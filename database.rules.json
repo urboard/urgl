@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "board": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
