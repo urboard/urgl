@@ -99,6 +99,9 @@
   .chip:hover{background:#d8e6e8}.chip.x{color:#c0392b}
   .maskx{background:none;border:0;cursor:pointer;color:var(--muted);font-size:12px;line-height:1;padding:0 3px;margin-left:2px;border-radius:4px;opacity:.6}
   .maskx:hover{opacity:1;color:#c0392b;background:#f7e4e2}
+  .mstep{display:inline-flex;flex-direction:column;margin:0 5px;vertical-align:middle;line-height:0}
+  .mstep button{background:none;border:0;cursor:pointer;color:var(--muted);font-size:9px;line-height:.9;padding:0 2px}
+  .mstep button:hover{color:var(--accent)}
   .txwrap{display:flex;flex-wrap:wrap;gap:4px;align-items:center;flex:1}
   .txchip{display:inline-flex;align-items:center;gap:5px;background:#e3eef0;border:1px solid #cfe0e3;border-radius:12px;padding:2px 4px 2px 9px;font-size:12px;font-weight:600}
   .txchip b{cursor:pointer;color:#c0392b}
@@ -152,10 +155,10 @@
   <div class="spacer"></div>
   <button id="undoBtn" onclick="undo()" title="Undo the last change (up to 5)" disabled>↶ Undo</button>
   <button onclick="openTLog()">👥 By therapist</button>
-  <button onclick="openRecords()">📒 Records</button>
   <div class="menu-wrap">
     <button class="ghost" onclick="toggleMenu(event)">⋯ More</button>
     <div class="menu" id="moreMenu" onclick="closeMenu()">
+      <button onclick="openRecords()">📒 Records</button>
       <button onclick="openBackups()">🗂 Backups</button>
       <button onclick="exportState()">⬇ Save to file</button>
       <button onclick="document.getElementById('importer').click()">⬆ Load from file</button>
@@ -255,7 +258,7 @@ const SEED={
   customers:{}
 };
 let state=migrate(load())||freshState();
-let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null;
+let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null,editingMaskRoom=null;
 let cloudRef=null,applyingRemote=false,saveTimer=null;
 let undoStack=[],histLast=null;const UNDO_MAX=5;
 
@@ -328,11 +331,12 @@ function arrive(){const name=$("arriveName").value.trim();if(!name){toast("Type 
 function setCustDoc(name,v){if(name){state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].doctor=v;}}
 function qSetDoctor(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.doctor=v;setCustDoc(q.customer,v);editingDocId=null;commit();}}
 function qSetAppt(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.appt=v;editingTimeId=null;commit();}}
-function editDoc(id){editingDocId=id;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;render();}
-function editTime(id){editingTimeId=id;editingDocId=null;editingDocRoom=null;editingTheraRoom=null;render();}
-function editTheraRoom(room){editingTheraRoom=room;editingDocId=null;editingDocRoom=null;editingTimeId=null;render();}
+function editDoc(id){editingDocId=id;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;render();}
+function editTime(id){editingTimeId=id;editingDocId=null;editingDocRoom=null;editingTheraRoom=null;editingMaskRoom=null;render();}
+function editTheraRoom(room){editingTheraRoom=room;editingDocId=null;editingDocRoom=null;editingTimeId=null;editingMaskRoom=null;render();}
+function maskBump(room,delta){const o=state.occ[room];if(!o||!o.mask)return;let m=(toMin(o.mask)+delta+1440)%1440;o.mask=pad(Math.floor(m/60))+":"+pad(m%60);commit();}
 function roomSetTherapist(room,v){const o=state.occ[room];if(o){o.therapist=v;editingTheraRoom=null;commit();}}
-function cancelEdit(){editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;render();}
+function cancelEdit(){editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;render();}
 function qTxAdd(id,v){v=v.trim();if(!v)return;const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);if(!q.treatment.includes(v))q.treatment.push(v);commit();}}
 function qTxRemove(id,i){const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);q.treatment.splice(i,1);commit();}}
 function qCheckIn(id){const q=state.queue.find(x=>x.id==id);if(q){q.arrivedAt=q.arrivedAt?"":nowHM();commit();}}
@@ -344,7 +348,7 @@ function moveQueueToRoom(id,room){if(!room)return;const i=state.queue.findIndex(
   state.queue.splice(i,1);commit();}
 function roomSet(room,f,v){if(state.occ[room]){state.occ[room][f]=v;commit();}}
 function roomSetDoctor(room,v){const o=state.occ[room];if(o){o.doctor=v;setCustDoc(o.customer,v);editingDocRoom=null;commit();}}
-function editDocRoom(room){editingDocRoom=room;editingDocId=null;editingTimeId=null;render();}
+function editDocRoom(room){editingDocRoom=room;editingDocId=null;editingTimeId=null;editingMaskRoom=null;render();}
 function roomTxAdd(room,v){v=v.trim();if(!v)return;const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);if(!o.treatment.includes(v))o.treatment.push(v);commit();}}
 function roomTxRemove(room,i){const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);o.treatment.splice(i,1);commit();}}
 function roomTxDone(room,i){const o=state.occ[room];if(!o)return;o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);const x=o.treatment.splice(i,1)[0];if(x)o.txDone.push(x);commit();}
@@ -403,17 +407,17 @@ function roomCard(room){
   return `<div class="room occ${maskClass(o)}${o.therapist?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">${o.mask&&toMin(o.mask)-curMin()<0?'MASK OFF':'IN USE'}</span></div>
     <div class="body">${nb}${o.therapist?'':'<div class="noTheraBanner">⚠ No therapist assigned</div>'}
       <div class="cust">${esc(o.customer)}</div>
-      <div class="fieldrow"><label>Doctor</label><div style="flex:1;display:flex;align-items:center;gap:4px">${docEl}</div></div>
-      <div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px">${theraEl}</div></div>
+      <div class="fieldrow"><label>Doctor</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${docEl}</div></div>
+      <div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>
       <div class="fieldrow"><label>Tx</label><div class="txwrap">${remChips}<input class="txin" list="txList" placeholder="+ add" onchange="roomTxAdd('${esc(room)}',this.value);this.value=''"></div></div>
       ${doneChips?`<div class="fieldrow"><label>Done</label><div class="txwrap">${doneChips}</div></div>`:''}
-      ${o.mask?`<div class="fieldrow"><label>Mask off</label><div style="flex:1;padding-top:6px"><b>${esc(hm12(o.mask))}</b>${maskRel(o.mask)} <button class="maskx" title="clear mask-off time" onclick="maskClear('${esc(room)}')">✕</button></div></div>`:`<div class="fieldrow maskrow"><label style="width:auto">Mask</label><span class="hint">on for:</span><button class="chip" onclick="maskIn('${esc(room)}',5)">5m</button><button class="chip" onclick="maskIn('${esc(room)}',10)">10m</button><button class="chip" onclick="maskIn('${esc(room)}',15)">15m</button><span class="maskbreak"></span><span class="mhidden">Mask</span><span class="hint mhidden">on for:</span><input class="timein" title="exact time" placeholder="e.g. 345" onchange="roomSet('${esc(room)}','mask',parseTimeInput(this.value))"></div>`}
+      ${o.mask?`<div class="fieldrow"><label>Mask off</label><div style="flex:1;padding-top:6px"><b>${esc(hm12(o.mask))}</b><span class="mstep"><button title="+1 min" onclick="maskBump('${esc(room)}',1)">▲</button><button title="-1 min" onclick="maskBump('${esc(room)}',-1)">▼</button></span>${maskRel(o.mask)} <button class="maskx" title="clear mask-off time" onclick="maskClear('${esc(room)}')">✕</button></div></div>`:`<div class="fieldrow maskrow"><label style="width:auto">Mask</label><span class="hint">on for:</span><button class="chip" onclick="maskIn('${esc(room)}',5)">5m</button><button class="chip" onclick="maskIn('${esc(room)}',10)">10m</button><button class="chip" onclick="maskIn('${esc(room)}',15)">15m</button><span class="maskbreak"></span><span class="mhidden">Mask</span><span class="hint mhidden">on for:</span><input class="timein" title="exact time" placeholder="e.g. 345" onchange="roomSet('${esc(room)}','mask',parseTimeInput(this.value))"></div>`}
       <div class="fieldrow"><label>Note</label><input class="note-in" value="${esc(o.note||'')}" placeholder="remark for this room…" onchange="roomSet('${esc(room)}','note',this.value)"></div>
       <div class="fieldrow"><label>Next →</label><select onchange="roomSetNext('${esc(room)}',this.value)">${nextOpts}</select></div>
       <div class="actions">${goBtn}
         <button class="btn sm red" onclick="clearRoom('${esc(room)}')">Clear Room</button>
+        <button class="btn sm grey" onclick="roomToQueue('${esc(room)}')">↩ Back to queue</button>
       </div>
-      <div style="margin-top:5px"><button class="btn sm grey" style="font-size:12px;padding:4px 9px" onclick="roomToQueue('${esc(room)}')">↩ Back to queue</button></div>
     </div></div>`;
 }
 function renderThera(){
