@@ -32,8 +32,16 @@
   .syncst.cloud{background:#2e7d32}.syncst.err{background:#b9534f}
   .spacer{flex:1}
   header button{background:#fff;color:var(--head);border:0;border-radius:7px;padding:8px 10px;font-size:13px;font-weight:700;cursor:pointer}
+  header button[disabled]{opacity:.45;cursor:default}
   header button:hover{background:#e9f0f1}
   header button.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
+  .menu-wrap{position:relative;display:inline-block}
+  .menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.2);padding:6px;min-width:190px;display:none;flex-direction:column;gap:2px;z-index:40}
+  .menu.show{display:flex}
+  .menu button{background:none;border:0;color:var(--ink);text-align:left;padding:8px 10px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
+  .menu button:hover{background:#eef3f4}
+  .menu button.danger{color:#c0392b}.menu button.danger:hover{background:#f7e4e2}
+  .menu-sep{height:1px;background:var(--line);margin:4px 2px}
   main{padding:16px;max-width:1500px;margin:0 auto}
   .arrive-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:16px}
   .arrive-bar strong{color:var(--head)}
@@ -78,9 +86,19 @@
   .mask b{font-variant-numeric:tabular-nums}
   .rel{font-size:12px;color:var(--muted);margin-left:4px}.rel.over{color:#c0392b;font-weight:700}.rel.soon{color:#b8860b;font-weight:700}
   .maskbtns{display:flex;gap:5px;flex-wrap:nowrap;align-items:center}
+  .maskbtns .hint{white-space:nowrap;flex:none;font-size:13px;color:var(--muted)}.maskbtns .chip{padding:3px 7px}
+  .maskrow{flex-wrap:wrap;align-items:center;row-gap:3px}
+  .maskrow label{padding-top:0}
+  .maskrow .hint{white-space:nowrap;flex:none;font-size:13px;color:var(--muted)}
+  .maskrow .chip{padding:3px 7px}
+  .maskrow .timein{width:84px}
+  .maskrow .maskbreak{flex-basis:100%;height:0}
+  .maskrow .mhidden{visibility:hidden;flex:none;white-space:nowrap}
   .maskbtns .timein{width:84px}
   .chip{background:#eef3f4;border:1px solid var(--line);border-radius:14px;padding:3px 9px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink)}
   .chip:hover{background:#d8e6e8}.chip.x{color:#c0392b}
+  .maskx{background:none;border:0;cursor:pointer;color:var(--muted);font-size:12px;line-height:1;padding:0 3px;margin-left:2px;border-radius:4px;opacity:.6}
+  .maskx:hover{opacity:1;color:#c0392b;background:#f7e4e2}
   .txwrap{display:flex;flex-wrap:wrap;gap:4px;align-items:center;flex:1}
   .txchip{display:inline-flex;align-items:center;gap:5px;background:#e3eef0;border:1px solid #cfe0e3;border-radius:12px;padding:2px 4px 2px 9px;font-size:12px;font-weight:600}
   .txchip b{cursor:pointer;color:#c0392b}
@@ -116,7 +134,6 @@
   .modal h2{margin:0;padding:14px 18px;background:var(--head);color:#fff;font-size:17px;display:flex;justify-content:space-between;align-items:center}
   .modal h2 span{cursor:pointer}
   .modal .mbody{padding:16px 18px;overflow:auto}
-  #summaryText{width:100%;height:320px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical;white-space:pre;color:var(--ink)}
   .modal .mfoot{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
   .tlog-th{font-weight:800;color:var(--head);margin:12px 0 4px;font-size:15px}.tlog-th:first-child{margin-top:0}
   .tlog-item{font-size:13px;margin:2px 0 2px 6px}.tlog-item .now{color:#256b39;font-weight:700}.tlog-item .done{color:var(--muted)}
@@ -133,15 +150,21 @@
   <img class="logo" src="logo.png" alt="" onerror="this.style.display='none'">
   <h1>Room Flow Board</h1><span id="clock">--:--</span><span id="syncst" class="syncst">local</span>
   <div class="spacer"></div>
+  <button id="undoBtn" onclick="undo()" title="Undo the last change (up to 5)" disabled>↶ Undo</button>
   <button onclick="openTLog()">👥 By therapist</button>
   <button onclick="openRecords()">📒 Records</button>
-  <button onclick="openSummary()">📋 Handover</button>
-  <button class="ghost" onclick="exportState()">⬇ Save</button>
-  <button class="ghost" onclick="document.getElementById('importer').click()">⬆ Load</button>
-  <button class="ghost" onclick="openSettings()">⚙ Lists</button>
-  <button class="ghost" onclick="openBackups()">🗂 Backups</button>
-  <button class="ghost" onclick="resetBoard()">↺ Reset</button>
-  <button class="ghost" id="logoutBtn" style="display:none" onclick="doLogout()">Log out</button>
+  <div class="menu-wrap">
+    <button class="ghost" onclick="toggleMenu(event)">⋯ More</button>
+    <div class="menu" id="moreMenu" onclick="closeMenu()">
+      <button onclick="openBackups()">🗂 Backups</button>
+      <button onclick="exportState()">⬇ Save to file</button>
+      <button onclick="document.getElementById('importer').click()">⬆ Load from file</button>
+      <button onclick="openSettings()">⚙ Edit lists</button>
+      <div class="menu-sep"></div>
+      <button class="danger" onclick="resetBoard()">↺ Reset board</button>
+      <button id="logoutBtn" style="display:none" onclick="doLogout()">⎋ Log out</button>
+    </div>
+  </div>
   <input type="file" id="importer" accept="application/json" style="display:none" onchange="importState(event)">
 </header>
 <main>
@@ -165,11 +188,6 @@
   </div>
 </main>
 
-<div class="modal-bg" id="summaryModal"><div class="modal">
-  <h2>Handover summary <span onclick="closeModal('summaryModal')">✕</span></h2>
-  <div class="mbody"><textarea id="summaryText" readonly></textarea></div>
-  <div class="mfoot"><button class="btn grey" onclick="closeModal('summaryModal')">Close</button><button class="btn" onclick="copyText('summaryText')">Copy</button></div>
-</div></div>
 <div class="modal-bg" id="tlogModal"><div class="modal">
   <h2>Customers by therapist <span onclick="closeModal('tlogModal')">✕</span></h2>
   <div class="mbody" id="tlogBody"></div>
@@ -239,6 +257,7 @@ const SEED={
 let state=migrate(load())||freshState();
 let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null;
 let cloudRef=null,applyingRemote=false,saveTimer=null;
+let undoStack=[],histLast=null;const UNDO_MAX=5;
 
 function freshState(){const occ={};SEED.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
   return {doctors:[...SEED.doctors],therapists:[...SEED.therapists],treatments:[...SEED.treatments],groups:JSON.parse(JSON.stringify(SEED.groups)),customers:{},occ,queue:[],completed:[],removed:[],seq:1,filterWindow:true};}
@@ -343,7 +362,16 @@ function assignFreeRoom(room,id){if(id)moveQueueToRoom(parseInt(id,10),room);}
 function toggleFilter(v){state.filterWindow=v;commit();}
 function resetBoard(){if(!confirm("Reset the board to empty? This clears all rooms, queue, waiting, and today's records. Your doctor/therapist/treatment/room lists are kept."))return;
   autoBackup();const occ={};allRooms().forEach(r=>occ[r]=null);state.occ=occ;state.queue=[];state.completed=[];state.removed=[];commit();toast("Board reset");}
-function commit(){save();render();}
+function updateUndoBtn(){const b=$("undoBtn");if(!b)return;const n=undoStack.length;b.disabled=!n;b.textContent="↶ Undo"+(n?" ("+n+")":"");}
+function recordHistory(){const cur=JSON.stringify(state);if(cur===histLast)return;
+  if(histLast!=null){undoStack.push(histLast);while(undoStack.length>UNDO_MAX)undoStack.shift();}
+  histLast=cur;updateUndoBtn();}
+function undo(){if(!undoStack.length){toast("Nothing to undo");return;}
+  const prev=undoStack.pop();try{state=migrate(JSON.parse(prev));}catch(e){toast("Could not undo");return;}
+  histLast=JSON.stringify(state);save();render();updateUndoBtn();toast("Undid last change");}
+function toggleMenu(e){e.stopPropagation();const m=$("moreMenu");if(m)m.classList.toggle("show");}
+function closeMenu(){const m=$("moreMenu");if(m)m.classList.remove("show");}
+function commit(){save();recordHistory();render();}
 
 function maskRel(hm){if(!hm)return"";const m=toMin(hm);if(m==null)return"";let d=m-curMin();
   if(d>=0)return `<span class="rel ${d<=5?'soon':''}">in ${d}m</span>`;return `<span class="rel over">${-d}m ago</span>`;}
@@ -372,21 +400,14 @@ function roomCard(room){
   const theraEl=(!o.therapist||editingT)?`<select ${editingT?'id="activeEdit" onblur="cancelEdit()"':''} onchange="roomSetTherapist('${esc(room)}',this.value)" style="flex:1">${thOptions(o.therapist)}</select>`:`<span class="docline">${esc(o.therapist)}</span><button class="docedit" title="change therapist" onclick="editTheraRoom('${esc(room)}')">✎</button>`;
   const remChips=txArr(o.treatment).map((x,i)=>`<span class="txchip"><span class="txname" title="tap when done" onclick="roomTxDone('${esc(room)}',${i})">${esc(x)}</span><b title="remove" onclick="roomTxRemove('${esc(room)}',${i})">✕</b></span>`).join('');
   const doneChips=txArr(o.txDone).map((x,i)=>`<span class="txchip done"><span class="txname" title="tap to undo" onclick="roomTxUndo('${esc(room)}',${i})">${esc(x)}</span></span>`).join('');
-  return `<div class="room occ${maskClass(o)}${o.therapist?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">IN USE</span></div>
+  return `<div class="room occ${maskClass(o)}${o.therapist?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">${o.mask&&toMin(o.mask)-curMin()<0?'MASK OFF':'IN USE'}</span></div>
     <div class="body">${nb}${o.therapist?'':'<div class="noTheraBanner">⚠ No therapist assigned</div>'}
       <div class="cust">${esc(o.customer)}</div>
       <div class="fieldrow"><label>Doctor</label><div style="flex:1;display:flex;align-items:center;gap:4px">${docEl}</div></div>
       <div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px">${theraEl}</div></div>
       <div class="fieldrow"><label>Tx</label><div class="txwrap">${remChips}<input class="txin" list="txList" placeholder="+ add" onchange="roomTxAdd('${esc(room)}',this.value);this.value=''"></div></div>
       ${doneChips?`<div class="fieldrow"><label>Done</label><div class="txwrap">${doneChips}</div></div>`:''}
-      <div class="fieldrow"><label>Mask off</label><div style="flex:1"><b>${o.mask?esc(hm12(o.mask)):'—'}</b>${maskRel(o.mask)}
-        <div class="maskbtns" style="margin-top:4px"><span class="hint">on for:</span>
-          <button class="chip" onclick="maskIn('${esc(room)}',5)">5m</button>
-          <button class="chip" onclick="maskIn('${esc(room)}',10)">10m</button>
-          <button class="chip" onclick="maskIn('${esc(room)}',15)">15m</button></div>
-        <div class="maskbtns" style="margin-top:4px">
-          <input class="timein" title="exact time" value="${esc(hm12(o.mask))}" placeholder="e.g. 345" onchange="roomSet('${esc(room)}','mask',parseTimeInput(this.value))">
-          <button class="chip x" onclick="maskClear('${esc(room)}')">clear</button></div></div></div>
+      ${o.mask?`<div class="fieldrow"><label>Mask off</label><div style="flex:1;padding-top:6px"><b>${esc(hm12(o.mask))}</b>${maskRel(o.mask)} <button class="maskx" title="clear mask-off time" onclick="maskClear('${esc(room)}')">✕</button></div></div>`:`<div class="fieldrow maskrow"><label style="width:auto">Mask</label><span class="hint">on for:</span><button class="chip" onclick="maskIn('${esc(room)}',5)">5m</button><button class="chip" onclick="maskIn('${esc(room)}',10)">10m</button><button class="chip" onclick="maskIn('${esc(room)}',15)">15m</button><span class="maskbreak"></span><span class="mhidden">Mask</span><span class="hint mhidden">on for:</span><input class="timein" title="exact time" placeholder="e.g. 345" onchange="roomSet('${esc(room)}','mask',parseTimeInput(this.value))"></div>`}
       <div class="fieldrow"><label>Note</label><input class="note-in" value="${esc(o.note||'')}" placeholder="remark for this room…" onchange="roomSet('${esc(room)}','note',this.value)"></div>
       <div class="fieldrow"><label>Next →</label><select onchange="roomSetNext('${esc(room)}',this.value)">${nextOpts}</select></div>
       <div class="actions">${goBtn}
@@ -466,15 +487,6 @@ function openRecords(){
   $("recBody").innerHTML=html;$("recModal").classList.add("show");}
 function clearRecords(){if(confirm("Clear today's records (completed + cancelled)?")){state.completed=[];state.removed=[];commit();openRecords();toast("Records cleared");}}
 
-function buildSummary(){let L=["ROOM FLOW — "+nowHM(),""];
-  state.groups.forEach(g=>{L.push(g.name.toUpperCase()+":");
-    g.rooms.forEach(r=>{const o=state.occ[r];if(o){let s=`  • ${r}: ${o.customer}`;let b=[];if(o.doctor)b.push(o.doctor);if(o.therapist)b.push(o.therapist);if(txArr(o.treatment).length)b.push(txDisp(o.treatment));if(b.length)s+=" — "+b.join(" / ");if(o.mask)s+="  | mask off "+hm12(o.mask);if(o.note)s+="  | note: "+o.note;L.push(s);}else L.push(`  • ${r}: free`);});L.push("");});
-  let waiting=state.queue.filter(q=>q.arrivedAt);if(waiting.length){L.push("WAITING NOW:");waiting.map(q=>({q,w:Math.max(0,curMin()-toMin(q.arrivedAt))})).sort((a,b)=>b.w-a.w).forEach(({q,w})=>L.push(`  • ${q.customer} — waiting ${w}m`));L.push("");}
-  let up=state.queue.filter(q=>!q.arrivedAt);L.push("NOT ARRIVED ("+up.length+"):");if(!up.length)L.push("  (none)");
-  up.slice().sort((a,b)=>(toMin(a.appt)||9999)-(toMin(b.appt)||9999)).forEach(q=>{let s=`  ${q.appt?hm12(q.appt):'--:--'}  ${q.customer}`;let b=[];if(q.doctor)b.push(q.doctor);if(txArr(q.treatment).length)b.push(txDisp(q.treatment));if(b.length)s+=" ("+b.join(", ")+")";L.push(s);});
-  return L.join("\n");}
-function openSummary(){$("summaryText").value=buildSummary();$("summaryModal").classList.add("show");}
-function copyText(id){const t=$(id);t.select();t.setSelectionRange(0,99999);try{document.execCommand('copy');toast("Copied");}catch(e){copyStr(t.value);}}
 function copyStr(str){if(navigator.clipboard){navigator.clipboard.writeText(str).then(()=>toast("Copied"),()=>{});}else{const ta=document.createElement('textarea');ta.value=str;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast("Copied");}catch(e){}ta.remove();}}
 
 function openSettings(){const dn=state.groups.find(g=>g.name==="Downstairs")||state.groups[0];const up=state.groups.find(g=>g.name==="Upstairs")||state.groups[1]||{rooms:[]};
@@ -503,7 +515,7 @@ function importState(ev){const f=ev.target.files[0];if(!f)return;const r=new Fil
 function setSync(t,cls){const e=$("syncst");if(e){e.textContent=t;e.className="syncst"+(cls?" "+cls:"");}}
 function connectCloud(){
   if(cloudRef)return;const db=firebase.database();cloudRef=db.ref(FIREBASE_PATH);
-  cloudRef.on('value',snap=>{const v=snap.val();if(typeof v==='string'){try{applyingRemote=true;state=migrate(JSON.parse(v));try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}render();}catch(e){}applyingRemote=false;}});
+  cloudRef.on('value',snap=>{const v=snap.val();if(typeof v==='string'){try{applyingRemote=true;state=migrate(JSON.parse(v));try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}recordHistory();render();}catch(e){}applyingRemote=false;}});
   cloudRef.once('value').then(s=>{if(s.val()==null){try{cloudRef.set(JSON.stringify(state));}catch(e){}}});
 }
 function doLogin(){let u=$("loginEmail").value.trim();const p=$("loginPwd").value;if(!u||!p){$("loginErr").textContent="Enter username and password.";return;}
@@ -524,7 +536,8 @@ function initCloud(){
 
 function tick(){$("clock").textContent=nowHM();if(!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))render();}
 $("arriveName").addEventListener("keydown",e=>{if(e.key==="Enter")arrive();});
-render();$("clock").textContent=nowHM();
+document.addEventListener("click",e=>{const m=$("moreMenu");if(m&&m.classList.contains("show")&&!e.target.closest(".menu-wrap"))m.classList.remove("show");});
+render();$("clock").textContent=nowHM();histLast=JSON.stringify(state);updateUndoBtn();
 if(FIREBASE_CONFIG&&window.firebase){$("loginOverlay").classList.add("show");}
 initCloud();
 setInterval(()=>{$("clock").textContent=nowHM();},1000);
