@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Room Flow Board">
-<!-- Firebase (only used if FIREBASE_CONFIG is filled in below) -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -30,6 +30,8 @@
   #clock{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.14);padding:3px 10px;border-radius:6px}
   .syncst{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.16)}
   .syncst.cloud{background:#2e7d32}.syncst.err{background:#b9534f}
+  .rolechip{font-size:12px;font-weight:700;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,.22);cursor:pointer}
+  .rolechip:hover{background:rgba(255,255,255,.35)}
   .spacer{flex:1}
   header button{background:#fff;color:var(--head);border:0;border-radius:7px;padding:8px 10px;font-size:13px;font-weight:700;cursor:pointer}
   header button[disabled]{opacity:.45;cursor:default}
@@ -43,8 +45,10 @@
   .menu button.danger{color:#c0392b}.menu button.danger:hover{background:#f7e4e2}
   .menu-sep{height:1px;background:var(--line);margin:4px 2px}
   main{padding:16px;max-width:1500px;margin:0 auto}
-  .arrive-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:16px}
-  .arrive-bar strong{color:var(--head)}
+  .arrive-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:10px}
+  .arrive-bar strong{color:var(--head);font-size:13px;flex:none}
+  .arrive-bar input,.arrive-bar select{padding:5px 7px;font-size:13px}
+  .arrive-bar .btn{padding:6px 10px;font-size:13px}
   input,select{font-family:inherit;font-size:14px;padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
   input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
   .btn{background:var(--accent);color:#fff;border:0;border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:14px}
@@ -67,7 +71,8 @@
   .room.maskOver .rhead{background:#ffd9d9;border-bottom-color:#e57373}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 3px #ef9a9a}50%{box-shadow:0 0 0 6px #ef9a9a}}
   .room .rname{font-size:16px}
-  .room .pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .room .pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;flex:none}
+  .room .rname{min-width:0;overflow:hidden;text-overflow:ellipsis}
   .room.free .pill{background:#cfe9d6;color:#256b39}.room.occ .pill{background:#f6d8b3;color:#8a5212}.room.maskOver .pill{background:#e57373;color:#fff}
   .room.hasnext{border-color:#9cc0e0}.room.hasnext .pill{background:#cfe2f5;color:#1565c0}
   .nextbanner{background:#eaf3fb;border:1px dashed #9cc0e0;color:#1565c0;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;margin-bottom:5px}
@@ -76,27 +81,18 @@
   .tag.warn{background:#f3e8fd;color:#7b2cbf}
   .timein{font-family:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
   .room .body{padding:10px 11px;display:flex;flex-direction:column;gap:7px;flex:1}
-  .cust{font-size:17px;font-weight:700;line-height:1.15}
+  .cust{font-size:15px;font-weight:800;line-height:1.25;letter-spacing:-.1px;margin-bottom:2px}
   .fieldrow{display:flex;align-items:flex-start;gap:6px;font-size:13px}
-  .fieldrow label{width:54px;color:var(--muted);flex:none;padding-top:6px}
+  .fieldrow label{width:58px;color:var(--muted);flex:none;padding-top:6px;white-space:nowrap;font-size:12px}
   .fieldrow select,.fieldrow .note-in{flex:1;min-width:0}
   .docline{font-weight:700;color:var(--head);font-size:13px}
   .docedit{background:none;border:0;cursor:pointer;color:var(--muted);font-size:13px;padding:0 4px;border-radius:4px}
   .docedit:hover{background:#eef3f4;color:var(--accent)}
   .mask b{font-variant-numeric:tabular-nums}
   .rel{font-size:12px;color:var(--muted);margin-left:4px}.rel.over{color:#c0392b;font-weight:700}.rel.soon{color:#b8860b;font-weight:700}
-  .maskbtns{display:flex;gap:5px;flex-wrap:nowrap;align-items:center}
-  .maskbtns .hint{white-space:nowrap;flex:none;font-size:13px;color:var(--muted)}.maskbtns .chip{padding:3px 7px}
-  .maskrow{flex-wrap:wrap;align-items:center;row-gap:3px}
-  .maskrow label{padding-top:0}
-  .maskrow .hint{white-space:nowrap;flex:none;font-size:13px;color:var(--muted)}
-  .maskrow .chip{padding:3px 7px}
-  .maskrow .timein{width:84px}
-  .maskrow .maskbreak{flex-basis:100%;height:0}
-  .maskrow .mhidden{visibility:hidden;flex:none;white-space:nowrap}
-  .maskbtns .timein{width:84px}
   .chip{background:#eef3f4;border:1px solid var(--line);border-radius:14px;padding:3px 9px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink)}
   .chip:hover{background:#d8e6e8}.chip.x{color:#c0392b}
+  .chip.go{background:#2e7d8a;color:#fff;border-color:#2e7d8a}
   .maskx{background:none;border:0;cursor:pointer;color:var(--muted);font-size:12px;line-height:1;padding:0 3px;margin-left:2px;border-radius:4px;opacity:.6}
   .maskx:hover{opacity:1;color:#c0392b;background:#f7e4e2}
   .mstep{display:inline-flex;flex-direction:column;margin:0 5px;vertical-align:middle;line-height:0}
@@ -115,7 +111,6 @@
   .freebody select{width:100%}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
   .tag{display:inline-block;background:#e6f4ea;color:#256b39;border-radius:12px;padding:2px 9px;margin:2px 3px 2px 0;font-weight:700;font-size:12px}
-  .tag.busy{background:#fdeede;color:#8a5212}
   .witem{border:1px solid var(--line);border-radius:8px;padding:7px 8px;margin-bottom:7px;background:#fbfdfd;display:flex;flex-direction:column;gap:5px}
   .witem.wmed{background:#fff8e1;border-color:#f0d48a}.witem.wlong{background:#fdeaea;border-color:#e9a3a3}
   .witem .wtop{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
@@ -123,7 +118,6 @@
   .witem.wlong .wmin{color:#c0392b}.witem.wmed .wmin{color:#b8860b}
   .queue{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
   .qitem{border:1px solid var(--line);border-radius:8px;padding:8px;margin-bottom:8px;background:#fbfdfd}
-  .qtop{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
   .qtime{font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;flex:none}
   .qname{font-weight:700;font-size:15px;flex:1}
   .qactions{display:flex;gap:6px;align-items:center;margin-top:6px}
@@ -145,44 +139,185 @@
   .settings .grp{margin-bottom:12px}.settings .grp label{font-weight:700;font-size:13px}
   .hint{font-size:12px;color:var(--muted)}
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2d33;color:#fff;padding:10px 18px;border-radius:8px;font-weight:700;opacity:0;transition:opacity .2s;z-index:99;pointer-events:none}
+  .toast.action{pointer-events:auto}
+  .toastUndo{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;font-weight:800;padding:3px 10px;border-radius:6px;cursor:pointer;margin-left:6px}
+  .toastUndo:hover{background:rgba(255,255,255,.3)}
   .toast.show{opacity:1}
+  /* ===== v2: Oxy step engine ===== */
+  .oxybox{background:#eef7f8;border:1px solid #bfe0e4;border-radius:8px;padding:6px 8px;display:flex;flex-direction:column;gap:5px}
+  .oxybox.paused{background:#fff8e1;border-color:#f0d48a}
+  .oxyline{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--head);flex-wrap:wrap}
+  .oxyline.consultline{align-items:baseline}
+  .oxydots{letter-spacing:2px;font-size:12px}
+  .oxydots .on{color:#2e7d8a}.oxydots .off{color:#c3d6d9}
+  .oxyrem{font-variant-numeric:tabular-nums}
+  .oxyrem.soon{color:#b8860b}.oxyrem.over{color:#c0392b}
+  .oxyctl{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .oxyctl .chip{padding:3px 8px}
+  .oxyctl select{font-size:12px;padding:4px 6px}
+  /* ===== v2: stage ===== */
+  /* ===== v2: phone (doctor / therapist) views ===== */
+  #phoneMain{max-width:560px}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:7px}
+  .pcard.alert{border-color:#e57373;box-shadow:0 0 0 3px #ffcdd2}
+  .pcard .ptop{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .pcard .pname{font-size:17px;font-weight:800}
+  .pcard .proom{font-size:13px;font-weight:800;color:var(--accent);background:#e3eef0;border-radius:10px;padding:2px 9px;flex:none}
+  .pstatus{font-size:13px;font-weight:700;color:#2c4a8a;background:#e8eef9;border-radius:8px;padding:4px 8px}
+  .pstatus.mo{background:#ffd9d9;color:#b3261e}
+  .pstatus.soon{background:#fdeede;color:#8a5212}
+  .pmeta{font-size:12px;color:var(--muted)}
+  .notif{background:#1f4e5f;color:#fff;border-radius:10px;padding:10px 12px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;align-items:center;animation:nflash .8s 3}
+  @keyframes nflash{0%,100%{background:#1f4e5f}50%{background:#2e7d8a}}
+  .notif button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:6px;padding:4px 9px;font-weight:700;cursor:pointer}
+  .rolebtns{display:flex;flex-direction:column;gap:8px}
+  .rolebtns button{padding:13px;font-size:15px;font-weight:800;border:1px solid var(--line);border-radius:9px;background:#fbfdfd;cursor:pointer;text-align:left}
+  .rolebtns button:hover{background:#e9f0f1;border-color:var(--accent)}
+  /* ===== v2.1 phone polish ===== */
+  @media(max-width:640px){input,select,textarea,.timein,.txin,.note-in{font-size:16px}}
+  body.phoneui header{padding:6px 10px;gap:7px}
+  body.phoneui header h1{font-size:15px}
+  body.phoneui .logo{display:none}
+  body.phoneui #clock{font-size:14px;padding:2px 8px}
+  body.phoneui .syncst{font-size:10px}
+  body.phoneui main{padding:10px}
+  .oxyctl.big{gap:8px}
+  .oxyctl.big .chip{padding:12px 16px;font-size:16px;border-radius:12px}
+  .oxyctl.big select{font-size:16px;padding:10px;border-radius:10px}
+  .oxyctl.big .maskx{font-size:16px;padding:6px 10px}
+  .stagechips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0}
+  .stagechips.oneline{flex-wrap:nowrap}
+  .stagechips .maskx{flex:none;margin-left:auto}
+  .miniToggle{background:#eef3f4;border:1px solid var(--line);border-radius:10px;padding:1px 7px;font-size:12px;cursor:pointer;line-height:1.5;vertical-align:middle;margin-left:4px}
+  .miniToggle:hover{border-color:var(--accent)}
+  .miniToggle.on{background:#e3eef0;border-color:var(--accent)}
+  .focusOverlay{position:fixed;inset:0;background:var(--head);color:#fff;z-index:9999;padding:18px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));overflow-y:auto;display:flex;flex-direction:column;height:100vh;height:100dvh}
+  .focusHead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex:none}
+  .focusBody{flex:1;display:flex;flex-direction:column;min-height:0}
+  .focusBody.center{justify-content:center}
+  .focusHead b{font-size:20px;display:block}
+  .focusSub{font-size:14px;opacity:.75}
+  .focusClose{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:22px;line-height:1;width:44px;height:44px;border-radius:50%;cursor:pointer;flex:none}
+  .focusClose:hover{background:rgba(255,255,255,.24)}
+  .focusSteps{display:flex;flex-direction:column;gap:12px;margin-bottom:18px;flex:1;min-height:0}
+  .focusStep{width:100%;flex:1;text-align:left;padding:0 24px;font-size:22px;font-weight:700;border-radius:14px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:flex;align-items:center}
+  .focusStep.active{background:#fff;color:var(--head);border-color:#fff}
+  .focusStep.done{opacity:.55;text-decoration:line-through}
+  .focusBig{font-size:38px;font-weight:800;text-align:center;margin:4px 0 16px;font-variant-numeric:tabular-nums;flex:none}
+  .focusBig.over{color:#ffb3b0}
+  .focusRow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;flex:none}
+  .focusPicks{display:flex;flex-direction:column;gap:14px;margin-top:16px;max-width:520px;align-self:center;width:100%;flex:1;min-height:0}
+  .focusPill{padding:16px 22px;font-size:18px;font-weight:700;border-radius:14px;border:0;background:#fff;color:var(--head);cursor:pointer}
+  .focusPicks .focusPill{flex:1;font-size:26px;display:flex;align-items:center;justify-content:center}
+  .focusPill.go{background:#ffcf6b;color:#5a3d00}
+  .focusInput{padding:16px;font-size:18px;border-radius:14px;border:0;width:110px;text-align:center}
+  .focusPicks .focusInput{width:100%;flex:1;font-size:26px;min-height:0}
+  .focusTrigger{padding:10px 16px;font-size:14px;font-weight:700;border-radius:10px;border:1px solid var(--line);background:#eef3f4;color:var(--head);cursor:pointer;margin:2px 0}
+  .focusTrigger.go{background:var(--head);color:#fff;border-color:var(--head)}
+  .focusTrigger.over{background:#fde3e2;color:#b3261e;border-color:#f2c4c4}
+  .focusTrigger.soon{background:#fdeede;color:#8a5212;border-color:#f0d48a}
+  body.phoneui .mstep button{font-size:15px;padding:2px 5px}
+  body.phoneui .stagechips .maskx{font-size:20px;padding:4px 10px;opacity:.85}
+  body.phoneui .stagechips b{font-size:15px}
+  .stagechips .rel{flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+  .moderow{width:100%;min-width:0}
+  .moderow:empty{display:none}
+  .pickwrap{width:100%;min-width:0}
+  .pickwrap .slabel{display:block;margin:0 0 3px;font-size:12px;color:var(--muted);font-weight:700}
+  body.phoneui .pickwrap .slabel{font-size:14px}
+  .moderow .stagechips{width:100%}
+  .stagechips .slabel,.stagechips b,.stagechips .rel{white-space:nowrap}
+  .attnrow2{background:#fff1f1;border:1px solid #f2c4c4;border-radius:8px;padding:5px 8px;margin-bottom:5px;font-size:13px;line-height:1.35}
+  .attnrow2 .aroom2{font-weight:800;color:var(--head)}
+  .attnrow2 .acust{color:var(--ink);margin-left:5px}
+  .attnrow2 .areason2{color:#b3261e;font-weight:800;margin-left:5px}
+  .attnrow2{display:flex;flex-wrap:wrap;align-items:center;gap:2px}
+  .attnbtn{margin-left:auto;flex:none;padding:3px 10px;font-size:12px}
+  .notetext{font-size:13px;color:#8a5212;cursor:pointer;background:#fff3d6;border:1px solid #f0d48a;border-radius:7px;padding:4px 8px;display:inline-block;font-weight:600}
+  .notetext:hover{border-color:var(--accent)}
+  .notelink{background:none;border:0;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;padding:2px 0;border-radius:4px}
+  .notelink:hover{color:var(--accent)}
+  .stagechips>*{flex:none}
+  .stagechips .chip{padding:3px 9px;font-size:12px}
+  body.phoneui .stagechips{gap:6px}
+  body.phoneui .stagechips .chip{padding:9px 12px;font-size:14px}
+  .stagechips .slabel{font-size:12px;color:var(--muted);font-weight:700;margin-left:2px}
+  body.phoneui .stagechips .slabel{font-size:14px}
+  .chip.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .chip.sel:hover{background:var(--accent);filter:brightness(1.08)}
+  .hdrbreak{display:none}
+  body.phoneui .hdrbreak{display:block;flex-basis:100%;height:0}
+  body.phoneui .rolechip{margin-right:auto}
+  .oxybox.mini{padding:3px 7px;gap:2px}
+  .oxybox.mini .oxyline{font-size:12px;gap:4px;flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
+  .oxybox.mini .oxydots{font-size:10px;letter-spacing:1px}
+  .pcard .txchip{padding:8px 12px;font-size:15px;border-radius:14px}
+  .txaddsel{font-size:15px;padding:8px;min-width:110px}
+  .trow{border:1px solid var(--line);border-radius:8px;padding:7px 8px;margin-bottom:6px;background:#fbfdfd}
+  .trow.free{background:#e6f4ea;border-color:#9cc4a8}
+  .trow.soon{background:#fff8e1;border-color:#f0d48a}
+  .trow .ttop{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+  .trow .tname{font-weight:800;font-size:14px}
+  .trow .teta{font-weight:800;font-variant-numeric:tabular-nums;font-size:13px;flex:none}
+  .trow.free .teta{color:#256b39}.trow.soon .teta{color:#b8860b}.trow .teta.unk{color:var(--muted);font-weight:700}
+  .trow .tline{font-size:12px;color:var(--ink);margin-top:3px;display:flex;gap:5px;align-items:baseline}
+  .trow .troom{font-weight:700;color:var(--accent);flex:none}
+  .trow .tstat{color:var(--muted)}
+  .trow .tstat.over{color:#c0392b;font-weight:700}
+  .qitem.compact{padding:8px 10px}
+  .qtop2{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .qleft{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+  .qleft .qtime{font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;font-size:12px}
+  .qleft .qname{font-weight:700;font-size:15px;white-space:normal;overflow-wrap:break-word}
+  .qright{display:flex;flex-direction:column;gap:5px;align-items:stretch;flex:none}
+  .qmore{background:none;border:0;color:var(--muted);cursor:pointer;font-size:12px;padding:3px 6px;border-radius:5px;white-space:nowrap}
+  .qmore:hover{background:#eef3f4;color:var(--accent)}
+  .qdoc{font-size:12px;color:var(--head);font-weight:700}
+
 </style>
 </head>
 <body>
 <header>
   <img class="logo" src="logo.png" alt="" onerror="this.style.display='none'">
   <h1>Room Flow Board</h1><span id="clock">--:--</span><span id="syncst" class="syncst">local</span>
+  <span class="hdrbreak"></span>
+  <span class="rolechip" id="roleChip" style="display:none" onclick="openRoleSetup()" title="Tap to switch role/device">…</span>
   <div class="spacer"></div>
-  <button id="undoBtn" onclick="undo()" title="Undo the last change (up to 5)" disabled>↶ Undo</button>
-  <button onclick="openTLog()">👥 By therapist</button>
-  <div class="menu-wrap">
+  <button id="undoBtn" class="adminOnly" onclick="undo()" title="Undo the last change (up to 5)" disabled>↶ Undo</button>
+  <button class="boardOnly" onclick="openTLog()">👥 By therapist</button>
+  <div class="menu-wrap boardOnly">
     <button class="ghost" onclick="toggleMenu(event)">⋯ More</button>
     <div class="menu" id="moreMenu" onclick="closeMenu()">
       <button onclick="openRecords()">📒 Records</button>
-      <button onclick="openBackups()">🗂 Backups</button>
-      <button onclick="exportState()">⬇ Save to file</button>
-      <button onclick="document.getElementById('importer').click()">⬆ Load from file</button>
-      <button onclick="openSettings()">⚙ Edit lists</button>
-      <div class="menu-sep"></div>
-      <button class="danger" onclick="resetBoard()">↺ Reset board</button>
+      <button class="counterOnly" onclick="openBackups()">🗂 Backups</button>
+      <button class="counterOnly" onclick="exportState()">⬇ Save to file</button>
+      <button class="counterOnly" onclick="document.getElementById('importer').click()">⬆ Load from file</button>
+      <button class="counterOnly" onclick="openSettings()">⚙ Edit lists</button>
+      <div class="menu-sep counterOnly"></div>
+      <button class="danger counterOnly" onclick="resetBoard()">↺ Reset board</button>
       <button id="logoutBtn" style="display:none" onclick="doLogout()">⎋ Log out</button>
     </div>
   </div>
+  <button id="logoutBtnPhone" style="display:none" class="ghost" onclick="doLogout()">⎋</button>
   <input type="file" id="importer" accept="application/json" style="display:none" onchange="importState(event)">
 </header>
-<main>
-  <div class="arrive-bar">
-    <strong>Add / walk-in:</strong>
-    <input id="arriveName" list="custList" placeholder="Type or pick name…" style="min-width:200px">
-    <datalist id="custList"></datalist>
-    <select id="arriveDoc" title="Doctor" style="width:140px"></select>
-    <input id="arriveTime" class="timein" placeholder="time e.g. 345" style="width:120px">
-    <input id="arriveTx" list="txList" placeholder="Treatment" style="width:170px">
-    <button class="btn" onclick="arrive()">+ Add to queue</button>
-  </div>
+
+<!-- ===== Counter / Consultant board ===== -->
+<main id="boardMain" style="display:none">
   <datalist id="txList"></datalist>
   <div class="layout">
-    <div><div id="roomsHost"></div></div>
+    <div>
+      <div class="arrive-bar">
+        <strong>Add / walk-in:</strong>
+        <input id="arriveName" list="custList" placeholder="Type or pick name…" style="min-width:170px">
+        <datalist id="custList"></datalist>
+        <select id="arriveDoc" title="Doctor" style="width:120px"></select>
+        <input id="arriveTime" class="timein" placeholder="time e.g. 345" style="width:100px">
+        <input id="arriveTx" list="txList" placeholder="Treatment" style="width:140px">
+        <button class="btn" onclick="arrive()">+ Add to queue</button>
+      </div>
+      <div id="roomsHost"></div>
+    </div>
     <div class="rightcol">
       <div class="panel" id="theraPanel"></div>
       <div class="panel" id="waitPanel"></div>
@@ -191,15 +326,22 @@
   </div>
 </main>
 
+<!-- ===== Doctor / Therapist phone view ===== -->
+<main id="phoneMain" style="display:none">
+  <div id="notifHost"></div>
+  <div id="phoneHost"></div>
+</main>
+<div id="focusHost"></div>
+
 <div class="modal-bg" id="tlogModal"><div class="modal">
   <h2>Customers by therapist <span onclick="closeModal('tlogModal')">✕</span></h2>
   <div class="mbody" id="tlogBody"></div>
-  <div class="mfoot"><button class="btn grey" onclick="clearLog()">Clear day's log</button><button class="btn grey" onclick="closeModal('tlogModal')">Close</button><button class="btn" onclick="copyTLog()">Copy</button></div>
+  <div class="mfoot"><button class="btn grey counterOnly" onclick="clearLog()">Clear day's log</button><button class="btn grey" onclick="closeModal('tlogModal')">Close</button><button class="btn" onclick="copyTLog()">Copy</button></div>
 </div></div>
 <div class="modal-bg" id="recModal"><div class="modal">
   <h2>Records — today <span onclick="closeModal('recModal')">✕</span></h2>
   <div class="mbody" id="recBody"></div>
-  <div class="mfoot"><button class="btn grey" onclick="clearRecords()">Clear records</button><button class="btn grey" onclick="closeModal('recModal')">Close</button></div>
+  <div class="mfoot"><button class="btn grey counterOnly" onclick="clearRecords()">Clear records</button><button class="btn grey" onclick="closeModal('recModal')">Close</button></div>
 </div></div>
 <div class="modal-bg" id="backupModal"><div class="modal">
   <h2>Local backups <span onclick="closeModal('backupModal')">✕</span></h2>
@@ -229,12 +371,35 @@
   </div>
   <div class="mfoot"><button class="btn" onclick="doLogin()">Sign in</button></div>
 </div></div>
+<div class="modal-bg" id="roleOverlay" style="background:rgba(31,78,95,.97)"><div class="modal" style="max-width:380px">
+  <h2>Who is using this device?</h2>
+  <div class="mbody">
+    <div class="rolebtns" id="rolePick">
+      <button onclick="pickRole('counter')">🖥 Counter PC <span class="hint">full board + admin</span></button>
+      <button onclick="pickRole('consultant')">🧭 Consultant <span class="hint">full board, no admin</span></button>
+      <button onclick="pickRole('doctor')">🩺 Doctor <span class="hint">my customers today</span></button>
+      <button onclick="pickRole('therapist')">💆 Therapist <span class="hint">my rooms &amp; next up</span></button>
+    </div>
+    <div id="roleNameWrap" style="display:none;margin-top:12px">
+      <p class="hint" id="roleNameHint">Select your name:</p>
+      <select id="roleNameSel" style="width:100%"></select>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="confirmRole()">Continue</button>
+      <button class="btn grey" style="width:100%;margin-top:6px" onclick="openRoleSetup()">← Back</button>
+    </div>
+  </div>
+</div></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
-/* ===== Cloud sync (optional) — paste your Firebase config to enable sharing across devices =====
-   Leave as null for single-device (browser-local) use. See README. */
+/* ============================================================
+   Room Flow Board — v2
+   - Per-node Firebase sync (occ/queue/lists/completed/removed)
+     so simultaneous edits from phones merge instead of clobber.
+   - Device roles: counter / consultant / doctor / therapist.
+   - Oxy step engine: one tap to start, timeline is computed
+     from the start timestamp; taps only correct reality.
+   ============================================================ */
 const FIREBASE_CONFIG={
   apiKey:"AIzaSyD-uqB5hculwYkTCQ8KWpB2mk_2YPwzfyg",
   authDomain:"urgreenlane.firebaseapp.com",
@@ -245,27 +410,51 @@ const FIREBASE_CONFIG={
   appId:"1:529625112847:web:c1af51c483e6c85cfede7a",
   measurementId:"G-RQ72QHJK79"
 };
-const FIREBASE_PATH="board";
-const LOGIN_DOMAIN="urgreenlane.local"; // staff type a username; app appends this to make the Firebase email
+const BASE_PATH="board_v2";      // new sectioned data
+const OLD_PATH="board";          // v1 single-blob path (migrated once, left untouched)
+const LOGIN_DOMAIN="urgreenlane.local";
 
-const LS_KEY="roomFlowBoard_v4";
+const LS_KEY="roomFlowBoard_urgreenlane_v5";
+const LS_ROLE="urgreenlane_v5_role";
+const LS_FILTER="urgreenlane_v5_filterWindow";
 const SEED_TX=["Goldius Glam","Alex","Pro Light","P7","Revive","E2","EXO-T","S Plus (Face)","S Plus (Neck)","HIFU (Face)","HIFU (Neck)","Oxy","SRW","Soft Laser","Radiesse","Filler","Botox","dePigmentation","Revital"];
 const SEED={
-  doctors:["Dr Cheryl","Dr Nicole","Dr Teh","Dr Chan","Dr Yi Wen","Dr Michelle","Dr Eunice"],
-  therapists:["Regina","Karene","Yunny","Xiao Wei","Chloe","Yan Yun","Katherine","Iris"],
-  treatments:[...SEED_TX],
-  groups:[{name:"Downstairs",rooms:["Con 1","Con 2","Room 1 (Alex)","Room 2 (Andy)"]},{name:"Upstairs",rooms:["R1","R2","R3","R4","Classroom","R5","R6","R7"]}],
-  customers:{}
+  doctors: ["Dr Cheryl","Dr Nicole","Dr Teh","Dr Chan","Dr Yi Wen","Dr Michelle","Dr Eunice"],
+  therapists: ["Regina","Karene","Yunny","Xiao Wei","Chloe","Yan Yun","Katherine","Iris"],
+  treatments: [...SEED_TX],
+  groups: [
+    {name: "Downstairs", rooms: ["Con 1","Con 2","Room 1 (Alex)","Room 2 (Andy)"]},
+    {name: "Upstairs", rooms: ["R1","R2","R3","R4","Classroom","R5","R6","R7"]}
+  ],
+  customers: {}
 };
-let state=migrate(load())||freshState();
-let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null,editingMaskRoom=null;
-let cloudRef=null,applyingRemote=false,saveTimer=null;
-let undoStack=[],histLast=null;const UNDO_MAX=5;
+const OXY_STEPS=[["Crystal Hydrosuction",5],["Derma Ultrasonic",5],["Bipolar Frequency",5],["Oxyinfusion",5],["Cool Lift",5]];
+const OXY_MASK_MIN=15;
 
+let state=migrate(load())||freshState();
+let filterWindow=(localStorage.getItem(LS_FILTER)??"1")==="1";
+let ROLE=null,MYNAME="";
+try{const r=JSON.parse(localStorage.getItem(LS_ROLE)||"null");if(r&&r.role){ROLE=r.role;MYNAME=r.name||"";}}catch(e){}
+let pendingRole=null;
+let expandedQ=null;
+let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null,editingMaskRoom=null;
+let db=null,baseRef=null,cloudOn=false;
+let undoStack=[],histLast=null;const UNDO_MAX=5;
+let notifReady=false,seenAlerts={},activeNotifs=[];
+
+/* ===== state helpers ===== */
 function freshState(){const occ={};SEED.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
-  return {doctors:[...SEED.doctors],therapists:[...SEED.therapists],treatments:[...SEED.treatments],groups:JSON.parse(JSON.stringify(SEED.groups)),customers:{},occ,queue:[],completed:[],removed:[],seq:1,filterWindow:true};}
+  return {doctors:[...SEED.doctors],therapists:[...SEED.therapists],treatments:[...SEED.treatments],groups:JSON.parse(JSON.stringify(SEED.groups)),customers:{},occ,queue:[],completed:[],removed:[]};}
 function txArr(t){return Array.isArray(t)?t.slice():(t?[t]:[]);}
-function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.removed)s.removed=[];if(!s.treatments||!s.treatments.length)s.treatments=[...SEED.treatments];if(s.filterWindow===undefined)s.filterWindow=true;
+function normRoomObj(o){if(!o)return null;if(o.note===undefined)o.note="";if(o.nextRoom===undefined)o.nextRoom="";if(o.stage===undefined)o.stage="";if(o.numb===undefined)o.numb="";if(o.consult===undefined)o.consult=false;if(o.consultant===undefined)o.consultant="";if(o.consultTs===undefined)o.consultTs=0;
+  o.doctor=o.doctor||"";o.therapist=o.therapist||"";o.mask=o.mask||"";o.numb=o.numb||"";o.appt=o.appt||"";o.customer=o.customer||"";
+  o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
+  if(o.oxy&&typeof o.oxy==="object"){if(o.oxy.idx===undefined)o.oxy.idx=0;if(!o.oxy.ts)o.oxy.ts=Date.now();o.oxy.paused=!!o.oxy.paused;}else o.oxy=null;
+  if(o.mask||o.numb||o.oxy)o.consult=false; // a running timer always ends a consult
+  if(!o.mask&&!o.numb&&!o.oxy&&o.stage)o.stage=""; // no timer running -> no leftover stage label
+  if(o.mask){o.numb="";o.oxy=null;}else if(o.oxy){o.numb="";} // exclusive: mask > oxy > numbing
+  return o;}
+function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.removed)s.removed=[];if(!s.treatments||!s.treatments.length)s.treatments=[...SEED.treatments];
   if(!s.doctors||!s.doctors.length)s.doctors=[...SEED.doctors];
   if(!s.therapists||!s.therapists.length)s.therapists=[...SEED.therapists];
   if(!s.groups||!s.groups.length)s.groups=JSON.parse(JSON.stringify(SEED.groups));
@@ -273,22 +462,91 @@ function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.remov
   if(!Array.isArray(s.queue))s.queue=[];
   if(!s.occ||typeof s.occ!=='object')s.occ={};
   s.groups.forEach(g=>g.rooms.forEach(r=>{if(!(r in s.occ))s.occ[r]=null;}));
-  if(!s.seq)s.seq=s.queue.reduce((m,q)=>Math.max(m,q.id||0),0)+1;
-  const __rooms=s.groups.flatMap(g=>g.rooms);Object.keys(s.occ).forEach(r=>{const o=s.occ[r];if(o&&!__rooms.includes(r)){s.queue.push({id:s.seq++,customer:o.customer,doctor:o.doctor||"",therapist:o.therapist||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});delete s.occ[r];}});
-  const BAD=["Dr Fong","Dr Agnes","Dr Yi Wen / Dr Fong"];const fixd=d=>d==="Dr Yi Wen / Dr Fong"?"Dr Yi Wen":(d||"");
-  if(s.doctors)s.doctors=s.doctors.filter(d=>!BAD.includes(d));
-  (s.queue||[]).forEach(q=>{if(q.arrivedAt===undefined)q.arrivedAt="";q.doctor=fixd(q.doctor);q.treatment=txArr(q.treatment);});
-  Object.values(s.occ||{}).forEach(o=>{if(o){if(o.note===undefined)o.note="";if(o.nextRoom===undefined)o.nextRoom="";o.doctor=fixd(o.doctor);o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);}});
-  Object.values(s.customers||{}).forEach(c=>{if(c)c.doctor=fixd(c.doctor);});
-  (s.completed||[]).forEach(c=>{c.doctor=fixd(c.doctor);c.treatment=txArr(c.treatment);});
+  // Rescue occupants of rooms that no longer exist in the lists (e.g. after a rename):
+  // runs only on single-writer paths (local load, import, undo, restore) — never from sync,
+  // where every connected device would duplicate the queue entry.
+  const __rooms=s.groups.flatMap(g=>g.rooms);Object.keys(s.occ).forEach(r=>{const o=s.occ[r];if(o&&!__rooms.includes(r)){s.queue.push({id:nextId(),customer:o.customer,doctor:o.doctor||"",therapist:o.therapist||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});delete s.occ[r];}});
+  (s.queue||[]).forEach(q=>{if(q.arrivedAt===undefined)q.arrivedAt="";q.doctor=q.doctor||"";q.therapist=q.therapist||"";q.treatment=txArr(q.treatment);q.consult=!!q.consult;q.consultant=q.consultant||"";});
+  Object.keys(s.occ||{}).forEach(r=>{s.occ[r]=normRoomObj(s.occ[r]);});
+  Object.values(s.customers||{}).forEach(c=>{if(c){c.doctor=c.doctor||"";c.therapist=c.therapist||"";}});
+  (s.completed||[]).forEach(c=>{c.doctor=c.doctor||"";c.treatment=txArr(c.treatment);});
   (s.removed||[]).forEach(c=>{c.treatment=txArr(c.treatment);});return s;}
 function load(){try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
-function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}
-  if(cloudRef&&!applyingRemote){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{cloudRef.set(JSON.stringify(state));}catch(e){}},250);}}
-function nextId(){return state.seq++;}
+function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
+function nextId(){return Date.now()*100+Math.floor(Math.random()*100);}
+function fbKey(s){return String(s).replace(/[.#$/\[\]]/g,'_').trim()||"_";}
 
-/* ===== Auto-backup: rolling local snapshots so data survives a Firebase drop or accidental reset ===== */
-const BK_KEY="roomFlowBoard_v4_backups",BK_MAX=18;
+/* ===== cloud write layer =====
+   Every action mutates `state` locally then calls cloudPatch()
+   with only the paths it touched. Firebase update() applies the
+   paths atomically; other sections are never rewritten, so two
+   devices editing different things can no longer erase each other. */
+function cloudPatch(patch){
+  if(baseRef){try{baseRef.update(patch);}catch(e){}}
+  saveLocal();recordHistory();render();}
+function roomPatch(room){const o=state.occ[room];const v=o?Object.assign({},o,{room}):null;
+  return {["occ/"+fbKey(room)]:v};}
+function commitRoom(room){cloudPatch(roomPatch(room));}
+function queuePatch(q){return {["queue/"+q.id]:q};}
+function commitQueue(q){cloudPatch(queuePatch(q));}
+function custPatch(name){return {["lists/customers/"+fbKey(name)]:state.customers[name]||null};}
+function listsPatch(){return {"lists/doctors":state.doctors,"lists/therapists":state.therapists,"lists/treatments":state.treatments,"lists/groups":state.groups,"lists/customers":state.customers};}
+function fullStateObj(st){
+  const occ={};Object.entries(st.occ||{}).forEach(([r,o])=>{if(o)occ[fbKey(r)]=Object.assign({},o,{room:r});});
+  const q={};(st.queue||[]).forEach(x=>{if(!x.id)x.id=nextId();q[x.id]=x;});
+  const cm={};(st.completed||[]).forEach(x=>{if(!x.id)x.id=nextId()+Math.floor(Math.random()*50);cm[x.id]=x;});
+  const rm={};(st.removed||[]).forEach(x=>{if(!x.id)x.id=nextId()+Math.floor(Math.random()*50);rm[x.id]=x;});
+  return {lists:{doctors:st.doctors,therapists:st.therapists,treatments:st.treatments,groups:st.groups,customers:st.customers||{}},
+    occ:Object.keys(occ).length?occ:null,queue:Object.keys(q).length?q:null,
+    completed:Object.keys(cm).length?cm:null,removed:Object.keys(rm).length?rm:null};}
+function pushFullState(st){state=migrate(st)||freshState();
+  if(baseRef){try{baseRef.set(fullStateObj(state));}catch(e){}}
+  saveLocal();recordHistory();render();}
+
+/* ===== cloud read layer ===== */
+function applyLists(v){v=v||{};
+  state.doctors=(v.doctors||[]).filter(Boolean);if(!state.doctors.length)state.doctors=[...SEED.doctors];
+  state.therapists=(v.therapists||[]).filter(Boolean);if(!state.therapists.length)state.therapists=[...SEED.therapists];
+  state.treatments=(v.treatments||[]).filter(Boolean);if(!state.treatments.length)state.treatments=[...SEED_TX];
+  state.groups=(v.groups&&v.groups.length)?v.groups.map(g=>({name:g.name,rooms:(g.rooms||[]).filter(Boolean)})):JSON.parse(JSON.stringify(SEED.groups));
+  state.customers=v.customers||{};
+  Object.values(state.customers).forEach(c=>{if(c){c.doctor=c.doctor||"";c.therapist=c.therapist||"";}});
+  state.groups.forEach(g=>g.rooms.forEach(r=>{if(!(r in state.occ))state.occ[r]=null;}));
+  if(pendingRole)fillRoleNames();
+  saveLocal();render();}
+function applyOcc(v){const occ={};state.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
+  Object.entries(v||{}).forEach(([k,o])=>{if(!o)return;const name=o.room||k;occ[name]=normRoomObj(o);});
+  state.occ=occ;scanAlerts();saveLocal();render();}
+function applyQueue(v){state.queue=Object.values(v||{}).filter(Boolean).map(q=>{q.treatment=txArr(q.treatment);q.arrivedAt=q.arrivedAt||"";q.doctor=q.doctor||"";q.therapist=q.therapist||"";q.consult=!!q.consult;q.consultant=q.consultant||"";return q;}).sort((a,b)=>(a.id||0)-(b.id||0));
+  scanAlerts();saveLocal();render();}
+function applyRecs(which,v){state[which]=Object.values(v||{}).filter(Boolean).map(c=>{c.treatment=txArr(c.treatment);return c;}).sort((a,b)=>(a.id||0)-(b.id||0));
+  saveLocal();render();}
+
+/* ===== doctor notifications (in-app; fires while the app is open) ===== */
+function scanAlerts(){
+  if(ROLE!=='doctor'||!MYNAME)return;
+  // drop any notif whose underlying situation is no longer true (e.g. customer moved back to queue)
+  activeNotifs=activeNotifs.filter(n=>{
+    let keep=true;
+    if(n.k[0]==='q'){const id=parseInt(n.k.slice(1),10);const q=state.queue.find(x=>x.id===id);keep=!!(q&&sameName(q.doctor,MYNAME)&&q.arrivedAt);}
+    else if(n.k[0]==='r'){const rest=n.k.slice(1);const sep=rest.indexOf('|');const room=rest.slice(0,sep);const cust=rest.slice(sep+1);const o=state.occ[room];keep=!!(o&&sameName(o.doctor,MYNAME)&&o.customer===cust);}
+    if(!keep)delete seenAlerts[n.k];
+    return keep;});
+  const found=[];
+  state.queue.forEach(q=>{if(sameName(q.doctor,MYNAME)&&q.arrivedAt)found.push({k:"q"+q.id,msg:q.customer+" has arrived · waiting"});});
+  allRooms().forEach(r=>{const o=state.occ[r];if(o&&sameName(o.doctor,MYNAME))found.push({k:"r"+r+"|"+o.customer,msg:o.customer+" — in "+r});});
+  if(!notifReady){found.forEach(f=>seenAlerts[f.k]=1);return;}
+  found.forEach(f=>{if(!seenAlerts[f.k]){seenAlerts[f.k]=1;activeNotifs.push(f);beep();try{navigator.vibrate&&navigator.vibrate([180,90,180]);}catch(e){}}});
+}
+function dismissNotif(k){activeNotifs=activeNotifs.filter(n=>n.k!==k);render();}
+let audioCtx=null;
+function beep(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);
+  o.frequency.value=880;g.gain.setValueAtTime(.25,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.5);
+  o.start();o.stop(audioCtx.currentTime+.5);}catch(e){}}
+
+/* ===== backups (local, unchanged) ===== */
+const BK_KEY="roomFlowBoard_v5_backups",BK_MAX=18;
 function loadBackups(){try{const a=JSON.parse(localStorage.getItem(BK_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return [];}}
 function autoBackup(){try{const json=JSON.stringify(state);const arr=loadBackups();const last=arr[arr.length-1];
   if(last&&last.json===json)last.t=Date.now();else arr.push({t:Date.now(),json});
@@ -300,9 +558,10 @@ function openBackups(){const arr=loadBackups().slice().reverse();
     html+=`<div class="rec-item">🗂 ${esc(bkTime(b.t))} · ${rooms} in use · ${q} in queue/appts <button class="btn sm" style="margin-left:6px" onclick="restoreBackup(${b.t})">Restore</button></div>`;});
   $("backupBody").innerHTML=html;$("backupModal").classList.add("show");}
 function restoreBackup(t){const b=loadBackups().find(x=>x.t===t);if(!b)return;
-  if(!confirm("Restore the board to the snapshot from "+bkTime(t)+"?\nThis replaces the current board"+(cloudRef?" on ALL connected devices":"")+"."))return;
-  try{autoBackup();state=migrate(JSON.parse(b.json));commit();closeModal('backupModal');toast("Backup restored");}catch(e){toast("Could not restore backup");}}
+  if(!confirm("Restore the board to the snapshot from "+bkTime(t)+"?\nThis replaces the current board"+(cloudOn?" on ALL connected devices":"")+"."))return;
+  try{autoBackup();pushFullState(JSON.parse(b.json));closeModal('backupModal');toast("Backup restored");}catch(e){toast("Could not restore backup");}}
 
+/* ===== tiny utils ===== */
 function $(id){return document.getElementById(id);}
 function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 function jsq(s){return esc(String(s||"").replace(/\\/g,'\\\\').replace(/'/g,"\\'"));}
@@ -310,88 +569,394 @@ function pad(n){return String(n).padStart(2,'0');}
 function curMin(){const d=new Date();return d.getHours()*60+d.getMinutes();}
 function toMin(hm){if(!hm)return null;const[h,m]=hm.split(":").map(Number);return h*60+(m||0);}
 function nowHM(){const d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes());}
-function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600);}
+let toastUndoFn=null,toastTimer=null;
+function toastUndo(){const f=toastUndoFn;toastUndoFn=null;const t=$("toast");t.classList.remove("show","action");if(f)f();}
+function toast(m,undoFn){const t=$("toast");
+  t.innerHTML=esc(m)+(undoFn?' <button class="toastUndo" onclick="toastUndo()">Undo</button>':'');
+  toastUndoFn=undoFn||null;
+  t.classList.toggle('action',!!undoFn);
+  t.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.classList.remove("show","action");toastUndoFn=null;},undoFn?7000:1600);}
 function allRooms(){return state.groups.flatMap(g=>g.rooms);}
 function freeRooms(){return allRooms().filter(r=>!state.occ[r]);}
 function thOptions(sel){return ['<option value="">Therapist…</option>'].concat(state.therapists.map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
 function docOptions(sel){return ['<option value="">Doctor…</option>'].concat(state.doctors.map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
 function parseTimeInput(s){s=(s||"").trim().toLowerCase();if(!s)return"";let pm=/p/.test(s),am=/a/.test(s);let h,mm;if(s.includes(":")){let p=s.replace(/[^0-9:]/g,'').split(":");h=parseInt(p[0]||"0",10);mm=parseInt(p[1]||"0",10);}else{let d=s.replace(/\D/g,'');if(!d)return"";if(d.length<=2){h=parseInt(d,10);mm=0;}else{mm=parseInt(d.slice(-2),10);h=parseInt(d.slice(0,-2),10);}}if(isNaN(h))return"";if(isNaN(mm))mm=0;if(am){if(h===12)h=0;}else if(pm){if(h<12)h+=12;}else if(h>=1&&h<=9)h+=12;if(h>23||mm>59)return"";return pad(h)+":"+pad(mm);}
+function hmShort(hm){if(!hm)return"";let[h,m]=hm.split(":").map(Number);let hh=h%12;if(hh===0)hh=12;return hh+":"+pad(m);}
 function hm12(hm){if(!hm)return"";let[h,m]=hm.split(":").map(Number);let ap=h>=12?'PM':'AM';let hh=h%12;if(hh===0)hh=12;return hh+":"+pad(m)+" "+ap;}
 function txDisp(t){return txArr(t).join(" + ");}
 function txChips(t,prefix){return txArr(t).map((x,i)=>`<span class="txchip">${esc(x)}<b onclick="${prefix}${i})">✕</b></span>`).join('');}
 function fillSel(id,html){const el=$(id);if(!el)return;const v=el.value;el.innerHTML=html;el.value=v;}
 function sendRoomOpts(label){return ['<option value="">'+label+'</option>'].concat(freeRooms().map(r=>`<option>${esc(r)}</option>`)).join('');}
+function isCounter(){return ROLE==='counter';}
+function isBoardRole(){return ROLE==='counter'||ROLE==='consultant';}
 
-function arrive(){const name=$("arriveName").value.trim();if(!name){toast("Type a name first");return;}
-  const doc=$("arriveDoc").value;
+/* ===== queue & room actions ===== */
+function addToQueue(nameRaw,doc,timeRaw,txRaw){const name=fbKey(String(nameRaw||"").trim());if(!name||name==="_"){toast("Type a name first");return false;}
   if(!state.customers[name])state.customers[name]={doctor:"",therapist:""};
   if(doc)state.customers[name].doctor=doc;
   const c=state.customers[name];
-  const txs=$("arriveTx").value.split(",").map(s=>s.trim()).filter(Boolean);
-  state.queue.push({id:nextId(),customer:name,doctor:doc||c.doctor||"",therapist:c.therapist||"",treatment:txs,appt:parseTimeInput($("arriveTime").value),arrivedAt:""});
-  $("arriveName").value="";$("arriveTx").value="";$("arriveDoc").value="";$("arriveTime").value="";commit();}
-function setCustDoc(name,v){if(name){state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].doctor=v;}}
-function qSetDoctor(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.doctor=v;setCustDoc(q.customer,v);editingDocId=null;commit();}}
-function qSetAppt(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.appt=v;editingTimeId=null;commit();}}
+  const txs=String(txRaw||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const q={id:nextId(),customer:name,doctor:doc||c.doctor||"",therapist:c.therapist||"",treatment:txs,appt:parseTimeInput(timeRaw),arrivedAt:""};
+  state.queue.push(q);
+  cloudPatch(Object.assign(queuePatch(q),custPatch(name)));return true;}
+function arrive(){
+  if(addToQueue($("arriveName").value,$("arriveDoc").value,$("arriveTime").value,$("arriveTx").value)){
+    $("arriveName").value="";$("arriveTx").value="";$("arriveDoc").value="";$("arriveTime").value="";}}
+function setCustDoc(name,v){if(!name)return null;state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].doctor=v;return custPatch(name);}
+function setCustThera(name,v){if(!name)return null;state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].therapist=v;return custPatch(name);}
+function qSetDoctor(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.doctor=v;const cp=setCustDoc(q.customer,v);editingDocId=null;cloudPatch(Object.assign(queuePatch(q),cp||{}));}}
+function qSetThera(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.therapist=v;const cp=setCustThera(q.customer,v);cloudPatch(Object.assign(queuePatch(q),cp||{}));}}
+function qSetAppt(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.appt=v;editingTimeId=null;commitQueue(q);}}
 function editDoc(id){editingDocId=id;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;render();}
 function editTime(id){editingTimeId=id;editingDocId=null;editingDocRoom=null;editingTheraRoom=null;editingMaskRoom=null;render();}
 function editTheraRoom(room){editingTheraRoom=room;editingDocId=null;editingDocRoom=null;editingTimeId=null;editingMaskRoom=null;render();}
-function maskBump(room,delta){const o=state.occ[room];if(!o||!o.mask)return;let m=(toMin(o.mask)+delta+1440)%1440;o.mask=pad(Math.floor(m/60))+":"+pad(m%60);commit();}
-function roomSetTherapist(room,v){const o=state.occ[room];if(o){o.therapist=v;editingTheraRoom=null;commit();}}
+function maskBump(room,delta){const o=state.occ[room];if(!o||!o.mask)return;let m=(toMin(o.mask)+delta+1440)%1440;o.mask=pad(Math.floor(m/60))+":"+pad(m%60);commitRoom(room);}
+function roomSetTherapist(room,v){const o=state.occ[room];if(o){o.therapist=v;editingTheraRoom=null;commitRoom(room);}}
+function toggleQ(id){expandedQ=expandedQ===id?null:id;render();}
 function cancelEdit(){editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;render();}
-function qTxAdd(id,v){v=v.trim();if(!v)return;const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);if(!q.treatment.includes(v))q.treatment.push(v);commit();}}
-function qTxRemove(id,i){const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);q.treatment.splice(i,1);commit();}}
-function qCheckIn(id){const q=state.queue.find(x=>x.id==id);if(q){q.arrivedAt=q.arrivedAt?"":nowHM();commit();}}
-function removeQueue(id){const q=state.queue.find(x=>x.id==id);if(q){state.removed.push({customer:q.customer,doctor:q.doctor,treatment:txArr(q.treatment),appt:q.appt,at:nowHM()});}
-  state.queue=state.queue.filter(x=>x.id!=id);commit();}
+function qTxAdd(id,v){v=v.trim();if(!v)return;const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);if(!q.treatment.includes(v))q.treatment.push(v);commitQueue(q);}}
+function qTxRemove(id,i){const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);q.treatment.splice(i,1);commitQueue(q);}}
+function qCheckIn(id){const q=state.queue.find(x=>x.id==id);if(q){q.arrivedAt=q.arrivedAt?"":nowHM();commitQueue(q);}}
+function removeQueue(id){const q=state.queue.find(x=>x.id==id);if(!q)return;
+  const rec={id:nextId(),customer:q.customer,doctor:q.doctor,treatment:txArr(q.treatment),appt:q.appt,at:nowHM()};
+  state.removed.push(rec);state.queue=state.queue.filter(x=>x.id!=id);
+  cloudPatch({["queue/"+id]:null,["removed/"+rec.id]:rec});}
 function moveQueueToRoom(id,room){if(!room)return;const i=state.queue.findIndex(x=>x.id==id);if(i<0)return;
   if(state.occ[room]){toast(room+" is occupied");render();return;}const rv=nextFor(room);if(rv){toast(room+" is reserved for "+rv.customer);render();return;}const q=state.queue[i];
-  state.occ[room]={customer:q.customer,doctor:q.doctor,therapist:q.therapist,treatment:txArr(q.treatment),txDone:[],mask:"",appt:q.appt||"",note:"",nextRoom:""};
-  state.queue.splice(i,1);commit();}
-function roomSet(room,f,v){if(state.occ[room]){state.occ[room][f]=v;commit();}}
-function roomSetDoctor(room,v){const o=state.occ[room];if(o){o.doctor=v;setCustDoc(o.customer,v);editingDocRoom=null;commit();}}
+  state.occ[room]=normRoomObj({customer:q.customer,doctor:q.doctor,therapist:q.therapist,treatment:txArr(q.treatment),txDone:[],mask:"",appt:q.appt||"",note:"",nextRoom:"",stage:"",oxy:null,
+    consult:!!q.consult,consultant:q.consultant||"",consultTs:q.consult?Date.now():0});
+  state.queue.splice(i,1);
+  cloudPatch(Object.assign({["queue/"+id]:null},roomPatch(room)));}
+function roomSetDoctor(room,v){const o=state.occ[room];if(o){o.doctor=v;const cp=setCustDoc(o.customer,v);editingDocRoom=null;cloudPatch(Object.assign(roomPatch(room),cp||{}));}}
 function editDocRoom(room){editingDocRoom=room;editingDocId=null;editingTimeId=null;editingMaskRoom=null;render();}
-function roomTxAdd(room,v){v=v.trim();if(!v)return;const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);if(!o.treatment.includes(v))o.treatment.push(v);commit();}}
-function roomTxRemove(room,i){const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);o.treatment.splice(i,1);commit();}}
-function roomTxDone(room,i){const o=state.occ[room];if(!o)return;o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);const x=o.treatment.splice(i,1)[0];if(x)o.txDone.push(x);commit();}
-function roomTxUndo(room,i){const o=state.occ[room];if(!o)return;o.txDone=txArr(o.txDone);o.treatment=txArr(o.treatment);const x=o.txDone.splice(i,1)[0];if(x)o.treatment.push(x);commit();}
-function roomSetNext(room,v){const o=state.occ[room];if(o){o.nextRoom=v;commit();}}
+function roomTxAdd(room,v){v=v.trim();if(!v)return;const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);if(!o.treatment.includes(v))o.treatment.push(v);commitRoom(room);}}
+function roomTxRemove(room,i){const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);o.treatment.splice(i,1);commitRoom(room);}}
+function roomTxDone(room,i){const o=state.occ[room];if(!o)return;o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);const x=o.treatment.splice(i,1)[0];if(x)o.txDone.push(x);commitRoom(room);}
+function roomTxUndo(room,i){const o=state.occ[room];if(!o)return;o.txDone=txArr(o.txDone);o.treatment=txArr(o.treatment);const x=o.txDone.splice(i,1)[0];if(x)o.treatment.push(x);commitRoom(room);}
+function roomSetNext(room,v){const o=state.occ[room];if(o){o.nextRoom=v;commitRoom(room);}}
 function nextFor(room){for(const r of allRooms()){const o=state.occ[r];if(o&&o.nextRoom===room)return {customer:o.customer,from:r};}return null;}
-function maskIn(room,mins){if(!state.occ[room])return;let m=(curMin()+mins)%1440;state.occ[room].mask=pad(Math.floor(m/60))+":"+pad(m%60);commit();}
-function maskClear(room){if(state.occ[room]){state.occ[room].mask="";commit();}}
-function moveRoomToRoom(from,to){if(!to)return;if(state.occ[to]){toast(to+" is occupied");render();return;}const rv=nextFor(to);if(rv&&rv.from!==from){toast(to+" is reserved for "+rv.customer);render();return;}state.occ[to]=state.occ[from];state.occ[to].nextRoom="";state.occ[from]=null;commit();}
-function roomToQueue(room){const o=state.occ[room];if(!o)return;state.queue.push({id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});state.occ[room]=null;commit();}
+function maskSet(room,hm){const o=state.occ[room];if(!o||!hm)return; // mask overrules: Oxy done, no numbing, stage = Mask on
+  o.mask=hm;o.oxy=null;o.numb="";o.consult=false;o.stage="Mask on";
+  markOxyDone(o);
+  editingNumbRoom=null;editingOxyRoom=null;editingMaskRoom=null;commitRoom(room);}
+function maskIn(room,mins){if(!state.occ[room])return;let m=(curMin()+mins)%1440;maskSet(room,pad(Math.floor(m/60))+":"+pad(m%60));}
+function maskClear(room){const o=state.occ[room];if(o){o.mask="";if(o.stage==="Mask on")o.stage="";commitRoom(room);}}
+function moveRoomToRoom(from,to){if(!to)return;if(state.occ[to]){toast(to+" is occupied");render();return;}const rv=nextFor(to);if(rv&&rv.from!==from){toast(to+" is reserved for "+rv.customer);render();return;}
+  const cust=state.occ[from]?state.occ[from].customer:"";
+  const prevNext=state.occ[from]?state.occ[from].nextRoom:""; // remember the reservation so undo can restore it
+  state.occ[to]=state.occ[from];state.occ[to].nextRoom="";state.occ[from]=null;
+  cloudPatch(Object.assign(roomPatch(from),roomPatch(to)));
+  toast(cust+" moved to "+to,()=>{
+    if(state.occ[from]){toast(from+" is occupied \u2014 can't undo");return;}
+    if(!state.occ[to]||state.occ[to].customer!==cust){toast("Too late to undo");return;}
+    state.occ[from]=state.occ[to];state.occ[from].nextRoom=prevNext;state.occ[to]=null;
+    cloudPatch(Object.assign(roomPatch(from),roomPatch(to)));
+    toast("Moved back to "+from);});}
+function roomToQueue(room){const o=state.occ[room];if(!o)return;const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
+  state.queue.push(q);state.occ[room]=null;
+  cloudPatch(Object.assign(queuePatch(q),roomPatch(room)));}
 function clearRoom(room){const o=state.occ[room];if(o&&!o.therapist){toast("Assign a therapist before clearing the room");return;}if(o&&!confirm("Clear "+room+" and free it?"))return;
-  if(o)state.completed.push({customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.txDone).concat(txArr(o.treatment)),room,at:nowHM()});
-  state.occ[room]=null;commit();}
+  let patch=roomPatch(room);
+  if(o){const rec={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.txDone).concat(txArr(o.treatment)),room,at:nowHM()};
+    state.completed.push(rec);state.occ[room]=null;patch=Object.assign(roomPatch(room),{["completed/"+rec.id]:rec});}
+  else state.occ[room]=null;
+  cloudPatch(patch);}
 function assignFreeRoom(room,id){if(id)moveQueueToRoom(parseInt(id,10),room);}
-function toggleFilter(v){state.filterWindow=v;commit();}
-function resetBoard(){if(!confirm("Reset the board to empty? This clears all rooms, queue, waiting, and today's records. Your doctor/therapist/treatment/room lists are kept."))return;
-  autoBackup();const occ={};allRooms().forEach(r=>occ[r]=null);state.occ=occ;state.queue=[];state.completed=[];state.removed=[];commit();toast("Board reset");}
+function toggleFilter(v){filterWindow=v;try{localStorage.setItem(LS_FILTER,v?"1":"0");}catch(e){}render();}
+function resetBoard(){if(!isCounter())return;if(!confirm("Reset the board to empty? This clears all rooms, queue, waiting, and today's records. Appointments synced from the CRM are kept. Your doctor/therapist/treatment/room lists are kept."))return;
+  autoBackup();const occ={};allRooms().forEach(r=>occ[r]=null);state.occ=occ;
+  const toRemove=(state.queue||[]).filter(q=>q&&q.source!=="crm"); // only clear manually-added walk-ins
+  const keptQueue=(state.queue||[]).filter(q=>q&&q.source==="crm"); // spare CRM-synced appointments
+  state.queue=keptQueue;state.completed=[];state.removed=[];
+  if(baseRef){try{
+    const patch={occ:null,completed:null,removed:null};
+    toRemove.forEach(q=>{patch["queue/"+q.id]=null;}); // delete only the walk-ins; synced entries are never referenced, so they're left alone
+    baseRef.update(patch);
+  }catch(e){}}
+  saveLocal();recordHistory();render();toast("Board reset"+(keptQueue.length?` (kept ${keptQueue.length} synced appointment${keptQueue.length===1?'':'s'})`:""));}
+
+/* ===== Oxy step engine =====
+   o.oxy = {idx, ts, paused, pausedAt}. Position is COMPUTED from
+   the anchor (idx, ts) at render time — nothing writes on a timer,
+   so five phones can watch the countdown without a single write.
+   Taps re-anchor when reality deviates. */
+function oxyPos(o){const x=o&&o.oxy;if(!x)return null;
+  const now=x.paused?(x.pausedAt||Date.now()):Date.now();
+  let el=Math.max(0,(now-x.ts)/1000);let i=x.idx||0;
+  while(i<OXY_STEPS.length&&el>=OXY_STEPS[i][1]*60){el-=OXY_STEPS[i][1]*60;i++;}
+  if(i>=OXY_STEPS.length)return {i:OXY_STEPS.length,remS:0,fin:true};
+  return {i,remS:Math.max(0,Math.ceil(OXY_STEPS[i][1]*60-el)),fin:false};}
+function fmtRem(s){return Math.floor(s/60)+":"+pad(Math.floor(s%60));}
+function oxyLabel(p){const i=Math.min(p.i,OXY_STEPS.length-1);return "Oxy "+(i+1)+"/5 \u00b7 "+OXY_STEPS[i][0];}
+function oxyNum(p){return p.fin?"Oxy done":("Oxy "+(Math.min(p.i,OXY_STEPS.length-1)+1)+"/5");}
+function oxyStepName(p){return OXY_STEPS[Math.min(p.i,OXY_STEPS.length-1)][0];}
+function oxyStart(room){const o=state.occ[room];if(!o)return;o.oxy={idx:0,ts:Date.now(),paused:false,pausedAt:0};
+  o.stage="Treatment ongoing";o.numb="";o.mask="";o.consult=false; // exclusive
+  if(!txArr(o.treatment).concat(txArr(o.txDone)).some(t=>/^oxy\b|^oxyinfus/i.test(t)))o.treatment=txArr(o.treatment).concat(["Oxy"]);
+  editingNumbRoom=null;editingMaskRoom=null;commitRoom(room);}
+function markOxyDone(o){o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
+  for(let i=o.treatment.length-1;i>=0;i--){if(/^oxy\b|^oxyinfus/i.test(o.treatment[i]))o.txDone.push(o.treatment.splice(i,1)[0]);}}
+function oxyNext(room){const o=state.occ[room];if(!o||!o.oxy)return;const p=oxyPos(o);
+  const ni=Math.min(p.i+1,OXY_STEPS.length);
+  o.oxy={idx:ni,ts:Date.now(),paused:false,pausedAt:0};
+  if(ni>=OXY_STEPS.length)markOxyDone(o); // all 5 steps complete -> Oxy moves to Done
+  commitRoom(room);}
+function oxyJump(room,i){const o=state.occ[room];if(!o)return;i=parseInt(i,10);if(isNaN(i))return;
+  if(!o.oxy)o.oxy={idx:0,ts:Date.now(),paused:false,pausedAt:0};
+  o.oxy={idx:i,ts:Date.now(),paused:false,pausedAt:0};
+  o.stage="Treatment ongoing";commitRoom(room);}
+function oxyPause(room){const o=state.occ[room];if(!o||!o.oxy)return;const x=o.oxy;
+  if(x.paused){x.ts+=Date.now()-(x.pausedAt||Date.now());x.paused=false;x.pausedAt=0;}
+  else{x.paused=true;x.pausedAt=Date.now();}
+  commitRoom(room);}
+function oxyEnd(room){const o=state.occ[room];if(!o)return;const p=oxyPos(o);
+  if(p&&p.i>=OXY_STEPS.length-1)markOxyDone(o); // reached the last step \u2014 treat as finished even without a mask
+  o.oxy=null;if(o.stage==="Treatment ongoing")o.stage="";editingOxyRoom=null;commitRoom(room);}
+function oxyEndThenNumb(room){oxyEnd(room);numbToggle(room);}
+function oxyFinishToMask(room){maskIn(room,OXY_MASK_MIN);}
+function oxyDoneToMask(room){maskIn(room,OXY_MASK_MIN);} // one tap: finish last step + start mask
+
+// ---- therapist full-screen focus mode: Oxy/Numb/Mask as one big, deep-teal, tap-anywhere view ----
+let theraFocus=null; // {room,mode:'oxy'|'numb'|'mask'}
+function openFocus(room,mode){
+  const o=state.occ[room];if(!o)return;
+  if(mode==='oxy'&&!o.oxy)oxyStart(room);
+  theraFocus={room,mode};render();}
+function closeFocus(){theraFocus=null;render();}
+function theraModeRow(room,o){
+  if(o.consult)return"";
+  const hasOxy=txArr(o.treatment).concat(txArr(o.txDone)).some(t=>/^oxy\b|^oxyinfus/i.test(t));
+  let main="",others=[];
+  if(o.mask){const d=toMin(o.mask)-curMin();
+    main=`<button class="focusTrigger${d<0?' over':(d<=5?' soon':'')}" data-trig="${esc(room)}" data-trigmode="mask" onclick="openFocus('${jsq(room)}','mask')">Mask \u00b7 ${d<0?'overdue '+(-d)+'m':'in '+d+'m'}</button>`;
+    others=[['Numb','numb'],['Oxy','oxy']];
+  }else if(o.numb){const d=toMin(o.numb)-curMin();
+    main=`<button class="focusTrigger${d<0?' over':(d<=2?' soon':'')}" data-trig="${esc(room)}" data-trigmode="numb" onclick="openFocus('${jsq(room)}','numb')">Numb \u00b7 ${d<0?'done '+(-d)+'m ago':d+'m left'}</button>`;
+    others=[['Mask','mask'],['Oxy','oxy']];
+  }else if(oxyPos(o)){const pp=oxyPos(o);
+    main=`<button class="focusTrigger go" data-trig="${esc(room)}" data-trigmode="oxy" onclick="openFocus('${jsq(room)}','oxy')">${pp.fin?'\u2713 Oxy done':'\u25b6 '+esc(oxyLabel(pp))}</button>`;
+    others=[['Numb','numb'],['Mask','mask']];
+  }else{
+    main=`<button class="focusTrigger${hasOxy?' go':''}" onclick="openFocus('${jsq(room)}','oxy')">\u25b6 Start Oxy</button>`;
+    others=[['Numb','numb'],['Mask','mask']];
+  }
+  return `<div class="stagechips">${main}${others.map(([label,mode])=>`<button class="chip" onclick="openFocus('${jsq(room)}','${mode}')">${label}</button>`).join('')}</div>`;}
+function focusStartMask(room){oxyDoneToMask(room);theraFocus={room,mode:'mask'};render();}
+function focusNumbDone(room){numbDone(room);closeFocus();}
+function renderFocusOverlay(){
+  if(!theraFocus)return"";
+  const {room,mode}=theraFocus;
+  const o=state.occ[room];
+  if(!o){theraFocus=null;return"";}
+  let body="";let needsCenter=false;
+  if(mode==='oxy'){
+    if(!o.oxy){theraFocus=null;return"";}
+    const p=oxyPos(o);const cur=p?p.i:0;
+    body=`<div class="focusSteps">`+OXY_STEPS.map((s,i)=>{
+      const done=p&&i<p.i;const active=p&&i===cur&&!p.fin;
+      return `<button class="focusStep${done?' done':''}${active?' active':''}" onclick="oxyJump('${jsq(room)}',${i})">${done?'\u2713 ':''}${i+1}. ${esc(s[0])}</button>`;}).join('')+
+      `</div>
+      <div class="focusBig" id="focusBigTxt">${p&&!p.fin?('~'+fmtRem(p.remS)+' left'):'Steps done'}</div>
+      <div class="focusRow">
+        <button class="focusPill" onclick="oxyPause('${jsq(room)}')">${o.oxy.paused?'\u25b6 Resume':'\u23f8 Pause'}</button>
+        <button class="focusPill go" onclick="focusStartMask('${jsq(room)}')">\u25b6 Start mask now</button>
+      </div>`;
+  }else if(mode==='numb'){
+    if(!o.numb){
+      body=`<div class="focusBig">Numb for</div><div class="focusPicks">`+
+        [10,15,20].map(m=>`<button class="focusPill big" onclick="numbIn('${jsq(room)}',${m})">${m}m</button>`).join('')+
+        `<input class="focusInput" placeholder="e.g. 345" onchange="numbSet('${jsq(room)}',parseTimeInput(this.value))"></div>`;
+    }else{const d=toMin(o.numb)-curMin();
+      needsCenter=true;
+      body=`<div class="focusBig${d<0?' over':''}" id="focusBigTxt">${d<0?('Done '+(-d)+'m ago'):('till '+esc(hm12(o.numb))+' \u00b7 '+d+'m left')}</div>
+      <div class="focusRow">
+        <button class="focusPill" onclick="numbBump('${jsq(room)}',-1)">\u2212 1m</button>
+        <button class="focusPill" onclick="numbBump('${jsq(room)}',1)">+ 1m</button>
+        <button class="focusPill go" id="focusReadyBtn" style="${d<0?'':'display:none'}" onclick="focusNumbDone('${jsq(room)}')">\u2713 Ready</button>
+      </div>
+      <div class="focusRow" style="margin-top:16px">
+        <button class="focusPill" style="width:100%;padding:20px;font-size:20px" onclick="closeFocus()">\u2713 Done</button>
+      </div>`;}
+  }else if(mode==='mask'){
+    if(!o.mask){
+      body=`<div class="focusBig">Mask for</div><div class="focusPicks">`+
+        [5,10,15].map(m=>`<button class="focusPill big" onclick="maskIn('${jsq(room)}',${m})">${m}m</button>`).join('')+
+        `<input class="focusInput" placeholder="e.g. 345" onchange="maskSet('${jsq(room)}',parseTimeInput(this.value))"></div>`;
+    }else{const d=toMin(o.mask)-curMin();
+      needsCenter=true;
+      body=`<div class="focusBig${d<0?' over':''}" id="focusBigTxt">${d<0?('overdue '+(-d)+'m'):('off '+esc(hm12(o.mask))+' \u00b7 in '+d+'m')}</div>
+      <div class="focusRow">
+        <button class="focusPill" onclick="maskBump('${jsq(room)}',-1)">\u2212 1m</button>
+        <button class="focusPill" onclick="maskBump('${jsq(room)}',1)">+ 1m</button>
+      </div>
+      <div class="focusRow" style="margin-top:16px">
+        <button class="focusPill" style="width:100%;padding:20px;font-size:20px" onclick="closeFocus()">\u2713 Done</button>
+      </div>`;}
+  }
+  return `<div class="focusOverlay"><div class="focusHead"><div><b>${esc(o.customer)}</b><span class="focusSub">${esc(room)}</span></div><button class="focusClose" onclick="closeFocus()">\u2715</button></div><div class="focusBody${needsCenter?' center':''}">${body}</div></div>`;}
+function oxyDots(i){let s="";for(let k=0;k<OXY_STEPS.length;k++)s+=`<span class="${k<i?'on':(k===i?'on':'off')}">${k<i?'\u25cf':(k===i?'\u25c9':'\u25cb')}</span>`;return `<span class="oxydots">${s}</span>`;}
+let editingOxyRoom=null;
+let editingNoteRoom=null;
+function noteToggle(room){editingNoteRoom=editingNoteRoom===room?null:room;render();setTimeout(()=>{const el=$("activeNote");if(el){el.focus();el.select&&el.select();}},0);}
+function noteSave(room,v){const o=state.occ[room];if(!o)return;o.note=v;editingNoteRoom=null;commitRoom(room);}
+let editingConsultRoom=null;
+function consultToggle(room){editingConsultRoom=editingConsultRoom===room?null:room;render();setTimeout(()=>{const el=$("activeConsultant");if(el){el.focus();}},0);}
+function consultEnd(room){const o=state.occ[room];if(!o)return;o.consult=false;o.consultant="";o.consultTs=0;editingConsultRoom=null;commitRoom(room);}
+function consultantSave(room,v){const o=state.occ[room];if(!o)return;o.consultant=v;editingConsultRoom=null;commitRoom(room);}
+function consultElapsed(o){if(!o.consultTs)return 0;return Math.max(0,Math.floor((Date.now()-o.consultTs)/60000));}
+function tsToHM(ts){const d=new Date(ts);return pad(d.getHours())+":"+pad(d.getMinutes());}
+function consultBlock(room,o){if(!o.consult)return"";
+  const started=o.consultTs?tsToHM(o.consultTs):"";const mins=consultElapsed(o);
+  const editing=editingConsultRoom===room;
+  return `<div class="oxybox mini"><div class="oxyline consultline"><span>\ud83e\ude7a Consult${started?' \u00b7 since '+esc(started):''}</span><b class="oxyrem" style="margin-left:auto" data-constart="${esc(room)}">${mins}m</b></div>
+    <div class="oxyctl">${editing?
+      `<input id="activeConsultant" class="timein" style="width:130px" value="${esc(o.consultant)}" placeholder="consultant name" onkeydown="if(event.key==='Enter')this.blur()" onblur="consultantSave('${jsq(room)}',this.value)">`:
+      (o.consultant?`<span class="notetext" title="click to edit" onclick="consultToggle('${jsq(room)}')">${esc(o.consultant)}</span>`:`<button class="chip" onclick="consultToggle('${jsq(room)}')">+ consultant</button>`)}
+      <button class="maskx" title="end consult" onclick="consultEnd('${jsq(room)}')">\u2715 end</button>
+    </div></div>`;}
+// ---- queue-level (Waiting Room) consult tagging \u2014 set at check-in, carried into the room automatically ----
+function qConsultSet(id,on){const q=state.queue.find(x=>x.id==id);if(!q)return;q.consult=on;if(!on){q.consultant="";}else{
+  q.treatment=txArr(q.treatment);["Goldius Glam","Oxy"].forEach(t=>{if(!q.treatment.includes(t))q.treatment.push(t);});}
+  commitQueue(q);}
+let editingQConsultant=null;
+function qConsultantToggle(id){editingQConsultant=editingQConsultant===id?null:id;render();setTimeout(()=>{const el=$("activeQConsultant");if(el){el.focus();}},0);}
+function qConsultantSave(id,v){const q=state.queue.find(x=>x.id==id);if(!q)return;q.consultant=v;editingQConsultant=null;commitQueue(q);}
+function qConsultBadge(q){
+  return `<button class="miniToggle${q.consult?' on':''}" title="${q.consult?'tap to remove consult tag':'tag this visit as a consult'}" onclick="qConsultSet(${q.id},${q.consult?'false':'true'})">\ud83e\ude7a</button>`;}
+function qConsultDetail(q){
+  if(!q.consult)return"";
+  const editing=editingQConsultant===q.id;
+  const hasPL=txArr(q.treatment).includes("Pro Light");
+  return `<div style="margin:2px 0;display:flex;align-items:center;gap:5px;flex-wrap:wrap">`+
+    (editing?`<input id="activeQConsultant" class="timein" style="width:120px" value="${esc(q.consultant||'')}" placeholder="consultant name" onkeydown="if(event.key==='Enter')this.blur()" onblur="qConsultantSave(${q.id},this.value)">`:
+      (q.consultant?`<span class="notetext" title="click to edit" onclick="qConsultantToggle(${q.id})">${esc(q.consultant)}</span>`:`<button class="chip" style="padding:2px 7px;font-size:11px" onclick="qConsultantToggle(${q.id})">+ consultant</button>`))+
+    (hasPL?'':`<button class="chip" style="padding:2px 7px;font-size:11px" title="add Pro Light" onclick="qTxAdd(${q.id},'Pro Light')">+ Pro Light</button>`)+
+    `</div>`;}
+function oxyToggleEdit(room){editingOxyRoom=editingOxyRoom===room?null:room;render();}
+function oxyCtlRow(room,o,big){const isLast=(o.oxy.idx>=OXY_STEPS.length-1);
+  return `<div class="oxyctl${big?' big':''}">
+      ${isLast?`<button class="chip go" onclick="oxyDoneToMask('${jsq(room)}')">\u2713 Done \u2192 start mask</button><button class="chip" onclick="oxyPause('${jsq(room)}')">${o.oxy.paused?'\u25b6 Resume':'\u23f8 Pause'}</button>`:`<button class="chip go" onclick="oxyNext('${jsq(room)}')">\u2713 Done \u2192 next</button><button class="chip" onclick="oxyPause('${jsq(room)}')">${o.oxy.paused?'\u25b6 Resume':'\u23f8 Pause'}</button><button class="chip" title="skip the rest and start mask now" onclick="oxyDoneToMask('${jsq(room)}')">\u25b6 Start mask now</button>`}
+      <select onchange="oxyJump('${jsq(room)}',this.value);this.value=''"><option value="">jump to\u2026</option>${OXY_STEPS.map((s,i)=>`<option value="${i}">${i+1}. ${esc(s[0])}</option>`).join('')}</select>
+      <button class="maskx" title="cancel Oxy tracking" onclick="oxyEnd('${jsq(room)}')">\u2715</button>
+    </div>`;}
+function oxyBlock(room,o,mode){ // mode: 'phone' (big controls) | 'board' (minimised, therapist drives it)
+  const p=oxyPos(o);const phone=mode==='phone';
+  if(!p)return "";
+  if(p.fin)return ""; // handled inline by stageChipsRow now \u2014 no separate box
+  const remHtml=o.oxy.paused?'<span class="oxyrem">\u23f8 paused</span>':`<span class="oxyrem${p.remS<=60?' over':(p.remS<=120?' soon':'')}" data-oxyt="${esc(room)}">~${fmtRem(p.remS)} left</span>`;
+  const line=`<div class="oxyline">${oxyDots(p.i)} <span data-oxyl="${esc(room)}">${esc(oxyLabel(p))}</span> ${remHtml}</div>`;
+  if(phone)return `<div class="oxybox${o.oxy.paused?' paused':''}">${line}${oxyCtlRow(room,o,true)}</div>`;
+  const open=editingOxyRoom===room;
+  return `<div class="oxybox mini${o.oxy.paused?' paused':''}"><div style="display:flex;align-items:center;gap:5px;min-width:0"><div class="oxyline" style="min-width:0;flex-wrap:nowrap"><span style="flex:none">${oxyDots(p.i)}</span><span data-oxynm="${esc(room)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(oxyStepName(p))}</span><span style="flex:none">${remHtml}</span></div><span style="flex:1"></span><button class="docedit" title="adjust Oxy (normally the therapist does this from her phone)" onclick="oxyToggleEdit('${jsq(room)}')">${open?'\u25be':'\u270e'}</button></div>${open?oxyCtlRow(room,o,false):''}</div>`;}
+function statusFor(o){
+  if(o.consult)return {t:"In consult"+(o.consultant?" \u00b7 "+o.consultant:""),cls:""};
+  if(o.mask){const d=toMin(o.mask)-curMin();
+    if(d<0)return {t:"MASK OVERDUE "+(-d)+"m",cls:"mo"};
+    return {t:"Mask off "+hm12(o.mask)+" \u00b7 in "+d+"m",cls:d<=5?"soon":""};}
+  const p=oxyPos(o);
+  const paused=p&&o.oxy&&o.oxy.paused;
+  if(p&&!paused){if(p.fin)return {t:"Oxy done \u2014 start mask?",cls:""};
+    return {t:oxyLabel(p)+" \u00b7 ~"+fmtRem(p.remS)+" left",cls:""};}
+  if(o.numb){const d=toMin(o.numb)-curMin();
+    if(d<0)return {t:"Numbing done \u2014 ready?",cls:"mo"};
+    return {t:"Numb done "+hm12(o.numb)+" \u00b7 in "+d+"m",cls:d<=2?"soon":""};}
+  if(paused)return {t:oxyLabel(p)+" \u00b7 \u23f8 paused",cls:""};
+  return {t:o.stage||"In room",cls:""};}
+let editingNumbRoom=null;
+function numbToggle(room){editingNumbRoom=editingNumbRoom===room?null:room;render();}
+function numbIn(room,mins){const o=state.occ[room];if(!o)return;let m=(curMin()+mins)%1440;
+  o.numb=pad(Math.floor(m/60))+":"+pad(m%60);o.stage="Numbing";o.mask="";o.oxy=null;o.consult=false; // exclusive
+  editingNumbRoom=null;editingMaskRoom=null;editingOxyRoom=null;commitRoom(room);}
+function numbClear(room){const o=state.occ[room];if(!o)return;o.numb="";if(o.stage==="Numbing")o.stage="";editingNumbRoom=null;commitRoom(room);}
+function numbSet(room,hm){const o=state.occ[room];if(!o||!hm)return;
+  o.numb=hm;o.stage="Numbing";o.mask="";o.oxy=null;o.consult=false;
+  editingNumbRoom=null;editingMaskRoom=null;editingOxyRoom=null;commitRoom(room);}
+function numbBump(room,delta){const o=state.occ[room];if(!o||!o.numb)return;let m=(toMin(o.numb)+delta+1440)%1440;o.numb=pad(Math.floor(m/60))+":"+pad(m%60);commitRoom(room);}
+function numbDone(room){const o=state.occ[room];if(!o)return;o.numb="";if(o.stage==="Numbing")o.stage="";commitRoom(room);}
+function cssEsc(s){return (window.CSS&&CSS.escape)?CSS.escape(s):String(s).replace(/"/g,'\\"');}
+function refreshTimers(){try{
+  allRooms().forEach(r=>{const o=state.occ[r];if(!o)return;const p=oxyPos(o);
+    if(p&&!p.fin&&o.oxy&&!o.oxy.paused){
+      document.querySelectorAll(`[data-oxyt="${cssEsc(r)}"]`).forEach(el=>{el.textContent="~"+fmtRem(p.remS)+" left";});
+      document.querySelectorAll(`[data-oxyl="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyLabel(p);});
+      document.querySelectorAll(`[data-oxyn="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyNum(p);});
+      document.querySelectorAll(`[data-oxynm="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyStepName(p);});}
+    document.querySelectorAll(`[data-oxys="${cssEsc(r)}"]`).forEach(el=>{const st=statusFor(o);el.textContent=st.t;el.className="pstatus"+(st.cls?" "+st.cls:"");});
+    document.querySelectorAll(`[data-teta="${cssEsc(r)}"]`).forEach(el=>{el.textContent=roomEta(o).txt;});
+    if(o.consult)document.querySelectorAll(`[data-constart="${cssEsc(r)}"]`).forEach(el=>{el.textContent=consultElapsed(o)+"m";});
+    document.querySelectorAll(`[data-trig="${cssEsc(r)}"]`).forEach(el=>{
+      const mode=el.getAttribute('data-trigmode');
+      if(mode==='mask'&&o.mask){const d=toMin(o.mask)-curMin();el.textContent="Mask \u00b7 "+(d<0?'overdue '+(-d)+'m':'in '+d+'m');el.classList.toggle('over',d<0);el.classList.toggle('soon',d>=0&&d<=5);}
+      else if(mode==='numb'&&o.numb){const d=toMin(o.numb)-curMin();el.textContent="Numb \u00b7 "+(d<0?'done '+(-d)+'m ago':d+'m left');el.classList.toggle('over',d<0);el.classList.toggle('soon',d>=0&&d<=2);}
+      else if(mode==='oxy'&&p)el.textContent=p.fin?"\u2713 Oxy done":"\u25b6 "+oxyLabel(p);
+    });
+  });
+  if(typeof theraFocus!=='undefined'&&theraFocus){
+    const o=state.occ[theraFocus.room];const el=$("focusBigTxt");
+    if(o&&el){
+      if(theraFocus.mode==='oxy'){const p=oxyPos(o);el.textContent=(p&&!p.fin)?("~"+fmtRem(p.remS)+" left"):"Steps done";}
+      else if(theraFocus.mode==='numb'&&o.numb){const d=toMin(o.numb)-curMin();el.textContent=d<0?("Done "+(-d)+"m ago"):("till "+hm12(o.numb)+" \u00b7 "+d+"m left");el.classList.toggle('over',d<0);
+        const rb=$("focusReadyBtn");if(rb)rb.style.display=d<0?'':'none';}
+      else if(theraFocus.mode==='mask'&&o.mask){const d=toMin(o.mask)-curMin();el.textContent=d<0?("overdue "+(-d)+"m"):("off "+hm12(o.mask)+" \u00b7 in "+d+"m");el.classList.toggle('over',d<0);}
+    }
+  }
+  }catch(e){}}
+function sameName(a,b){return String(a||"").trim().toLowerCase()===String(b||"").trim().toLowerCase();}
+
+/* ===== undo (board roles) ===== */
 function updateUndoBtn(){const b=$("undoBtn");if(!b)return;const n=undoStack.length;b.disabled=!n;b.textContent="↶ Undo"+(n?" ("+n+")":"");}
 function recordHistory(){const cur=JSON.stringify(state);if(cur===histLast)return;
   if(histLast!=null){undoStack.push(histLast);while(undoStack.length>UNDO_MAX)undoStack.shift();}
   histLast=cur;updateUndoBtn();}
 function undo(){if(!undoStack.length){toast("Nothing to undo");return;}
-  const prev=undoStack.pop();try{state=migrate(JSON.parse(prev));}catch(e){toast("Could not undo");return;}
-  histLast=JSON.stringify(state);save();render();updateUndoBtn();toast("Undid last change");}
+  const prev=undoStack.pop();let st;try{st=migrate(JSON.parse(prev));}catch(e){toast("Could not undo");return;}
+  state=st;histLast=JSON.stringify(state);
+  if(baseRef){try{baseRef.set(fullStateObj(state));}catch(e){}}
+  saveLocal();render();updateUndoBtn();toast("Undid last change");}
 function toggleMenu(e){e.stopPropagation();const m=$("moreMenu");if(m)m.classList.toggle("show");}
 function closeMenu(){const m=$("moreMenu");if(m)m.classList.remove("show");}
-function commit(){save();recordHistory();render();}
 
+/* ===== render dispatch ===== */
 function maskRel(hm){if(!hm)return"";const m=toMin(hm);if(m==null)return"";let d=m-curMin();
   if(d>=0)return `<span class="rel ${d<=5?'soon':''}">in ${d}m</span>`;return `<span class="rel over">${-d}m ago</span>`;}
-function maskClass(o){if(!o.mask)return"";const d=toMin(o.mask)-curMin();if(d<0)return" maskOver";if(d<=5)return" maskSoon";return"";}
+function maskClass(o){const t=o.mask||o.numb;if(!t)return"";const soonAt=o.mask?5:2;const d=toMin(t)-curMin();if(d<0)return" maskOver";if(d<=soonAt)return" maskSoon";return"";}
 function docInline(id,doc){return editingDocId===id?`<select id="activeEdit" onblur="cancelEdit()" onchange="qSetDoctor(${id},this.value)" style="flex:1">${docOptions(doc)}</select>`:`<span class="docline">${esc(doc)||'no doctor'}</span><button class="docedit" title="change doctor" onclick="editDoc(${id})">✎</button>`;}
 
+function usePhoneUI(){return ROLE==='doctor'||ROLE==='therapist'||(ROLE==='consultant'&&window.innerWidth<=820);}
+function syncMainVis(){const ph=usePhoneUI();$("boardMain").style.display=ph?"none":"";$("phoneMain").style.display=ph?"":"none";document.body.classList.toggle('phoneui',ph);}
 function render(){
+  if(!ROLE)return;
+  const ae=document.activeElement;
+  if(ae&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)&&ae.id)return; // don't wipe a field the person is actively typing in
+  syncMainVis();
+  if(usePhoneUI())renderPhone();else renderBoard();
+  $("focusHost").innerHTML=(ROLE==='therapist'&&usePhoneUI())?renderFocusOverlay():"";
+}
+function applyRoleChrome(){
+  const ph=usePhoneUI();const board=isBoardRole();
+  syncMainVis();
+  document.querySelectorAll(".boardOnly").forEach(el=>el.style.display=(board&&!ph)?"":"none");
+  document.querySelectorAll(".counterOnly").forEach(el=>el.style.display=isCounter()?"":"none");
+  document.querySelectorAll(".adminOnly").forEach(el=>el.style.display=(board&&!ph)?"":"none");
+  $("logoutBtnPhone").style.display=(ph&&cloudOn)?"":"none";
+  const chip=$("roleChip");
+  if(ROLE){chip.style.display="";const icon={counter:"\ud83d\udda5",consultant:"\ud83e\udded",doctor:"\ud83e\ude7a",therapist:"\ud83d\udc86"}[ROLE]||"";
+    chip.textContent=icon+" "+(MYNAME||ROLE)+" \u21c4";}
+  else chip.style.display="none";
+}
+
+/* ---- board (counter / consultant) ---- */
+function renderBoard(){
   $("custList").innerHTML=Object.keys(state.customers||{}).sort().map(n=>`<option value="${esc(n)}">`).join('');
   $("txList").innerHTML=state.treatments.map(t=>`<option value="${esc(t)}">`).join('');
   fillSel("arriveDoc",docOptions(""));
   let html="";state.groups.forEach(g=>{html+=`<div class="group-title">${esc(g.name)}</div><div class="rooms-grid">`+g.rooms.map(roomCard).join('')+`</div>`;});
+  const __known=allRooms();const __orph=Object.keys(state.occ).filter(r=>state.occ[r]&&!__known.includes(r));
+  if(__orph.length)html+=`<div class="group-title" style="color:#7b2cbf">⚠ Unlisted rooms (rename in Edit lists or move the customer)</div><div class="rooms-grid">`+__orph.map(roomCard).join('')+`</div>`;
   $("roomsHost").innerHTML=html;
   renderThera();renderWaiting();renderQueue();
-  const ae=$("activeEdit");if(ae)ae.focus();
+  const ae=$("activeEdit");if(ae){ae.focus();try{ae.showPicker&&ae.showPicker();}catch(e){}}
 }
 function roomCard(room){
   const o=state.occ[room];const nx=nextFor(room);
@@ -399,6 +964,7 @@ function roomCard(room){
   if(!o){const qOpts=['<option value="">Assign from queue ▾</option>'].concat(state.queue.map(q=>`<option value="${q.id}">${esc(q.customer)}${q.arrivedAt?' (waiting)':''}</option>`)).join('');
     return `<div class="room free${nx?' hasnext':''}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">${nx?'RESERVED':'FREE'}</span></div>
       <div class="freebody">${nb}<select onchange="assignFreeRoom('${jsq(room)}',this.value)">${qOpts}</select></div></div>`;}
+  const picking=(editingNumbRoom===room||editingMaskRoom===room);
   const nextOpts=['<option value="">set next room…</option>'].concat(allRooms().filter(r=>r!==room).map(r=>`<option ${o.nextRoom===r?'selected':''}>${esc(r)}</option>`)).join('');
   const goBtn=o.nextRoom?`<button class="btn sm" onclick="moveRoomToRoom('${jsq(room)}','${jsq(o.nextRoom)}')">→ ${esc(o.nextRoom)} now</button>`:'';
   const docEl=editingDocRoom===room?`<select id="activeEdit" onblur="cancelEdit()" onchange="roomSetDoctor('${jsq(room)}',this.value)" style="flex:1">${docOptions(o.doctor)}</select>`:`<span class="docline">${esc(o.doctor)||'no doctor'}</span><button class="docedit" title="change doctor" onclick="editDocRoom('${jsq(room)}')">✎</button>`;
@@ -406,15 +972,19 @@ function roomCard(room){
   const theraEl=(!o.therapist||editingT)?`<select ${editingT?'id="activeEdit" onblur="cancelEdit()"':''} onchange="roomSetTherapist('${jsq(room)}',this.value)" style="flex:1">${thOptions(o.therapist)}</select>`:`<span class="docline">${esc(o.therapist)}</span><button class="docedit" title="change therapist" onclick="editTheraRoom('${jsq(room)}')">✎</button>`;
   const remChips=txArr(o.treatment).map((x,i)=>`<span class="txchip"><span class="txname" title="tap when done" onclick="roomTxDone('${jsq(room)}',${i})">${esc(x)}</span><b title="remove" onclick="roomTxRemove('${jsq(room)}',${i})">✕</b></span>`).join('');
   const doneChips=txArr(o.txDone).map((x,i)=>`<span class="txchip done"><span class="txname" title="tap to undo" onclick="roomTxUndo('${jsq(room)}',${i})">${esc(x)}</span></span>`).join('');
-  return `<div class="room occ${maskClass(o)}${o.therapist?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">${o.mask&&toMin(o.mask)-curMin()<0?'MASK OFF':'IN USE'}</span></div>
-    <div class="body">${nb}${o.therapist?'':'<div class="noTheraBanner">⚠ No therapist assigned</div>'}
+  return `<div class="room occ${maskClass(o)}${(o.therapist||o.consult)?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">${o.consult?'CONSULT':(o.mask&&toMin(o.mask)-curMin()<0?'MASK OFF':(o.numb&&toMin(o.numb)-curMin()<0?'NUMB DONE':'IN USE'))}</span></div>
+    <div class="body">${nb}${(o.therapist||o.consult)?'':'<div class="noTheraBanner">⚠ No therapist assigned</div>'}
       <div class="cust">${esc(o.customer)}</div>
       <div class="fieldrow"><label>Doctor</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${docEl}</div></div>
-      <div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>
+      ${o.consult?'':`<div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>`}
+      ${o.consult?'':`<div class="fieldrow"><label>${picking?(editingNumbRoom===room?'Numb for':'Mask for'):'Timer'}</label><div style="flex:1;display:flex;align-items:center;gap:6px;padding-top:4px;flex-wrap:wrap">${(oxyPos(o)&&!oxyPos(o).fin)?`<span style="font-weight:700;color:var(--head)" data-oxyn="${esc(room)}">${esc(oxyNum(oxyPos(o)))}</span>`:''}${picking?'':stageChipsRow(room,o)}</div></div>`}
+      ${picking?`<div class="moderow">${stageChipsRow(room,o)}</div>`:''}
+      ${consultBlock(room,o)}
+      ${oxyBlock(room,o,'board')}
       <div class="fieldrow"><label>Tx</label><div class="txwrap">${remChips}<input class="txin" list="txList" placeholder="+ add" onchange="roomTxAdd('${jsq(room)}',this.value);this.value=''"></div></div>
       ${doneChips?`<div class="fieldrow"><label>Done</label><div class="txwrap">${doneChips}</div></div>`:''}
-      ${o.mask?`<div class="fieldrow"><label>Mask off</label><div style="flex:1;padding-top:6px"><b>${esc(hm12(o.mask))}</b><span class="mstep"><button title="+1 min" onclick="maskBump('${jsq(room)}',1)">▲</button><button title="-1 min" onclick="maskBump('${jsq(room)}',-1)">▼</button></span>${maskRel(o.mask)} <button class="maskx" title="clear mask-off time" onclick="maskClear('${jsq(room)}')">✕</button></div></div>`:`<div class="fieldrow maskrow"><label style="width:auto">Mask</label><span class="hint">on for:</span><button class="chip" onclick="maskIn('${jsq(room)}',5)">5m</button><button class="chip" onclick="maskIn('${jsq(room)}',10)">10m</button><button class="chip" onclick="maskIn('${jsq(room)}',15)">15m</button><span class="maskbreak"></span><span class="mhidden">Mask</span><span class="hint mhidden">on for:</span><input class="timein" title="exact time" placeholder="e.g. 345" onchange="roomSet('${jsq(room)}','mask',parseTimeInput(this.value))"></div>`}
-      <div class="fieldrow"><label>Note</label><input class="note-in" value="${esc(o.note||'')}" placeholder="remark for this room…" onchange="roomSet('${jsq(room)}','note',this.value)"></div>
+      ${o.consult?`<div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>`:''}
+      ${noteRow(room,o,'Note')}
       <div class="fieldrow"><label>Next →</label><select onchange="roomSetNext('${jsq(room)}',this.value)">${nextOpts}</select></div>
       <div class="actions">${goBtn}
         <button class="btn sm red" onclick="clearRoom('${jsq(room)}')">Clear Room</button>
@@ -422,13 +992,58 @@ function roomCard(room){
       </div>
     </div></div>`;
 }
+function attentionList(){
+  const out=[];
+  allRooms().forEach(r=>{const o=state.occ[r];if(!o)return;
+    if(o.mask){const d=toMin(o.mask)-curMin();
+      if(d<0)out.push({r,txt:"mask overdue "+(-d)+"m",cls:"",pri:0,act:"clear",label:"Clear room"});
+      else if(d<=5)out.push({r,txt:"mask off in "+d+"m",cls:"mid",pri:1});}
+    if(o.numb){const d=toMin(o.numb)-curMin();
+      if(d<0)out.push({r,txt:"numbing done \u2014 ready?",cls:"",pri:0,act:"numbdone",label:"\u2713 Ready"});
+      else if(d<=2)out.push({r,txt:"numbing done in "+d+"m",cls:"mid",pri:1});}
+  });
+  out.sort((a,b)=>a.pri-b.pri);return out;}
+function attnAction(act,room){if(act==="clear")clearRoom(room);else if(act==="numbdone")numbDone(room);}
+function roomEta(o){ // minutes until this room needs no more therapist time, or null if unknown
+  if(o.consult)return {m:null,pend:0,txt:"in consult"+(o.consultant?" \u00b7 "+o.consultant:""),over:false};
+  if(o.mask){const d=toMin(o.mask)-curMin();return {m:Math.max(0,d),txt:d<0?"mask overdue "+(-d)+"m":"mask off "+hm12(o.mask),over:d<0};}
+  const p=oxyPos(o);
+  if(p&&!p.fin){
+    if(o.oxy&&o.oxy.paused)return {m:null,txt:oxyLabel(p)+" \u00b7 \u23f8 paused",over:false};
+    const stepsLeft=(OXY_STEPS.length-p.i-1)*5;
+    const m=Math.ceil(p.remS/60)+stepsLeft+(o.mask?0:OXY_MASK_MIN);
+    return {m,txt:oxyLabel(p),over:false};}
+  if(p&&p.fin&&!o.mask)return {m:OXY_MASK_MIN,txt:"Oxy done \u2014 mask next",over:false};
+  if(o.mask){const d=toMin(o.mask)-curMin();return {m:Math.max(0,d),txt:d<0?"mask overdue "+(-d)+"m":"mask off "+hm12(o.mask),over:d<0};}
+  if(o.numb){const d=toMin(o.numb)-curMin();return {m:Math.max(0,d),txt:d<0?"numb done \u2014 ready?":"numbing "+d+"m left",over:d<0};}
+  const pend=txArr(o.treatment).length;
+  return {m:null,pend,txt:(o.stage||"in room")+(pend?" \u00b7 "+pend+" tx pending":""),over:false};}
+function etaLabel(m){if(m===null)return "no timer";if(m<=0)return "now";return "~"+m+"m";}
 function renderThera(){
-  let busy={};allRooms().forEach(r=>{const o=state.occ[r];if(o&&o.therapist)(busy[o.therapist]=busy[o.therapist]||[]).push(r);});
-  let avail=state.therapists.filter(t=>!busy[t]);
-  let html=`<div class="section-title">Therapists available</div>`+(avail.length?avail.map(t=>`<span class="tag">${esc(t)}</span>`).join(''):'<span class="hint">none free</span>');
-  let bk=Object.keys(busy);if(bk.length)html+=`<div class="section-title" style="margin-top:10px">Busy</div>`+bk.map(t=>`<span class="tag busy">${esc(t)} · ${busy[t].map(esc).join(', ')}</span>`).join('');
-  let noTh=allRooms().filter(r=>state.occ[r]&&!state.occ[r].therapist);
-  if(noTh.length)html+=`<div class="section-title" style="margin-top:10px;color:#7b2cbf">⚠ No therapist yet</div>`+noTh.map(r=>`<span class="tag warn">${esc(r)} · ${esc(state.occ[r].customer)}</span>`).join('');
+  const rooms={};allRooms().forEach(r=>{const o=state.occ[r];if(o&&o.therapist)(rooms[o.therapist]=rooms[o.therapist]||[]).push(r);});
+  const rows=state.therapists.map(t=>{const rs=rooms[t]||[];
+    const items=rs.map(r=>({room:r,eta:roomEta(state.occ[r]),cust:state.occ[r].customer}));
+    let free=!rs.length,eta=0,unknown=false;
+    items.forEach(it=>{if(it.eta.m===null)unknown=true;else eta=Math.max(eta,it.eta.m);});
+    return {t,items,free,eta:free?0:(unknown?null:eta)};});
+  rows.forEach(r=>{r.pend=r.free?0:r.items.reduce((s,it)=>s+(it.eta.pend||0),0);});
+  rows.sort((a,b)=>{
+    const av=a.free?-1:(a.eta===null?9999:a.eta),bv=b.free?-1:(b.eta===null?9999:b.eta);
+    if(av!==bv)return av-bv;
+    return a.pend-b.pend; // among unknown/no-timer rooms, fewer pending treatments ranks higher
+  });
+  let html="";
+  const attn=attentionList();
+  if(attn.length){html+=`<div class="section-title" style="color:#b3261e">\u26a0 Needs attention</div>`;
+    attn.forEach(it=>{html+=`<div class="attnrow2"><span class="aroom2">${esc(it.r)}</span><span class="acust">${esc(state.occ[it.r].customer)}</span><span class="areason2">${esc(it.txt)}</span>${it.act?`<button class="chip sel attnbtn" onclick="attnAction('${it.act}','${jsq(it.r)}')">${esc(it.label)}</button>`:''}</div>`;});}
+  let noTh=allRooms().filter(r=>state.occ[r]&&!state.occ[r].therapist&&!state.occ[r].consult);
+  if(noTh.length){html+=`<div class="section-title" style="margin-top:${attn.length?'10px':'0'};color:#7b2cbf">\u26a0 No therapist yet</div>`+noTh.map(r=>`<span class="tag warn">${esc(r)} \u00b7 ${esc(state.occ[r].customer)}</span>`).join('');}
+  html+=`<div class="section-title" style="margin-top:${(attn.length||noTh.length)?'10px':'0'}">Therapists \u2014 free soonest first</div>`;
+  if(!rows.length)html+='<span class="hint">no therapists in list</span>';
+  rows.forEach(r=>{const cls=r.free?'free':((r.eta!==null&&r.eta<=10)?'soon':'');
+    html+=`<div class="trow ${cls}"><div class="ttop"><span class="tname">${esc(r.t)}</span><span class="teta${r.eta===null&&!r.free?' unk':''}">${r.free?'FREE':etaLabel(r.eta)}</span></div>`;
+    r.items.forEach(it=>{html+=`<div class="tline"><span class="troom">${esc(it.room)}</span><span class="tstat${it.eta.over?' over':''}" data-teta="${esc(it.room)}">${esc(it.eta.txt)}</span></div>`;});
+    html+=`</div>`;});
   $("theraPanel").innerHTML=html;
 }
 function renderWaiting(){
@@ -438,7 +1053,8 @@ function renderWaiting(){
   if(!w.length){html+=`<div class="hint">No one checked in. Tap “✓ Arrived” on an appointment.</div>`;}
   w.forEach(({q,wait})=>{const cls=wait>=40?'wlong':wait>=20?'wmed':'';
     html+=`<div class="witem ${cls}"><div class="wtop"><b>${esc(q.customer)}</b><span class="wmin">${wait}m</span></div>
-      <div class="qmeta" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)">${docInline(q.id,q.doctor)}${q.appt?' · '+esc(hm12(q.appt)):''}</div>
+      <div class="qmeta" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)">${docInline(q.id,q.doctor)}${q.appt?' · '+esc(hm12(q.appt)):''}<span style="flex:1"></span>${qConsultBadge(q)}<select style="width:96px;flex:none" onchange="qSetThera(${q.id},this.value)">${thOptions(q.therapist)}</select></div>
+      ${qConsultDetail(q)}
       <div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}<input class="txin" list="txList" placeholder="+ tx" onchange="qTxAdd(${q.id},this.value);this.value=''"></div>
       <div style="display:flex;gap:6px;align-items:center"><select onchange="moveQueueToRoom(${q.id},this.value)" style="flex:1">${sendRoomOpts('→ room ▾')}</select><button class="btn sm grey" title="Clicked Arrived by mistake — send back to appointments" onclick="qCheckIn(${q.id})">↩ appts</button><button class="btn sm grey" title="Remove customer (logged in Records)" onclick="removeQueue(${q.id})">✕</button></div></div>`;});
   $("waitPanel").innerHTML=html;
@@ -448,22 +1064,195 @@ function renderQueue(){
   let base=state.queue.filter(q=>!q.arrivedAt);
   let timed=base.filter(q=>q.appt).sort((a,b)=>toMin(a.appt)-toMin(b.appt));
   let notimed=base.filter(q=>!q.appt);
-  let shown=state.filterWindow?timed.filter(q=>{const d=toMin(q.appt)-nowM;return d>=-60&&d<=60;}):timed;
-  let html=`<div class="filterbar"><label><input type="checkbox" ${state.filterWindow?'checked':''} onchange="toggleFilter(this.checked)"> Within 1 hr of appt</label><span class="hint">${shown.length} shown / ${base.length} not arrived</span></div>`;
-  let n=1;if(!shown.length)html+=`<div class="empty">${state.filterWindow?'No appointments within an hour of now.':'No timed appointments.'}</div>`;
+  let shown=filterWindow?timed.filter(q=>{const d=toMin(q.appt)-nowM;return d>=-60&&d<=60;}):timed;
+  let html=`<div class="filterbar"><label><input type="checkbox" ${filterWindow?'checked':''} onchange="toggleFilter(this.checked)"> Within 1 hr of appt</label><span class="hint">${shown.length} shown / ${base.length} not arrived</span></div>`;
+  if(!shown.length)html+=`<div class="empty">${filterWindow?'No appointments within an hour of now.':'No timed appointments.'}</div>`;
   shown.forEach(q=>{html+=qCard(q);});
   if(notimed.length){html+=`<div class="section-title" style="margin-top:14px">No set time (${notimed.length})</div>`;notimed.forEach(q=>{html+=qCard(q);});}
   $("queueHost").innerHTML=html;
 }
 function qCard(q){
-  const timeEl=editingTimeId===q.id?`<input id="activeEdit" class="timein" value="${esc(hm12(q.appt))}" placeholder="e.g. 345" onkeydown="if(event.key==='Enter')this.blur()" onblur="qSetAppt(${q.id},parseTimeInput(this.value))" style="width:92px">`:`<span class="qtime" title="click to edit time" style="cursor:pointer" onclick="editTime(${q.id})">${q.appt?esc(hm12(q.appt)):'＋ set time'}</span>`;
-  return `<div class="qitem"><div class="qtop">${timeEl}<span class="qname">${esc(q.customer)}</span>
-      <button class="btn sm grey" title="Remove" onclick="removeQueue(${q.id})">✕</button></div>
-    <div class="txwrap" style="margin-top:6px">${txChips(q.treatment,`qTxRemove(${q.id},`)}<input class="txin" list="txList" placeholder="+ treatment" onchange="qTxAdd(${q.id},this.value);this.value=''"></div>
-    <div class="qactions">${docInline(q.id,q.doctor)}<span style="flex:1"></span><button class="chip" onclick="qCheckIn(${q.id})">✓ Arrived</button></div>
-    <div class="qactions"><select onchange="moveQueueToRoom(${q.id},this.value)">${sendRoomOpts('Send to room ▾')}</select></div></div>`;
+  const open=expandedQ===q.id;
+  const timeEl=editingTimeId===q.id?`<input id="activeEdit" class="timein" value="${esc(hm12(q.appt))}" placeholder="e.g. 345" onkeydown="if(event.key==='Enter')this.blur()" onblur="qSetAppt(${q.id},parseTimeInput(this.value))" style="width:92px">`:`<span class="qtime" title="click to edit time" style="cursor:pointer" onclick="editTime(${q.id})">${q.appt?esc(hm12(q.appt)):'\uff0b set time'}</span>`;
+  let h=`<div class="qitem compact"><div class="qtop2">
+      <div class="qleft">${timeEl}<span class="qname">${esc(q.customer)}</span><span class="qdoc">${esc(q.doctor)||'\u2014'}</span></div>
+      <div class="qright"><button class="chip" onclick="qCheckIn(${q.id})">\u2713 Arrived</button><button class="qmore" title="more" onclick="toggleQ(${q.id})">${open?'\u25b4 less':'\u22ef more'}</button></div>
+    </div>`;
+  if(open){h+=`<div class="txwrap" style="margin-top:6px">${txChips(q.treatment,`qTxRemove(${q.id},`)}<input class="txin" list="txList" placeholder="+ treatment" onchange="qTxAdd(${q.id},this.value);this.value=''"></div>
+    <div class="qactions">${docInline(q.id,q.doctor)}<span style="flex:1"></span><button class="btn sm grey" title="Remove" onclick="removeQueue(${q.id})">\u2715</button></div>
+    <div class="qactions"><select onchange="qSetThera(${q.id},this.value)">${thOptions(q.therapist)}</select><select onchange="moveQueueToRoom(${q.id},this.value)">${sendRoomOpts('Send to room \u25be')}</select></div>`;}
+  return h+`</div>`;
 }
 
+/* ---- phone views ---- */
+function renderPhone(){
+  $("notifHost").innerHTML=activeNotifs.map(n=>`<div class="notif"><span>\ud83d\udd14 ${esc(n.msg)}</span><button onclick="dismissNotif('${jsq(n.k)}')">OK</button></div>`).join('');
+  if(ROLE==='doctor')renderDoctorView();else if(ROLE==='therapist')renderTheraView();else renderConsultantPhone();
+}
+function txAddSel(room){const o=state.occ[room];const taken=o?new Set(txArr(o.treatment).concat(txArr(o.txDone))):new Set();
+  const opts=state.treatments.filter(t=>!taken.has(t));
+  return `<select class="txaddsel" onchange="if(this.value)roomTxAdd('${jsq(room)}',this.value);this.value=''"><option value="">+ add\u2026</option>${opts.map(t=>`<option>${esc(t)}</option>`).join('')}</select>`;}
+function qTxAddSel(id){const q=state.queue.find(x=>x.id==id);const taken=q?new Set(txArr(q.treatment)):new Set();
+  const opts=state.treatments.filter(t=>!taken.has(t));
+  return `<select class="txaddsel" onchange="if(this.value)qTxAdd(${id},this.value);this.value=''"><option value="">+ add\u2026</option>${opts.map(t=>`<option>${esc(t)}</option>`).join('')}</select>`;}
+function phoneQTxChips(q){
+  const chips=txArr(q.treatment).map((x,i)=>`<span class="txchip">${esc(x)}<b onclick="qTxRemove(${q.id},${i})">\u2715</b></span>`).join('');
+  return `<div class="txwrap">${chips}${qTxAddSel(q.id)}</div>`;}
+function phoneTxChips(room,o,editable){
+  const rem=txArr(o.treatment).map((x,i)=>`<span class="txchip">${editable?`<span class="txname" title="tap when done" onclick="roomTxDone('${jsq(room)}',${i})">${esc(x)}</span>`:esc(x)}</span>`).join('');
+  const done=txArr(o.txDone).map((x,i)=>`<span class="txchip done">${editable?`<span class="txname" title="tap to undo" onclick="roomTxUndo('${jsq(room)}',${i})">${esc(x)}</span>`:esc(x)}</span>`).join('');
+  return `<div class="txwrap">${rem}${done}${editable?txAddSel(room):''}</div>`;}
+function noteRow(room,o,label){
+  if(editingNoteRoom===room)
+    return `<div class="fieldrow"><label>${label}</label><input id="activeNote" class="note-in" value="${esc(o.note||'')}" placeholder="remark\u2026" onkeydown="if(event.key==='Enter')this.blur()" onblur="noteSave('${jsq(room)}',this.value)"></div>`;
+  if(o.note)
+    return `<div class="fieldrow"><label>${label}</label><div style="flex:1;padding-top:5px"><span class="notetext" title="click to edit" onclick="noteToggle('${jsq(room)}')">\ud83d\udcdd ${esc(o.note)}</span></div></div>`;
+  return `<div class="fieldrow"><label></label><div style="flex:1"><button class="notelink" onclick="noteToggle('${jsq(room)}')">\uff0b note</button></div></div>`;}
+function stageChipsRow(room,o){
+  if(o.mask){const d=toMin(o.mask)-curMin();
+    return `<div class="stagechips oneline"><span class="slabel">Mask</span><b>${esc(hmShort(o.mask))}</b><span class="mstep"><button title="+1 min" onclick="maskBump('${jsq(room)}',1)">\u25b2</button><button title="-1 min" onclick="maskBump('${jsq(room)}',-1)">\u25bc</button></span>${maskRel(o.mask)}<button class="maskx" title="clear mask" onclick="maskClear('${jsq(room)}')">\u2715</button></div>`;}
+  const numbing=o.numb;
+  if(numbing){const d=toMin(o.numb)-curMin();
+    if(d<0)return `<div class="stagechips oneline"><span class="slabel">Numb</span><span class="rel over">${-d}m ago</span><button class="chip sel" onclick="numbDone('${jsq(room)}')">\u2713 ready</button><button class="maskx" title="cancel numbing" onclick="numbClear('${jsq(room)}')">\u2715</button></div>`;
+    return `<div class="stagechips oneline"><span class="slabel">Numb</span><b>${esc(hmShort(o.numb))}</b><span class="mstep"><button title="+1 min" onclick="numbBump('${jsq(room)}',1)">\u25b2</button><button title="-1 min" onclick="numbBump('${jsq(room)}',-1)">\u25bc</button></span>`+
+      maskRel(o.numb)+`<button class="maskx" title="cancel numbing" onclick="numbClear('${jsq(room)}')">\u2715</button></div>`;}
+  if(editingNumbRoom===room){
+    return `<div class="pickwrap"><div class="stagechips oneline">`+
+      [10,15,20].map(m=>`<button class="chip" onclick="numbIn('${jsq(room)}',${m})">${m}m</button>`).join('')+
+      `<input class="timein" style="width:66px" title="exact time" placeholder="345" onchange="numbSet('${jsq(room)}',parseTimeInput(this.value))">`+
+      `<button class="maskx" title="cancel" onclick="numbToggle('${jsq(room)}')">\u2715</button></div></div>`;}
+  if(editingMaskRoom===room){
+    return `<div class="pickwrap"><div class="stagechips oneline">`+
+      [5,10,15].map(m=>`<button class="chip" onclick="maskIn('${jsq(room)}',${m})">${m}m</button>`).join('')+
+      `<input class="timein" style="width:66px" title="exact time" placeholder="345" onchange="maskSet('${jsq(room)}',parseTimeInput(this.value))">`+
+      `<button class="maskx" title="cancel" onclick="maskToggle('${jsq(room)}')">\u2715</button></div></div>`;}
+  const oxp=oxyPos(o);
+  if(oxp&&!oxp.fin)return ""; // Oxy actively counting down \u2014 its own bar holds the controls
+  if(oxp&&oxp.fin)
+    return `<div class="stagechips"><span class="slabel">Oxy done \u2192</span><button class="chip" onclick="oxyEndThenNumb('${jsq(room)}')">Numb</button><button class="chip go" onclick="oxyFinishToMask('${jsq(room)}')">Mask</button><button class="maskx" title="dismiss" onclick="oxyEnd('${jsq(room)}')">\u2715</button></div>`;
+  let h=`<div class="stagechips">`;
+  h+=`<button class="chip" title="start a numbing timer" onclick="numbToggle('${jsq(room)}')">Numb</button>`;
+  h+=`<button class="chip" title="start Oxy steps" onclick="oxyStart('${jsq(room)}')">Oxy</button>`;
+  h+=`<button class="chip" title="start mask timer" onclick="maskToggle('${jsq(room)}')">Mask</button>`;
+  return h+`</div>`;}
+function maskToggle(room){editingMaskRoom=editingMaskRoom===room?null:room;editingNumbRoom=null;render();}
+
+function renderDoctorView(){
+  const me=MYNAME;const nowM=curMin();
+  let html="";
+  const waiting=state.queue.filter(q=>sameName(q.doctor,me)&&q.arrivedAt).map(q=>({q,wait:Math.max(0,nowM-toMin(q.arrivedAt))})).sort((a,b)=>b.wait-a.wait);
+  html+=`<div class="section-title">Arrived \u00b7 waiting for you (${waiting.length})</div>`;
+  if(!waiting.length)html+=`<div class="empty">No one waiting right now.</div>`;
+  waiting.forEach(({q,wait})=>{html+=`<div class="pcard${wait>=20?' alert':''}"><div class="ptop"><span class="pname">${esc(q.customer)}</span><span class="wmin">${wait}m</span></div>
+    <div class="pmeta">${q.appt?'Appt '+esc(hm12(q.appt))+' \u00b7 ':''}arrived ${esc(hm12(q.arrivedAt))}${q.therapist?' \u00b7 '+esc(q.therapist):''}</div>
+    ${phoneQTxChips(q)}</div>`;});
+  const mine=allRooms().filter(r=>state.occ[r]&&sameName(state.occ[r].doctor,me));
+  html+=`<div class="section-title" style="margin-top:14px">In rooms (${mine.length})</div>`;
+  if(!mine.length)html+=`<div class="empty">No customers in rooms.</div>`;
+  mine.forEach(r=>{const o=state.occ[r];const st=statusFor(o);
+    html+=`<div class="pcard${(!o.mask&&!o.numb&&!oxyPos(o)&&!o.consult)?' alert':''}"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
+      <div class="pstatus ${st.cls}" data-oxys="${esc(r)}">${esc(st.t)}</div>
+      ${o.consult?'':stageChipsRow(r,o)}
+      ${consultBlock(r,o)}
+      ${oxyBlock(r,o,'phone')}
+      <div class="pmeta">Tap a treatment to mark done / undo:</div>
+      ${phoneTxChips(r,o,true)}
+      ${noteRow(r,o,'Note')}
+    </div>`;});
+  const later=state.queue.filter(q=>sameName(q.doctor,me)&&!q.arrivedAt).sort((a,b)=>(toMin(a.appt)||9999)-(toMin(b.appt)||9999));
+  html+=`<div class="section-title" style="margin-top:14px">Appointments \u2014 not arrived (${later.length})</div>`;
+  if(!later.length)html+=`<div class="empty">None.</div>`;
+  later.forEach(q=>{html+=`<div class="pcard"><div class="ptop"><span class="pname">${esc(q.customer)}</span><span class="qtime">${q.appt?esc(hm12(q.appt)):'no time'}</span></div>
+    ${phoneQTxChips(q)}</div>`;});
+  const done=state.completed.filter(c=>sameName(c.doctor,me));
+  html+=`<div class="section-title" style="margin-top:14px">Done today (${done.length})</div>`;
+  done.slice().reverse().forEach(c=>{html+=`<div class="rec-item">\u2713 ${esc(c.at||'')} \u00b7 ${esc(c.customer)}${txArr(c.treatment).length?' / '+esc(txDisp(c.treatment)):''}</div>`;});
+  $("phoneHost").innerHTML=html;
+}
+
+function renderTheraView(){
+  const me=MYNAME;const nowM=curMin();
+  let html="";
+  const mine=allRooms().filter(r=>state.occ[r]&&sameName(state.occ[r].therapist,me));
+  html+=`<div class="section-title">My rooms (${mine.length})</div>`;
+  if(!mine.length)html+=`<div class="empty">No rooms right now.</div>`;
+  mine.forEach(r=>{const o=state.occ[r];const st=statusFor(o);
+    html+=`<div class="pcard"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
+      <div class="pstatus ${st.cls}" data-oxys="${esc(r)}">${esc(st.t)}</div>
+      ${theraModeRow(r,o)}
+      ${consultBlock(r,o)}
+      <div class="pmeta">Treatments \u2014 tap to mark done / undo:</div>
+      ${phoneTxChips(r,o,true)}
+      ${noteRow(r,o,'Note')}
+      ${o.nextRoom?`<div class="pmeta" style="margin-top:8px">Next \u2014 reserved for <b>${esc(o.nextRoom)}</b></div><div class="qactions"><button class="btn sm" style="flex:1" onclick="moveRoomToRoom('${jsq(r)}','${jsq(o.nextRoom)}')">\u2192 Move to ${esc(o.nextRoom)}</button></div>`:''}
+      <div class="qactions"><button class="btn sm red" onclick="clearRoom('${jsq(r)}')">Clear room \u2014 treatment done</button></div>
+    </div>`;});
+  const next=state.queue.filter(q=>sameName(q.therapist,me)).map(q=>({q,wait:q.arrivedAt?Math.max(0,nowM-toMin(q.arrivedAt)):-1})).sort((a,b)=>b.wait-a.wait);
+  html+=`<div class="section-title" style="margin-top:14px">Assigned to me \u2014 up next (${next.length})</div>`;
+  if(!next.length)html+=`<div class="empty">No one assigned yet. The consultant assigns from the board.</div>`;
+  next.forEach(({q,wait})=>{html+=`<div class="pcard${wait>=20?' alert':''}"><div class="ptop"><span class="pname">${esc(q.customer)}</span>${wait>=0?`<span class="wmin">${wait}m wait</span>`:`<span class="qtime">${q.appt?esc(hm12(q.appt)):'no time'}</span>`}</div>
+    <div class="pmeta">${q.doctor?esc(q.doctor)+' \u00b7 ':''}${wait>=0?'in waiting room':'not arrived yet'}</div>
+    <div class="txwrap">${txArr(q.treatment).map(x=>`<span class="txchip">${esc(x)}</span>`).join('')||'<span class="hint">no treatment set</span>'}</div>
+    ${wait>=0?`<div class="qactions"><select onchange="moveQueueToRoom(${q.id},this.value)" style="flex:1"><option value="">\u2192 bring to room\u2026</option>${freeRooms().map(r=>`<option>${esc(r)}</option>`).join('')}</select></div>`:`<div class="pmeta hint">Check in from the board once they arrive</div>`}</div>`;});
+  const done=state.completed.filter(c=>sameName(c.therapist,me));
+  html+=`<div class="section-title" style="margin-top:14px">Done today (${done.length})</div>`;
+  done.slice().reverse().forEach(c=>{html+=`<div class="rec-item">\u2713 ${esc(c.at||'')} \u00b7 ${esc(c.customer)}${txArr(c.treatment).length?' / '+esc(txDisp(c.treatment)):''}</div>`;});
+  $("phoneHost").innerHTML=html;
+}
+
+function roomUrgency(o){const p=oxyPos(o);
+  if(o.mask){const d=toMin(o.mask)-curMin();if(d<0)return 0;if(d<=5)return 1;}
+  if(o.numb&&toMin(o.numb)-curMin()<0)return 2;
+  if(p&&p.fin)return 3;
+  return 9;}
+function renderConsultantPhone(){
+  const nowM=curMin();
+  let html="";
+  // needs attention first — the whole reason they're checking the phone mid-rush
+  const attn=attentionList();
+  if(attn.length){html+=`<div class="section-title" style="color:#b3261e">\u26a0 Needs attention (${attn.length})</div>`;
+    attn.forEach(it=>{html+=`<div class="attnrow2"><span class="aroom2">${esc(it.r)}</span><span class="acust">${esc(state.occ[it.r].customer)}</span><span class="areason2">${esc(it.txt)}</span>${it.act?`<button class="chip sel attnbtn" onclick="attnAction('${it.act}','${jsq(it.r)}')">${esc(it.label)}</button>`:''}</div>`;});}
+  // waiting room next — who's here, how long, so they know who to wash first
+  const w=state.queue.filter(q=>q.arrivedAt).map(q=>({q,wait:Math.max(0,nowM-toMin(q.arrivedAt))})).sort((a,b)=>b.wait-a.wait);
+  html+=`<div class="section-title" style="margin-top:${attn.length?'14px':'0'}">Waiting (${w.length})</div>`;
+  if(!w.length)html+=`<div class="empty">No one checked in.</div>`;
+  w.forEach(({q,wait})=>{html+=`<div class="pcard${wait>=20?' alert':''}"><div class="ptop"><span class="pname">${esc(q.customer)}</span><span class="wmin">${wait}m</span></div>
+    <div class="pmeta">${esc(q.doctor)||'no doctor'}${q.appt?' \u00b7 appt '+esc(hm12(q.appt)):''}</div>
+    ${qConsultDetail(q)}
+    <div class="txwrap">${txArr(q.treatment).map(x=>`<span class="txchip">${esc(x)}</span>`).join('')}</div>
+    <div class="qactions">${qConsultBadge(q)}<select onchange="qSetThera(${q.id},this.value)">${thOptions(q.therapist)}</select><select onchange="moveQueueToRoom(${q.id},this.value)">${sendRoomOpts('\u2192 room \u25be')}</select></div>
+    <div class="qactions"><button class="btn sm grey" onclick="qCheckIn(${q.id})">\u21a9 appts</button><button class="btn sm grey" onclick="removeQueue(${q.id})">\u2715 remove</button></div></div>`;});
+  // rooms in use, most urgent first (mask overdue -> mask soon -> numb done -> oxy finished -> rest)
+  const occR=allRooms().filter(r=>state.occ[r]).sort((a,b)=>roomUrgency(state.occ[a])-roomUrgency(state.occ[b]));
+  html+=`<div class="section-title" style="margin-top:14px">Rooms in use (${occR.length})</div>`;
+  if(!occR.length)html+=`<div class="empty">All rooms free.</div>`;
+  occR.forEach(r=>{const o=state.occ[r];const urgent=roomUrgency(o)<4;
+    html+=`<div class="pcard${urgent?' alert':''}"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
+      <div class="pmeta">${esc(o.doctor)||'no doctor'} \u00b7 ${o.therapist?esc(o.therapist):'<b style="color:#7b2cbf">\u26a0 no therapist</b>'}</div>
+      ${o.therapist?'':`<select onchange="roomSetTherapist('${jsq(r)}',this.value)">${thOptions('')}</select>`}
+      ${o.consult?'':stageChipsRow(r,o)}
+      ${consultBlock(r,o)}
+      ${oxyBlock(r,o,'phone')}
+      ${phoneTxChips(r,o,false)}
+      ${noteRow(r,o,'Note')}
+      <div class="qactions"><button class="btn sm red" onclick="clearRoom('${jsq(r)}')">Clear room</button><button class="btn sm grey" onclick="roomToQueue('${jsq(r)}')">\u21a9 queue</button></div>
+    </div>`;});
+  // free rooms
+  const fr=freeRooms();
+  html+=`<div class="section-title" style="margin-top:14px">Free rooms (${fr.length})</div><div class="pcard">`+
+    (fr.length?fr.map(r=>`<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><b style="width:120px;flex:none;font-size:13px">${esc(r)}</b><select style="flex:1;min-width:0" onchange="assignFreeRoom('${jsq(r)}',this.value)">${['<option value=\"\">assign from queue \u25be</option>'].concat(state.queue.map(q=>`<option value="${q.id}">${esc(q.customer)}${q.arrivedAt?' (waiting)':''}</option>`)).join('')}</select></div>`).join(''):'<div class="hint">none free</div>')+`</div>`;
+  // appointments
+  const ap=state.queue.filter(q=>!q.arrivedAt).sort((a,b)=>(toMin(a.appt)||9999)-(toMin(b.appt)||9999));
+  html+=`<div class="section-title" style="margin-top:14px">Appointments \u2014 not arrived (${ap.length})</div>`;
+  if(!ap.length)html+=`<div class="empty">None. Add customers from the counter board.</div>`;
+  ap.forEach(q=>{html+=`<div class="pcard"><div class="ptop"><span class="pname">${esc(q.customer)}</span><span class="qtime">${q.appt?esc(hm12(q.appt)):'no time'}</span></div>
+    <div class="pmeta">${esc(q.doctor)||'no doctor'}</div>
+    <div class="txwrap">${txArr(q.treatment).map(x=>`<span class="txchip">${esc(x)}</span>`).join('')}</div>
+    <div class="qactions"><button class="chip go" onclick="qCheckIn(${q.id})">\u2713 Arrived</button><button class="btn sm grey" onclick="removeQueue(${q.id})">\u2715</button></div></div>`;});
+  $("phoneHost").innerHTML=html;
+}
+
+/* ===== therapist log / records (board roles) ===== */
 function therapistGroups(){
   let g={};const add=(t,o)=>{t=t||"— (no therapist)";(g[t]=g[t]||[]).push(o);};
   allRooms().forEach(r=>{const o=state.occ[r];if(o)add(o.therapist,{customer:o.customer,treatment:txDisp(o.treatment),status:'now',room:r});});
@@ -476,13 +1265,15 @@ function openTLog(){const g=therapistGroups();const order=state.therapists.conca
   order.forEach(t=>{const items=g[t];if(!items||!items.length)return;total+=items.length;html+=`<div class="tlog-th">${esc(t)} (${items.length})</div>`;
     items.forEach(o=>{html+=`<div class="tlog-item">• ${esc(o.customer)}${o.treatment?' — '+esc(o.treatment):''} ${o.status==='now'?`<span class="now">[in ${esc(o.room)} now]</span>`:`<span class="done">[done ${esc(o.time||'')}]</span>`}</div>`;});});
   if(!total)html='<div class="empty">No customers assigned to therapists yet today.</div>';
-  $("tlogBody").innerHTML=html;$("tlogModal").classList.add("show");}
+  $("tlogBody").innerHTML=html;$("tlogModal").classList.add("show");applyRoleChrome();}
 function tlogText(){const g=therapistGroups();const order=state.therapists.concat(Object.keys(g).filter(t=>!state.therapists.includes(t)));
   let L=["CUSTOMERS BY THERAPIST — "+nowHM(),""];order.forEach(t=>{const items=g[t];if(!items||!items.length)return;L.push(t+" ("+items.length+"):");
     items.forEach(o=>L.push("  • "+o.customer+(o.treatment?" — "+o.treatment:"")+(o.status==='now'?" [in "+o.room+" now]":" [done "+(o.time||"")+"]")));L.push("");});return L.join("\n");}
 function copyTLog(){copyStr(tlogText());}
-function clearLog(){if(confirm("Clear today's completed therapist log?")){state.completed=[];commit();openTLog();toast("Log cleared");}}
-
+function clearLog(){if(!isCounter()){toast("Only the counter PC can clear the log");return;}
+  if(confirm("Clear today's completed therapist log?")){state.completed=[];
+    if(baseRef){try{baseRef.update({completed:null});}catch(e){}}
+    saveLocal();recordHistory();render();openTLog();toast("Log cleared");}}
 function openRecords(){
   let html=`<div class="tlog-th">Completed / Done (${state.completed.length})</div>`;
   if(!state.completed.length)html+='<div class="hint">none yet</div>';
@@ -490,39 +1281,94 @@ function openRecords(){
   html+=`<div class="tlog-th">Cancelled / Deleted (${state.removed.length})</div>`;
   if(!state.removed.length)html+='<div class="hint">none</div>';
   state.removed.slice().reverse().forEach(c=>{html+=`<div class="rec-item cx">✕ ${esc(c.at||'')} · ${esc(c.customer)}${c.doctor?' — '+esc(c.doctor):''}${txArr(c.treatment).length?' / '+esc(txDisp(c.treatment)):''}${c.appt?' · appt '+esc(hm12(c.appt)):''}</div>`;});
-  $("recBody").innerHTML=html;$("recModal").classList.add("show");}
-function clearRecords(){if(confirm("Clear today's records (completed + cancelled)?")){state.completed=[];state.removed=[];commit();openRecords();toast("Records cleared");}}
+  $("recBody").innerHTML=html;$("recModal").classList.add("show");applyRoleChrome();}
+function clearRecords(){if(!isCounter()){toast("Only the counter PC can clear records");return;}
+  if(confirm("Clear today's records (completed + cancelled)?")){state.completed=[];state.removed=[];
+    if(baseRef){try{baseRef.update({completed:null,removed:null});}catch(e){}}
+    saveLocal();recordHistory();render();openRecords();toast("Records cleared");}}
 
 function copyStr(str){if(navigator.clipboard){navigator.clipboard.writeText(str).then(()=>toast("Copied"),()=>{});}else{const ta=document.createElement('textarea');ta.value=str;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast("Copied");}catch(e){}ta.remove();}}
 
-function openSettings(){const dn=state.groups.find(g=>g.name==="Downstairs")||state.groups[0];const up=state.groups.find(g=>g.name==="Upstairs")||state.groups[1]||{rooms:[]};
+/* ===== settings (counter only) ===== */
+function openSettings(){if(!isCounter())return;const dn=state.groups.find(g=>g.name==="Downstairs")||state.groups[0];const up=state.groups.find(g=>g.name==="Upstairs")||state.groups[1]||{rooms:[]};
   $("setDown").value=dn.rooms.join("\n");$("setUp").value=up.rooms.join("\n");$("setDoctors").value=state.doctors.join("\n");$("setTherapists").value=state.therapists.join("\n");$("setTreatments").value=state.treatments.join("\n");
   $("setCustomers").value=Object.entries(state.customers).map(([n,c])=>{let s=n;if(c.doctor||c.therapist)s+=" = "+(c.doctor||"");if(c.therapist)s+=" = "+c.therapist;return s;}).join("\n");$("settingsModal").classList.add("show");}
 function saveSettings(){const lines=t=>t.value.split("\n").map(x=>x.trim()).filter(Boolean);
-  const newGroups=[{name:"Downstairs",rooms:lines($("setDown"))},{name:"Upstairs",rooms:lines($("setUp"))}];
+  const cleanRoom=x=>fbKey(x);
+  const newGroups=[{name:"Downstairs",rooms:lines($("setDown")).map(cleanRoom)},{name:"Upstairs",rooms:lines($("setUp")).map(cleanRoom)}];
   state.doctors=lines($("setDoctors"));state.therapists=lines($("setTherapists"));state.treatments=lines($("setTreatments"));
-  const cust={};lines($("setCustomers")).forEach(l=>{const p=l.split("=").map(x=>x.trim());cust[p[0]]={doctor:p[1]||"",therapist:p[2]||""};});state.customers=cust;
+  const cust={};lines($("setCustomers")).forEach(l=>{const p=l.split("=").map(x=>x.trim());const nm=fbKey(p[0]);if(nm&&nm!=="_")cust[nm]={doctor:p[1]||"",therapist:p[2]||""};});state.customers=cust;
   const newRooms=newGroups.flatMap(g=>g.rooms);const occ={};newRooms.forEach(r=>occ[r]=state.occ[r]||null);
-  allRooms().forEach(r=>{if(!newRooms.includes(r)&&state.occ[r]){const o=state.occ[r];state.queue.push({id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});}});
-  state.groups=newGroups;state.occ=occ;closeModal('settingsModal');commit();toast("Lists saved");}
+  const patch=listsPatch();
+  allRooms().forEach(r=>{if(!newRooms.includes(r)&&state.occ[r]){const o=state.occ[r];const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
+    state.queue.push(q);Object.assign(patch,queuePatch(q));patch["occ/"+fbKey(r)]=null;}});
+  state.groups=newGroups;state.occ=occ;
+  Object.assign(patch,{"lists/groups":state.groups});
+  newRooms.forEach(r=>{Object.assign(patch,roomPatch(r));});
+  closeModal('settingsModal');cloudPatch(patch);toast("Lists saved");}
 function closeModal(id){$(id).classList.remove("show");}
 
+/* ===== export / import (counter only) ===== */
 function exportState(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="room-flow-state-"+nowHM().replace(":","")+".json";a.click();toast("State saved to file");}
 function importState(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{
+    const raw=JSON.parse(r.result);
+    if(!raw||typeof raw!=='object'||Array.isArray(raw)||!Array.isArray(raw.queue)){
+      toast("File isn't a valid appointments file (missing the expected format) — nothing was changed");
+      ev.target.value="";return;
+    }
     autoBackup();
-    const inc=migrate(JSON.parse(r.result));
-    // keep the operator's configuration lists — a day file only refreshes appointments
+    const inc=migrate(raw);
     inc.doctors=state.doctors;inc.therapists=state.therapists;inc.treatments=state.treatments;inc.groups=state.groups;
     inc.customers=Object.assign({},state.customers,inc.customers||{});
-    const occ={};state.groups.forEach(g=>g.rooms.forEach(rm=>occ[rm]=(inc.occ&&inc.occ[rm])||null));inc.occ=occ;
-    state=inc;commit();toast("Appointments loaded (your lists kept)");
+    // Occupied-room rescue: if the incoming file doesn't say who's in a room but
+    // someone is sitting there right now, send them back to the queue instead of wiping them.
+    const occ={};state.groups.forEach(g=>g.rooms.forEach(rm=>{
+      const incoming=(inc.occ&&inc.occ[rm])||null;
+      if(!incoming&&state.occ[rm]){const o=state.occ[rm];
+        inc.queue.push({id:nextId(),customer:o.customer,doctor:o.doctor||"",therapist:o.therapist||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});}
+      occ[rm]=incoming;}));
+    inc.occ=occ;
+    pushFullState(inc);toast("Appointments loaded (your lists kept; current room occupants moved to queue)");
   }catch(e){toast("Could not read file");}};r.readAsText(f);ev.target.value="";}
 
+/* ===== role setup ===== */
+function openRoleSetup(){pendingRole=null;$("rolePick").style.display="";$("roleNameWrap").style.display="none";$("roleOverlay").classList.add("show");}
+function pickRole(role){
+  if(role==='counter'||role==='consultant'){setRole(role,"");return;}
+  pendingRole=role;$("rolePick").style.display="none";$("roleNameWrap").style.display="";
+  $("roleNameHint").textContent=role==='doctor'?"Select your name (doctor):":"Select your name (therapist):";
+  fillRoleNames();}
+function fillRoleNames(){if(!pendingRole)return;const list=pendingRole==='doctor'?state.doctors:state.therapists;
+  $("roleNameSel").innerHTML=list.map(n=>`<option>${esc(n)}</option>`).join('')||'<option value="">(list is empty — counter must add names in Edit lists)</option>';}
+function confirmRole(){const n=$("roleNameSel").value;if(!n){toast("No name selected");return;}setRole(pendingRole,n);}
+function setRole(role,name){ROLE=role;MYNAME=name;pendingRole=null;
+  try{localStorage.setItem(LS_ROLE,JSON.stringify({role,name}));}catch(e){}
+  notifReady=false;seenAlerts={};activeNotifs=[];
+  closeModal('roleOverlay');applyRoleChrome();render();
+  setTimeout(()=>{scanAlerts();notifReady=true;},1500);
+  toast(role==='counter'?"Counter PC mode":role==='consultant'?"Consultant mode":(name+" — "+role));}
+
+/* ===== cloud connect / auth / migration ===== */
 function setSync(t,cls){const e=$("syncst");if(e){e.textContent=t;e.className="syncst"+(cls?" "+cls:"");}}
 function connectCloud(){
-  if(cloudRef)return;const db=firebase.database();cloudRef=db.ref(FIREBASE_PATH);
-  cloudRef.on('value',snap=>{const v=snap.val();if(typeof v==='string'){try{applyingRemote=true;state=migrate(JSON.parse(v));try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}recordHistory();render();}catch(e){}applyingRemote=false;}});
-  cloudRef.once('value').then(s=>{if(s.val()==null){try{cloudRef.set(JSON.stringify(state));}catch(e){}}});
+  if(baseRef)return;db=firebase.database();baseRef=db.ref(BASE_PATH);cloudOn=true;
+  baseRef.once('value').then(s=>{
+    if(s.val()==null){
+      // First run on v2: migrate the old single-blob board if it exists.
+      db.ref(OLD_PATH).once('value').then(os=>{
+        let st=null;try{if(typeof os.val()==='string')st=migrate(JSON.parse(os.val()));}catch(e){}
+        pushFullState(st||state);attachListeners();
+      }).catch(()=>{pushFullState(state);attachListeners();});
+    } else attachListeners();
+  }).catch(()=>{attachListeners();});
+}
+function attachListeners(){
+  baseRef.child('lists').on('value',s=>applyLists(s.val()));
+  baseRef.child('occ').on('value',s=>applyOcc(s.val()));
+  baseRef.child('queue').on('value',s=>applyQueue(s.val()));
+  baseRef.child('completed').on('value',s=>applyRecs('completed',s.val()));
+  baseRef.child('removed').on('value',s=>applyRecs('removed',s.val()));
+  setTimeout(()=>{notifReady=true;},2500);
 }
 function doLogin(){let u=$("loginEmail").value.trim();const p=$("loginPwd").value;if(!u||!p){$("loginErr").textContent="Enter username and password.";return;}
   const e=u.indexOf('@')>-1?u:u+'@'+LOGIN_DOMAIN;
@@ -530,24 +1376,32 @@ function doLogin(){let u=$("loginEmail").value.trim();const p=$("loginPwd").valu
   firebase.auth().signInWithEmailAndPassword(e,p).catch(err=>{$("loginErr").textContent=(err&&err.message)||"Sign-in failed";});}
 function doLogout(){if(window.firebase&&firebase.auth)firebase.auth().signOut();}
 function initCloud(){
-  if(!FIREBASE_CONFIG||!window.firebase){return;}
+  if(!FIREBASE_CONFIG||!window.firebase){afterAuth();return;}
   try{
     firebase.initializeApp(FIREBASE_CONFIG);
     firebase.auth().onAuthStateChanged(function(user){
-      if(user){cloudRef=null;connectCloud();$("loginOverlay").classList.remove("show");$("logoutBtn").style.display='';setSync('☁ synced','cloud');$("loginPwd").value="";}
-      else{if(cloudRef){cloudRef.off();cloudRef=null;}$("loginOverlay").classList.add("show");$("logoutBtn").style.display='none';setSync('login required','err');}
+      if(user){baseRef=null;connectCloud();$("loginOverlay").classList.remove("show");$("logoutBtn").style.display='';setSync('☁ synced','cloud');$("loginPwd").value="";afterAuth();}
+      else{if(baseRef){baseRef.off();baseRef.child&&['lists','occ','queue','completed','removed'].forEach(c=>{try{baseRef.child(c).off();}catch(e){}});baseRef=null;}cloudOn=false;$("loginOverlay").classList.add("show");$("logoutBtn").style.display='none';setSync('login required','err');}
     });
-  }catch(e){setSync('cloud error','err');}
+  }catch(e){setSync('cloud error','err');afterAuth();}
+}
+function afterAuth(){
+  if(!ROLE)openRoleSetup();
+  applyRoleChrome();render();
 }
 
+/* ===== boot ===== */
 function tick(){$("clock").textContent=nowHM();if(!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))render();}
 $("arriveName").addEventListener("keydown",e=>{if(e.key==="Enter")arrive();});
 document.addEventListener("click",e=>{const m=$("moreMenu");if(m&&m.classList.contains("show")&&!e.target.closest(".menu-wrap"))m.classList.remove("show");});
-render();$("clock").textContent=nowHM();histLast=JSON.stringify(state);updateUndoBtn();
+$("clock").textContent=nowHM();histLast=JSON.stringify(state);updateUndoBtn();
 if(FIREBASE_CONFIG&&window.firebase){$("loginOverlay").classList.add("show");}
+applyRoleChrome();render();
 initCloud();
 setInterval(()=>{$("clock").textContent=nowHM();},1000);
 setInterval(tick,20000);
+setInterval(refreshTimers,1000);
+window.addEventListener("resize",()=>{applyRoleChrome();render();});
 autoBackup();setInterval(autoBackup,600000);
 </script>
 </body>
