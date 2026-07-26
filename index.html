@@ -57,7 +57,7 @@
   .btn{background:var(--accent);color:#fff;border:0;border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:14px}
   .btn:hover{filter:brightness(1.07)}
   .btn.sm{padding:5px 9px;font-size:13px}.btn.grey{background:#e3e9eb;color:var(--ink)}.btn.red{background:#d9534f}
-  .layout{display:grid;grid-template-columns:1fr 372px;gap:16px;align-items:start}
+  .layout{display:grid;grid-template-columns:1fr 335px;gap:16px;align-items:start}
   @media(max-width:1050px){.layout{grid-template-columns:1fr}}
   .rightcol{position:sticky;top:64px;display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 80px);overflow:auto}
   .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:6px 2px 10px}
@@ -71,6 +71,7 @@
   .room.maskSoon{border-color:#f5c542;box-shadow:0 0 0 3px #ffe082}
   .room.maskSoon .rhead{background:#fff3c4;border-bottom-color:#f5c542}
   .room.maskOver{border-color:#e57373;box-shadow:0 0 0 3px #ef9a9a;animation:pulse 1.4s infinite}
+  /* someone has said they're handling it: stop the pulse and dim it, but keep it visible */
   .room.maskOver .rhead{background:#ffd9d9;border-bottom-color:#e57373}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 3px #ef9a9a}50%{box-shadow:0 0 0 6px #ef9a9a}}
   .room .rname{font-size:16px}
@@ -82,13 +83,18 @@
   .room.noThera{border-color:#c89be8}
   .noTheraBanner{background:#f3e8fd;border:1px solid #d6b3f0;color:#7b2cbf;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700;margin-bottom:5px}
   .tag.warn{background:#f3e8fd;color:#7b2cbf}
-  .timein{font-family:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+  .timein{font-family:inherit;font-size:14px;padding:1px 8px;border:1px solid transparent;border-bottom:1px dashed #c6d3d6;border-radius:6px;background:transparent;color:var(--ink)}
+  .timein::placeholder{color:#9fb0b4}
+  .timein:hover{border-bottom-color:var(--accent)}
+  .timein:focus{border:1px solid var(--accent);background:#fff;outline:none}
   .room .body{padding:10px 11px;display:flex;flex-direction:column;gap:7px;flex:1}
   .cust{font-size:15px;font-weight:800;line-height:1.25;letter-spacing:-.1px;margin-bottom:2px}
   .fieldrow{display:flex;align-items:flex-start;gap:6px;font-size:13px}
-  .fieldrow label{width:58px;color:var(--muted);flex:none;padding-top:6px;white-space:nowrap;font-size:12px}
+  .fieldrow label{width:50px;color:var(--muted);flex:none;padding-top:6px;white-space:nowrap;font-size:12px}
   .fieldrow select,.fieldrow .note-in{flex:1;min-width:0}
   .docline{font-weight:700;color:var(--head);font-size:13px}
+  /* only the narrow waiting-room card needs the name to truncate */
+  .witem .docline{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;display:inline-block;vertical-align:bottom}
   .docedit{background:none;border:0;cursor:pointer;color:var(--muted);font-size:13px;padding:0 4px;border-radius:4px}
   .docedit:hover{background:#eef3f4;color:var(--accent)}
   .mask b{font-variant-numeric:tabular-nums}
@@ -150,7 +156,7 @@
   /* ===== v2: Oxy step engine ===== */
   .oxybox{background:#eef7f8;border:1px solid #bfe0e4;border-radius:8px;padding:6px 8px;display:flex;flex-direction:column;gap:5px}
   .oxybox.paused{background:#fff8e1;border-color:#f0d48a}
-  .oxyline{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--head);flex-wrap:wrap}
+  .oxyline{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700;color:var(--head);flex-wrap:wrap}
   .oxyline.consultline{align-items:baseline}
   .oxydots{letter-spacing:2px;font-size:12px}
   .oxydots .on{color:#2e7d8a}.oxydots .off{color:#c3d6d9}
@@ -207,7 +213,7 @@
   .focusStep{width:100%;flex:1;text-align:left;padding:0 24px;font-size:22px;font-weight:700;border-radius:14px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:flex;align-items:center}
   .focusStep.active{background:#fff;color:var(--head);border-color:#fff}
   .focusStep.done{opacity:.55;text-decoration:line-through}
-  .focusBig{font-size:38px;font-weight:800;text-align:center;margin:4px 0 16px;font-variant-numeric:tabular-nums;flex:none}
+  .focusBig{font-size:clamp(46px,17vw,104px);line-height:1.05;font-weight:800;text-align:center;margin:4px 0 18px;font-variant-numeric:tabular-nums;flex:none}
   .focusBig.over{color:#ffb3b0}
   .focusRow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;flex:none}
   .focusPicks{display:flex;flex-direction:column;gap:14px;margin-top:16px;max-width:520px;align-self:center;width:100%;flex:1;min-height:0}
@@ -220,6 +226,19 @@
   .focusTrigger.go{background:var(--head);color:#fff;border-color:var(--head)}
   .focusTrigger.over{background:#fde3e2;color:#b3261e;border-color:#f2c4c4}
   .focusTrigger.soon{background:#fdeede;color:#8a5212;border-color:#f0d48a}
+  /* Oxy / SRW timer pills. Deliberately a different blue from the treatment
+     chips and the green "done" chips, so "the clock is running" can never be
+     misread as "this treatment is finished". Colour carries the state; no tick. */
+  .tpill{background:#eaf5fb;border:1px solid #b8d9e8;border-radius:12px;padding:2px 9px;font-size:12px;font-weight:700;cursor:pointer;color:#1c5a72}
+  .tpill:hover{border-color:var(--accent)}
+  .tpill.on{background:#9fd0e6;border-color:#5aa8c6;color:#0d3d52}
+  .tpill.big{padding:10px 16px;font-size:14px;border-radius:10px;margin:2px 0}
+  .stagechips .pillrow{flex-basis:100%;display:flex;gap:4px;flex-wrap:wrap}
+  .pcard .docmeta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .pcard .docmeta .pstatus{padding:2px 8px}
+  .stagechips.timerrow .maskx{margin-left:2px}
+  .stagechips.timerrow .chip{padding:2px 7px}
+  .stagechips.timerrow .mstep{margin:0 3px}
   body.phoneui .mstep button{font-size:15px;padding:2px 5px}
   body.phoneui .stagechips .maskx{font-size:20px;padding:4px 10px;opacity:.85}
   body.phoneui .stagechips b{font-size:15px}
@@ -252,7 +271,10 @@
   .hdrbreak{display:none}
   body.phoneui .hdrbreak{display:block;flex-basis:100%;height:0}
   body.phoneui .rolechip{margin-right:auto}
-  .oxybox.mini{padding:3px 7px;gap:2px}
+  .oxybox.mini{padding:2px 6px;gap:2px}
+  .oxybox.mini .oxyctl{gap:4px}
+  .oxybox.mini .oxyctl .chip{padding:2px 7px;font-size:11px}
+  .oxybox.mini .oxyctl .mstep button{padding:0 4px}
   .oxybox.mini .oxyline{font-size:12px;gap:4px;flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
   .oxybox.mini .oxydots{font-size:10px;letter-spacing:1px}
   .pcard .txchip{padding:8px 12px;font-size:15px;border-radius:14px}
@@ -293,12 +315,13 @@
   <span class="hdrbreak"></span>
   <span class="rolechip" id="roleChip" style="display:none" onclick="openRoleSetup()" title="Tap to switch role/device">…</span>
   <div class="spacer"></div>
-  <button id="undoBtn" class="adminOnly" onclick="undo()" title="Undo the last change (up to 5)" disabled>↶ Undo</button>
+  <button id="undoBtn" class="adminOnly" onclick="undo()" title="Nothing of yours to undo yet" disabled>↶ Undo</button>
   <button class="boardOnly" onclick="openTLog()">👥 By therapist</button>
   <div class="menu-wrap boardOnly">
     <button class="ghost" onclick="toggleMenu(event)">⋯</button>
     <div class="menu" id="moreMenu" onclick="closeMenu()">
       <button onclick="openRecords()">📒 Records</button>
+      <button class="counterOnly" onclick="openLog()">📜 Activity log</button>
       <button class="counterOnly" onclick="openBackups()">🗂 Backups</button>
       <button class="counterOnly" onclick="document.getElementById('importer').click()">⬆ Load from file</button>
       <button class="counterOnly" onclick="openSettings()">⚙ Edit lists</button>
@@ -317,13 +340,14 @@
   <div class="layout">
     <div>
       <div class="arrive-bar">
-        <strong>Add / walk-in:</strong>
+        <strong>Add:</strong>
+        <span><button class="miniToggle" id="addModeAppt" onclick="setAddMode(false)">Appointment</button><button class="miniToggle" id="addModeWalk" onclick="setAddMode(true)">Walk-in</button></span>
         <input id="arriveName" list="custList" placeholder="Type or pick name…" style="min-width:170px">
         <datalist id="custList"></datalist>
         <select id="arriveDoc" title="Doctor" style="width:120px"></select>
         <input id="arriveTime" class="timein" placeholder="time e.g. 345" style="width:100px">
         <input id="arriveTx" list="txList" placeholder="Treatment" style="width:140px">
-        <button class="btn" onclick="arrive()">+ Add to queue</button>
+        <button class="btn" id="arriveBtn" onclick="arrive()">+ Add appointment</button>
       </div>
       <div id="roomsHost"></div>
     </div>
@@ -352,9 +376,15 @@
   <div class="mbody" id="recBody"></div>
   <div class="mfoot"><button class="btn grey counterOnly" onclick="clearRecords()">Clear records</button><button class="btn grey" onclick="closeModal('recModal')">Close</button></div>
 </div></div>
+<div class="modal-bg" id="logModal"><div class="modal">
+  <h2>Activity log <span onclick="closeModal('logModal')">✕</span></h2>
+  <div class="mbody"><p class="hint">Who changed what, most recent first. Each device records its own actions, so nothing is double-counted. Timer completions run themselves and aren't logged as anyone's action.</p><div id="logBody"></div></div>
+  <div class="mfoot"><button class="btn grey" onclick="closeModal('logModal')">Close</button><button class="btn" onclick="openLog()">Refresh</button></div>
+</div></div>
+
 <div class="modal-bg" id="backupModal"><div class="modal">
   <h2>Local backups <span onclick="closeModal('backupModal')">✕</span></h2>
-  <div class="mbody"><p class="hint">Automatic local snapshots, taken every 10 minutes and before a reset/load. Restore one if the board ever empties out. These live in this browser only.</p><div id="backupBody"></div></div>
+  <div class="mbody"><p class="hint">Snapshots taken every 10 minutes. <b>On this device</b> ones live only in this browser; <b>cloud</b> ones are written by the counter PC and can be restored from anywhere. Restore one if the board ever empties out — check the doctor/room counts first.</p><div id="backupBody"></div></div>
   <div class="mfoot"><button class="btn grey" onclick="closeModal('backupModal')">Close</button></div>
 </div></div>
 <div class="modal-bg" id="settingsModal"><div class="modal">
@@ -425,6 +455,7 @@ const LOGIN_DOMAIN="urgreenlane.local";
 const LS_KEY="roomFlowBoard_urgreenlane_v5";
 const LS_ROLE="urgreenlane_v5_role";
 const LS_FILTER="urgreenlane_v5_filterWindow";
+const LS_ADDMODE="urgreenlane_v5_addWalkIn";
 const SEED_TX=["Goldius Glam","Alex","Pro Light","P7","Revive","E2","EXO-T","S Plus (Face)","S Plus (Neck)","HIFU (Face)","HIFU (Neck)","Oxy","SRW","Soft Laser","Radiesse","Filler","Botox","dePigmentation","Revital"];
 const SEED={
   doctors: ["Dr Cheryl","Dr Nicole","Dr Teh","Dr Chan","Dr Yi Wen","Dr Michelle","Dr Eunice"],
@@ -436,18 +467,37 @@ const SEED={
   ],
   customers: {}
 };
-const OXY_STEPS=[["Crystal Hydrosuction",5],["Derma Ultrasonic",5],["Bipolar Frequency",5],["Oxyinfusion",5],["Cool Lift",5]];
-const OXY_MASK_MIN=15;
+// Timed treatments share ONE countdown. Running both simply adds their minutes
+// together (Oxy 30 + SRW 5 = 35), and adding the second one part-way through
+// extends whatever time is left rather than restarting the clock.
+const OXY_MINS=30,SRW_MINS=5;
+const TIMED_TX=[{key:"Oxy",mins:OXY_MINS,re:/^oxy\b|^oxyinfus/i},{key:"SRW",mins:SRW_MINS,re:/^srw\b/i}];
 
 let state=migrate(load())||freshState();
 let filterWindow=(localStorage.getItem(LS_FILTER)??"1")==="1";
+let addWalkIn=localStorage.getItem(LS_ADDMODE)==="1"; // remembered per device
 let ROLE=null,MYNAME="";
 try{const r=JSON.parse(localStorage.getItem(LS_ROLE)||"null");if(r&&r.role){ROLE=r.role;MYNAME=r.name||"";}}catch(e){}
 let pendingRole=null;
 let expandedQ=null;
-let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null,editingMaskRoom=null;
+let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null,editingMaskRoom=null,editingQTheraId=null;
 let db=null,baseRef=null,cloudOn=false;
-let undoStack=[],histLast=null;const UNDO_MAX=5;
+/* Undo is PER-DEVICE and SINGLE-STEP. `lastAction` holds only the paths this
+   device's own last write touched, plus the value each held beforehand, so an
+   undo can revert exactly that one action and nothing else. It never restores a
+   whole-board snapshot — that is what once pushed a fresh device's placeholder
+   lists over everyone's real data. `cloudMirror` tracks what Firebase currently
+   holds, so those "before" values are read from the cloud's truth, not from
+   local state (which callers have already mutated by the time we're called). */
+let lastAction=null,cloudMirror={};
+// True once Firebase has delivered its first snapshot. Until then a connected
+// device's mirror is only as good as its (possibly stale) localStorage, so Undo
+// stays disarmed rather than risk reverting to values that were never current.
+let cloudReady=false;
+// True only when Firebase actually delivered lists. Distinguishes "these are the
+// real lists" from "the cloud gave us nothing so we're showing built-in defaults" —
+// which is what the backup sanity gate needs to know.
+let listsFromCloud=false;
 let notifReady=false,seenAlerts={},activeNotifs=[];
 
 /* ===== state helpers ===== */
@@ -457,9 +507,12 @@ function txArr(t){return Array.isArray(t)?t.slice():(t?[t]:[]);}
 function normRoomObj(o){if(!o)return null;if(o.note===undefined)o.note="";if(o.nextRoom===undefined)o.nextRoom="";if(o.stage===undefined)o.stage="";if(o.numb===undefined)o.numb="";if(o.consult===undefined)o.consult=false;if(o.consultant===undefined)o.consultant="";if(o.consultTs===undefined)o.consultTs=0;if(o.numbRemovedAt===undefined)o.numbRemovedAt="";
   o.doctor=o.doctor||"";o.therapist=o.therapist||"";o.mask=o.mask||"";o.numb=o.numb||"";o.appt=o.appt||"";o.customer=o.customer||"";
   o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
-  if(o.oxy&&typeof o.oxy==="object"){if(o.oxy.idx===undefined)o.oxy.idx=0;if(!o.oxy.ts)o.oxy.ts=Date.now();o.oxy.paused=!!o.oxy.paused;}else o.oxy=null;
+  if(o.oxy&&typeof o.oxy==="object"){if(!o.oxy.ts)o.oxy.ts=Date.now();o.oxy.paused=!!o.oxy.paused;
+    o.oxy.kinds=txArr(o.oxy.kinds);if(!o.oxy.kinds.length)o.oxy.kinds=["Oxy"]; // rooms left running under the old 5-step model
+    if(typeof o.oxy.mins!=="number"||!(o.oxy.mins>0))o.oxy.mins=OXY_MINS;
+    delete o.oxy.idx;}else o.oxy=null;
   if(o.mask||o.numb||o.oxy)o.consult=false; // a running timer always ends a consult
-  if(!o.mask&&!o.numb&&!o.oxy&&o.stage)o.stage=""; // no timer running -> no leftover stage label
+  if(!o.mask&&!o.numb&&!o.oxy&&o.stage&&!/ done$/.test(o.stage))o.stage=""; // no timer running -> drop the label, but keep an "… done" result
   if(o.mask){o.numb="";o.oxy=null;}else if(o.oxy){o.numb="";} // exclusive: mask > oxy > numbing
   return o;}
 function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.removed)s.removed=[];if(!s.treatments||!s.treatments.length)s.treatments=[...SEED.treatments];
@@ -489,14 +542,46 @@ function fbKey(s){return String(s).replace(/[.#$/\[\]]/g,'_').trim()||"_";}
    with only the paths it touched. Firebase update() applies the
    paths atomically; other sections are never rewritten, so two
    devices editing different things can no longer erase each other. */
-function cloudPatch(patch){
+function mirrorGet(path){let cur=cloudMirror;
+  for(const p of path.split("/")){if(cur==null||typeof cur!=="object")return null;cur=cur[p];}
+  return (cur===undefined)?null:JSON.parse(JSON.stringify(cur));}
+function mirrorSet(path,val){const parts=path.split("/");let cur=cloudMirror;
+  for(let i=0;i<parts.length-1;i++){if(cur[parts[i]]==null||typeof cur[parts[i]]!=="object")cur[parts[i]]={};cur=cur[parts[i]];}
+  const k=parts[parts.length-1];
+  if(val===null||val===undefined)delete cur[k];else cur[k]=JSON.parse(JSON.stringify(val));}
+function mirrorSection(name,v){cloudMirror[name]=(v==null)?{}:JSON.parse(JSON.stringify(v));}
+// Best-effort name for an action, used by both the Undo button and the activity
+// log when a caller didn't pass an explicit label.
+function deriveLabel(patch){
+  const paths=Object.keys(patch);
+  const rooms=paths.filter(p=>p.indexOf("occ/")===0);
+  if(rooms.length===1){const key=rooms[0].slice(4);const room=allRooms().find(r=>fbKey(r)===key)||key;
+    const v=patch[rooms[0]];return v?(room+" — "+(v.customer||"updated")):(room+" cleared");}
+  if(rooms.length>1)return rooms.length+" rooms changed";
+  const qs=paths.filter(p=>p.indexOf("queue/")===0);
+  if(qs.length===1){const v=patch[qs[0]];return v?((v.customer||"appointment")+" — updated"):"appointment removed";}
+  if(qs.length>1)return qs.length+" appointments changed";
+  if(paths.some(p=>p.indexOf("lists/")===0))return "lists edited";
+  return "board updated";
+}
+function cloudPatch(patch,label){
+  label=label||deriveLabel(patch);
+  // Snapshot what these exact paths hold RIGHT NOW, before the write lands.
+  // INVARIANT: cloudMirror must mirror what Firebase holds. It is seeded from
+  // local state at boot, replaced section-by-section by the apply* listeners,
+  // and advanced by every write below. Anything that changes the cloud without
+  // going through one of those would leave undo restoring stale values.
+  const before={};Object.keys(patch).forEach(p=>{before[p]=mirrorGet(p);});
+  lastAction=(baseRef&&!cloudReady)?null:{before,label};
+  Object.keys(patch).forEach(p=>{mirrorSet(p,patch[p]);});
+  updateUndoBtn();logAction(label);
   if(baseRef){try{baseRef.update(patch);}catch(e){}}
-  saveLocal();recordHistory();render();}
+  saveLocal();render();}
 function roomPatch(room){const o=state.occ[room];const v=o?Object.assign({},o,{room}):null;
   return {["occ/"+fbKey(room)]:v};}
-function commitRoom(room){cloudPatch(roomPatch(room));}
+function commitRoom(room,label){cloudPatch(roomPatch(room),label);}
 function queuePatch(q){return {["queue/"+q.id]:q};}
-function commitQueue(q){cloudPatch(queuePatch(q));}
+function commitQueue(q,label){cloudPatch(queuePatch(q),label);}
 function custPatch(name){return {["lists/customers/"+fbKey(name)]:state.customers[name]||null};}
 function listsPatch(){return {"lists/doctors":state.doctors,"lists/therapists":state.therapists,"lists/treatments":state.treatments,"lists/groups":state.groups,"lists/customers":state.customers};}
 function fullStateObj(st){
@@ -506,15 +591,23 @@ function fullStateObj(st){
   const rm={};(st.removed||[]).forEach(x=>{if(!x.id)x.id=nextId()+Math.floor(Math.random()*50);rm[x.id]=x;});
   return {lists:{doctors:st.doctors,therapists:st.therapists,treatments:st.treatments,groups:st.groups,customers:st.customers||{}},
     occ:Object.keys(occ).length?occ:null,queue:Object.keys(q).length?q:null,
-    completed:Object.keys(cm).length?cm:null,removed:Object.keys(rm).length?rm:null};}
+    completed:Object.keys(cm).length?cm:null,removed:Object.keys(rm).length?rm:null,
+    syncDate:st.syncDate||null};} // carried through, or a restore/import would wipe the header date stamp
+// Whole-board replace — only restore-from-backup and import use this. It is
+// deliberately NOT undoable: both are counter-only, confirmed, and take a
+// backup first, and a single-action undo must never fan out to the whole board.
 function pushFullState(st){state=migrate(st)||freshState();
-  if(baseRef){try{baseRef.set(fullStateObj(state));}catch(e){}}
-  saveLocal();recordHistory();render();}
+  const obj=fullStateObj(state);
+  if(baseRef){try{baseRef.set(obj);}catch(e){}}
+  cloudMirror=JSON.parse(JSON.stringify(obj));
+  lastAction=null;updateUndoBtn();
+  saveLocal();render();}
 
 /* ===== cloud read layer ===== */
-function applyLists(v){v=v||{};
-  state.doctors=(v.doctors||[]).filter(Boolean);if(!state.doctors.length)state.doctors=[...SEED.doctors];
-  state.therapists=(v.therapists||[]).filter(Boolean);if(!state.therapists.length)state.therapists=[...SEED.therapists];
+function applyLists(v){mirrorSection("lists",v);cloudReady=true;v=v||{};
+  state.doctors=(v.doctors||[]).filter(Boolean);const gotDoctors=state.doctors.length>0;if(!gotDoctors)state.doctors=[...SEED.doctors];
+  state.therapists=(v.therapists||[]).filter(Boolean);const gotThera=state.therapists.length>0;if(!gotThera)state.therapists=[...SEED.therapists];
+  listsFromCloud=gotDoctors&&gotThera;
   state.treatments=(v.treatments||[]).filter(Boolean);if(!state.treatments.length)state.treatments=[...SEED_TX];
   state.groups=(v.groups&&v.groups.length)?v.groups.map(g=>({name:g.name,rooms:(g.rooms||[]).filter(Boolean)})):JSON.parse(JSON.stringify(SEED.groups));
   state.customers=v.customers||{};
@@ -522,12 +615,12 @@ function applyLists(v){v=v||{};
   state.groups.forEach(g=>g.rooms.forEach(r=>{if(!(r in state.occ))state.occ[r]=null;}));
   if(pendingRole)fillRoleNames();
   saveLocal();render();}
-function applyOcc(v){const occ={};state.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
+function applyOcc(v){mirrorSection("occ",v);const occ={};state.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
   Object.entries(v||{}).forEach(([k,o])=>{if(!o)return;const name=o.room||k;occ[name]=normRoomObj(o);});
   state.occ=occ;scanAlerts();saveLocal();render();}
-function applyQueue(v){state.queue=Object.values(v||{}).filter(Boolean).map(q=>{q.treatment=txArr(q.treatment);q.arrivedAt=q.arrivedAt||"";q.doctor=q.doctor||"";q.therapist=q.therapist||"";q.consult=!!q.consult;q.consultant=q.consultant||"";return q;}).sort((a,b)=>(a.id||0)-(b.id||0));
+function applyQueue(v){mirrorSection("queue",v);state.queue=Object.values(v||{}).filter(Boolean).map(q=>{q.treatment=txArr(q.treatment);q.arrivedAt=q.arrivedAt||"";q.doctor=q.doctor||"";q.therapist=q.therapist||"";q.consult=!!q.consult;q.consultant=q.consultant||"";return q;}).sort((a,b)=>(a.id||0)-(b.id||0));
   scanAlerts();saveLocal();render();}
-function applyRecs(which,v){state[which]=Object.values(v||{}).filter(Boolean).map(c=>{c.treatment=txArr(c.treatment);return c;}).sort((a,b)=>(a.id||0)-(b.id||0));
+function applyRecs(which,v){mirrorSection(which,v);state[which]=Object.values(v||{}).filter(Boolean).map(c=>{c.treatment=txArr(c.treatment);return c;}).sort((a,b)=>(a.id||0)-(b.id||0));
   saveLocal();render();}
 
 /* ===== doctor notifications (in-app; fires while the app is open) ===== */
@@ -553,18 +646,124 @@ function beep(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAu
   o.frequency.value=880;g.gain.setValueAtTime(.25,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.5);
   o.start();o.stop(audioCtx.currentTime+.5);}catch(e){}}
 
+/* ===== activity log =====
+   One entry per action this device takes. cloudPatch writes these, so each
+   device logs only its own work and entries never double up across devices.
+   Counter-only to read (⋯ menu). Never listened to — read on demand, so six
+   phones don't stream the log all day. */
+const LOG_KEEP=200;
+function actorName(){if(MYNAME)return MYNAME;
+  return ROLE?ROLE.charAt(0).toUpperCase()+ROLE.slice(1):"Someone";}
+function logAction(msg){
+  if(!baseRef||!msg)return;
+  try{baseRef.child("log").push({t:Date.now(),who:actorName(),role:ROLE||"",msg:String(msg)});}catch(e){}}
+// Machine-driven write (e.g. a timer finishing on its own): applied and synced,
+// but never logged and never undoable — it isn't anybody's action.
+function systemPatch(patch){
+  Object.keys(patch).forEach(p=>mirrorSet(p,patch[p]));
+  if(baseRef){try{baseRef.update(patch);}catch(e){}}
+  saveLocal();render();}
+const LOG_SHOW=60;
+function logTime(t){const d=new Date(t||0);return pad(d.getHours())+":"+pad(d.getMinutes());}
+function openLog(){
+  if(!isCounter()){toast("The activity log is on the counter PC");return;}
+  $("logBody").innerHTML='<div class="hint">Loading…</div>';
+  $("logModal").classList.add("show");
+  if(!baseRef){$("logBody").innerHTML='<div class="hint">Not connected — the activity log lives in the cloud.</div>';return;}
+  try{baseRef.child("log").limitToLast(LOG_SHOW).once("value").then(s=>{
+    const v=s.val()||{};
+    const rows=Object.keys(v).sort().reverse().map(k=>v[k]).filter(Boolean);
+    if(!rows.length){$("logBody").innerHTML='<div class="hint">Nothing logged yet.</div>';return;}
+    let last="";let html="";
+    rows.forEach(e=>{
+      const d=new Date(e.t||0),day=d.toDateString();
+      if(day!==last){last=day;html+=`<div class="tlog-th">${esc(d.getDate()+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()])}</div>`;}
+      html+=`<div class="rec-item">${esc(logTime(e.t))} · <b>${esc(e.who||"?")}</b> — ${esc(e.msg||"")}</div>`;});
+    $("logBody").innerHTML=html;
+  }).catch(()=>{$("logBody").innerHTML='<div class="hint">Could not load the log.</div>';});}
+  catch(e){$("logBody").innerHTML='<div class="hint">Could not load the log.</div>';}}
+function pruneLog(){
+  if(!baseRef||!isCounter())return;
+  try{baseRef.child("log").once("value").then(s=>{
+    const v=s.val()||{},keys=Object.keys(v);
+    if(keys.length<=LOG_KEEP)return;
+    keys.sort(); // Firebase push keys sort chronologically
+    const drop={};keys.slice(0,keys.length-LOG_KEEP).forEach(k=>{drop[k]=null;});
+    baseRef.child("log").update(drop);
+  }).catch(()=>{});}catch(e){}}
+
 /* ===== backups (local, unchanged) ===== */
 const BK_KEY="roomFlowBoard_v5_backups",BK_MAX=18;
 function loadBackups(){try{const a=JSON.parse(localStorage.getItem(BK_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return [];}}
 function autoBackup(){try{const json=JSON.stringify(state);const arr=loadBackups();const last=arr[arr.length-1];
   if(last&&last.json===json)last.t=Date.now();else arr.push({t:Date.now(),json});
   while(arr.length>BK_MAX)arr.shift();localStorage.setItem(BK_KEY,JSON.stringify(arr));}catch(e){}}
+/* ===== cloud backups =====
+   The counter device writes a snapshot every 10 minutes. The key is derived from
+   the CLOCK (slot_<10-min window>), not generated per write, so if two devices
+   are both set to Counter they land on the same key and overwrite each other
+   instead of burning two of the five slots. Nothing ever listens to this node —
+   it is read only when the modal is opened. */
+const CLOUD_BK_KEEP=5,CLOUD_BK_SLOT=600000;
+// Refuse to snapshot a board that looks wiped, or the bad state would quietly
+// push the good snapshots out of the 5 we keep.
+function looksWiped(st){
+  const d=st.doctors||[],t=st.therapists||[],rooms=(st.groups||[]).reduce((a,g)=>a.concat(g.rooms||[]),[]);
+  if(!d.length||!t.length||!rooms.length)return true;
+  // NOT "do the lists equal SEED?" — on boards whose SEED is the real roster
+  // (GL) that flags a perfectly healthy board and silently disables backups.
+  // The real question is whether we're showing cloud data or built-in fallbacks.
+  return !listsFromCloud;
+}
+function cloudBackup(){
+  if(!baseRef||!isCounter())return;
+  if(looksWiped(state))return;
+  const slot="slot_"+Math.floor(Date.now()/CLOUD_BK_SLOT);
+  const snap={t:Date.now(),by:actorName(),
+    rooms:Object.values(state.occ||{}).filter(Boolean).length,
+    queue:(state.queue||[]).length,
+    doctors:(state.doctors||[]).length,
+    therapists:(state.therapists||[]).length,
+    roomCount:allRooms().length,
+    json:JSON.stringify(state)};
+  try{
+    baseRef.child("backups/"+slot).set(snap);
+    baseRef.child("backups").once("value").then(s=>{
+      const v=s.val()||{},keys=Object.keys(v);
+      if(keys.length<=CLOUD_BK_KEEP)return;
+      keys.sort((a,b)=>(parseInt(a.slice(5),10)||0)-(parseInt(b.slice(5),10)||0));
+      const drop={};keys.slice(0,keys.length-CLOUD_BK_KEEP).forEach(k=>{drop[k]=null;});
+      baseRef.child("backups").update(drop);
+    }).catch(()=>{});
+  }catch(e){}}
+function loadCloudBackups(){
+  const el=$("cloudBkBody");if(!el)return;
+  if(!baseRef){el.innerHTML='<div class="hint">Not connected — cloud snapshots need the board to be online.</div>';return;}
+  try{baseRef.child("backups").once("value").then(s=>{
+    const v=s.val()||{},keys=Object.keys(v).sort().reverse();
+    if(!keys.length){el.innerHTML='<div class="hint">None yet. The counter PC saves one every 10 minutes.</div>';return;}
+    el.innerHTML=keys.map(k=>{const b=v[k]||{};
+      return `<div class="rec-item">\u2601 ${esc(bkTime(b.t))} \u00b7 ${b.rooms||0} in use \u00b7 ${b.queue||0} in queue/appts \u00b7 <b>${b.doctors||0} doctors / ${b.roomCount||0} rooms</b> <button class="btn sm" style="margin-left:6px" onclick="restoreCloudBackup('${esc(k)}')">Restore</button></div>`;}).join('');
+  }).catch(()=>{el.innerHTML='<div class="hint">Could not load cloud snapshots.</div>';});}catch(e){}}
+function restoreCloudBackup(key){
+  if(!baseRef)return;
+  try{baseRef.child("backups/"+key).once("value").then(s=>{
+    const b=s.val();
+    if(!b||!b.json){toast("That snapshot is empty");return;}
+    if(!confirm("Restore the board to the cloud snapshot from "+bkTime(b.t)+"?\nThis replaces the current board on ALL connected devices."))return;
+    autoBackup(); // keep a local copy of what we are about to replace
+    try{pushFullState(JSON.parse(b.json));closeModal('backupModal');
+      logAction("restored the cloud snapshot from "+bkTime(b.t));toast("Cloud backup restored");}
+    catch(e){toast("Could not restore that snapshot");}
+  }).catch(()=>toast("Could not load that snapshot"));}catch(e){}}
 function bkTime(t){const d=new Date(t);return pad(d.getHours())+":"+pad(d.getMinutes())+" ("+(d.getMonth()+1)+"/"+d.getDate()+")";}
 function openBackups(){const arr=loadBackups().slice().reverse();
-  let html=arr.length?'':'<div class="hint">No backups yet. The board saves a local snapshot automatically every 10 minutes.</div>';
+  let html=arr.length?'':'<div class="hint">None on this device yet.</div>';
   arr.forEach(b=>{let rooms=0,q=0;try{const st=JSON.parse(b.json);rooms=Object.values(st.occ||{}).filter(Boolean).length;q=(st.queue||[]).length;}catch(e){}
     html+=`<div class="rec-item">🗂 ${esc(bkTime(b.t))} · ${rooms} in use · ${q} in queue/appts <button class="btn sm" style="margin-left:6px" onclick="restoreBackup(${b.t})">Restore</button></div>`;});
-  $("backupBody").innerHTML=html;$("backupModal").classList.add("show");}
+  $("backupBody").innerHTML='<div class="tlog-th">On this device only</div>'+html+
+    '<div class="tlog-th">In the cloud (every device can see these)</div><div id="cloudBkBody"><div class="hint">Loading…</div></div>';
+  $("backupModal").classList.add("show");loadCloudBackups();}
 function restoreBackup(t){const b=loadBackups().find(x=>x.t===t);if(!b)return;
   if(!confirm("Restore the board to the snapshot from "+bkTime(t)+"?\nThis replaces the current board"+(cloudOn?" on ALL connected devices":"")+"."))return;
   try{autoBackup();pushFullState(JSON.parse(b.json));closeModal('backupModal');toast("Backup restored");}catch(e){toast("Could not restore backup");}}
@@ -587,8 +786,13 @@ function toast(m,undoFn){const t=$("toast");
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.classList.remove("show","action");toastUndoFn=null;},undoFn?7000:1600);}
 function allRooms(){return state.groups.flatMap(g=>g.rooms);}
 function freeRooms(){return allRooms().filter(r=>!state.occ[r]);}
-function thOptions(sel){return ['<option value="">Therapist…</option>'].concat(state.therapists.map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
-function docOptions(sel){return ['<option value="">Doctor…</option>'].concat(state.doctors.map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
+// If the current name isn't in the list (e.g. the nightly CRM sync derives doctor
+// names independently of the counter-maintained lists, so spellings can differ),
+// carry it as an extra option — otherwise the box silently falls back to the
+// "Therapist…"/"Doctor…" placeholder with an empty value, hiding who's actually assigned.
+function withCurrent(list,sel){const a=list.slice();if(sel&&a.indexOf(sel)<0)a.unshift(sel);return a;}
+function thOptions(sel){return ['<option value="">Therapist…</option>'].concat(withCurrent(state.therapists,sel).map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
+function docOptions(sel){return ['<option value="">Doctor…</option>'].concat(withCurrent(state.doctors,sel).map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
 function parseTimeInput(s){s=(s||"").trim().toLowerCase();if(!s)return"";let pm=/p/.test(s),am=/a/.test(s);let h,mm;if(s.includes(":")){let p=s.replace(/[^0-9:]/g,'').split(":");h=parseInt(p[0]||"0",10);mm=parseInt(p[1]||"0",10);}else{let d=s.replace(/\D/g,'');if(!d)return"";if(d.length<=2){h=parseInt(d,10);mm=0;}else{mm=parseInt(d.slice(-2),10);h=parseInt(d.slice(0,-2),10);}}if(isNaN(h))return"";if(isNaN(mm))mm=0;if(am){if(h===12)h=0;}else if(pm){if(h<12)h+=12;}else if(h>=1&&h<=9)h+=12;if(h>23||mm>59)return"";return pad(h)+":"+pad(mm);}
 function hmShort(hm){if(!hm)return"";let[h,m]=hm.split(":").map(Number);let hh=h%12;if(hh===0)hh=12;return hh+":"+pad(m);}
 function hm12(hm){if(!hm)return"";let[h,m]=hm.split(":").map(Number);let ap=h>=12?'PM':'AM';let hh=h%12;if(hh===0)hh=12;return hh+":"+pad(m)+" "+ap;}
@@ -600,56 +804,74 @@ function isCounter(){return ROLE==='counter';}
 function isBoardRole(){return ROLE==='counter'||ROLE==='consultant';}
 
 /* ===== queue & room actions ===== */
-function addToQueue(nameRaw,doc,timeRaw,txRaw){const name=fbKey(String(nameRaw||"").trim());if(!name||name==="_"){toast("Type a name first");return false;}
+function addToQueue(nameRaw,doc,timeRaw,txRaw,walkIn){const name=fbKey(String(nameRaw||"").trim());if(!name||name==="_"){toast("Type a name first");return false;}
   if(!state.customers[name])state.customers[name]={doctor:"",therapist:""};
   if(doc)state.customers[name].doctor=doc;
   const c=state.customers[name];
   const txs=String(txRaw||"").split(",").map(s=>s.trim()).filter(Boolean);
-  const q={id:nextId(),customer:name,doctor:doc||c.doctor||"",therapist:c.therapist||"",treatment:txs,appt:parseTimeInput(timeRaw),arrivedAt:""};
+  const q={id:nextId(),customer:name,doctor:doc||c.doctor||"",therapist:c.therapist||"",treatment:txs,appt:parseTimeInput(timeRaw),arrivedAt:walkIn?nowHM():""};
   state.queue.push(q);
-  cloudPatch(Object.assign(queuePatch(q),custPatch(name)));return true;}
+  cloudPatch(Object.assign(queuePatch(q),custPatch(name)),(walkIn?"walk-in: ":"added ")+name);return true;}
+// Appointment = not here yet (Appointments list). Walk-in = standing at the
+// counter now (Waiting room). Same fields either way; the toggle picks which.
+function setAddMode(walk){addWalkIn=!!walk;try{localStorage.setItem(LS_ADDMODE,addWalkIn?"1":"0");}catch(e){}updateAddMode();}
+function updateAddMode(){
+  const a=$("addModeAppt"),w=$("addModeWalk"),b=$("arriveBtn");
+  if(a)a.classList.toggle("on",!addWalkIn);
+  if(w)w.classList.toggle("on",addWalkIn);
+  if(b)b.textContent=addWalkIn?"+ Add walk-in":"+ Add appointment";}
 function arrive(){
-  if(addToQueue($("arriveName").value,$("arriveDoc").value,$("arriveTime").value,$("arriveTx").value)){
+  if(addToQueue($("arriveName").value,$("arriveDoc").value,$("arriveTime").value,$("arriveTx").value,addWalkIn)){
     $("arriveName").value="";$("arriveTx").value="";$("arriveDoc").value="";$("arriveTime").value="";}}
 function setCustDoc(name,v){if(!name)return null;state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].doctor=v;return custPatch(name);}
 function setCustThera(name,v){if(!name)return null;state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].therapist=v;return custPatch(name);}
-function qSetDoctor(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.doctor=v;const cp=setCustDoc(q.customer,v);editingDocId=null;cloudPatch(Object.assign(queuePatch(q),cp||{}));}}
-function qSetThera(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.therapist=v;const cp=setCustThera(q.customer,v);cloudPatch(Object.assign(queuePatch(q),cp||{}));}}
-function qSetAppt(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.appt=v;editingTimeId=null;commitQueue(q);}}
-function editDoc(id){editingDocId=id;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;render();}
-function editTime(id){editingTimeId=id;editingDocId=null;editingDocRoom=null;editingTheraRoom=null;editingMaskRoom=null;render();}
-function editTheraRoom(room){editingTheraRoom=room;editingDocId=null;editingDocRoom=null;editingTimeId=null;editingMaskRoom=null;render();}
-function maskBump(room,delta){const o=state.occ[room];if(!o||!o.mask)return;let m=(toMin(o.mask)+delta+1440)%1440;o.mask=pad(Math.floor(m/60))+":"+pad(m%60);commitRoom(room);}
-function roomSetTherapist(room,v){const o=state.occ[room];if(o){o.therapist=v;editingTheraRoom=null;commitRoom(room);}}
+function qSetDoctor(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.doctor=v;const cp=setCustDoc(q.customer,v);editingDocId=null;cloudPatch(Object.assign(queuePatch(q),cp||{}),q.customer+": doctor → "+(v||"none"));}}
+function qSetThera(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.therapist=v;const cp=setCustThera(q.customer,v);editingQTheraId=null;cloudPatch(Object.assign(queuePatch(q),cp||{}),q.customer+": therapist → "+(v||"none"));}}
+function qSetAppt(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.appt=v;editingTimeId=null;commitQueue(q,q.customer+": time → "+(v?hm12(v):"none"));}}
+function editDoc(id){editingDocId=id;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;editingQTheraId=null;render();}
+function editTime(id){editingTimeId=id;editingDocId=null;editingDocRoom=null;editingTheraRoom=null;editingMaskRoom=null;editingQTheraId=null;render();const el=$("activeEdit");if(el){el.focus();el.select&&el.select();}}
+function editTheraRoom(room){editingTheraRoom=room;editingDocId=null;editingDocRoom=null;editingTimeId=null;editingMaskRoom=null;editingQTheraId=null;render();}
+function maskBump(room,delta){const o=state.occ[room];if(!o||!o.mask)return;let m=(toMin(o.mask)+delta+1440)%1440;o.mask=pad(Math.floor(m/60))+":"+pad(m%60);commitRoom(room,o.customer+": mask "+(delta>0?"+":"")+delta+"m");}
+function roomSetTherapist(room,v){const o=state.occ[room];if(o){o.therapist=v;editingTheraRoom=null;commitRoom(room,o.customer+": therapist → "+(v||"none"));}}
 function toggleQ(id){expandedQ=expandedQ===id?null:id;render();}
-function cancelEdit(){editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;render();}
-function qTxAdd(id,v){v=v.trim();if(!v)return;const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);if(!q.treatment.includes(v))q.treatment.push(v);commitQueue(q);}}
-function qTxRemove(id,i){const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);q.treatment.splice(i,1);commitQueue(q);}}
-function qCheckIn(id){const q=state.queue.find(x=>x.id==id);if(q){q.arrivedAt=q.arrivedAt?"":nowHM();commitQueue(q);}}
+function cancelEdit(){editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;editingQTheraId=null;render();}
+function qTxAdd(id,v){v=v.trim();if(!v)return;const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);if(!q.treatment.includes(v))q.treatment.push(v);commitQueue(q,q.customer+": + "+v);}}
+function qTxRemove(id,i){const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);const tx=q.treatment.splice(i,1)[0];commitQueue(q,q.customer+": − "+(tx||"treatment"));}}
+function qCheckIn(id){const q=state.queue.find(x=>x.id==id);if(q){q.arrivedAt=q.arrivedAt?"":nowHM();commitQueue(q,q.customer+(q.arrivedAt?" arrived":": arrival undone"));}}
 function removeQueue(id){const q=state.queue.find(x=>x.id==id);if(!q)return;
   const rec={id:nextId(),customer:q.customer,doctor:q.doctor,treatment:txArr(q.treatment),appt:q.appt,at:nowHM()};
   state.removed.push(rec);state.queue=state.queue.filter(x=>x.id!=id);
-  cloudPatch({["queue/"+id]:null,["removed/"+rec.id]:rec});}
+  cloudPatch({["queue/"+id]:null,["removed/"+rec.id]:rec},"removed "+q.customer+" from appointments");}
 function moveQueueToRoom(id,room){if(!room)return;const i=state.queue.findIndex(x=>x.id==id);if(i<0)return;
   if(state.occ[room]){toast(room+" is occupied");render();return;}const rv=nextFor(room);if(rv){toast(room+" is reserved for "+rv.customer);render();return;}const q=state.queue[i];
   state.occ[room]=normRoomObj({customer:q.customer,doctor:q.doctor,therapist:q.therapist,treatment:txArr(q.treatment),txDone:[],mask:"",appt:q.appt||"",note:"",nextRoom:"",stage:"",oxy:null,
     consult:!!q.consult,consultant:q.consultant||"",consultTs:q.consult?Date.now():0});
   state.queue.splice(i,1);
-  cloudPatch(Object.assign({["queue/"+id]:null},roomPatch(room)));}
-function roomSetDoctor(room,v){const o=state.occ[room];if(o){o.doctor=v;const cp=setCustDoc(o.customer,v);editingDocRoom=null;cloudPatch(Object.assign(roomPatch(room),cp||{}));}}
-function editDocRoom(room){editingDocRoom=room;editingDocId=null;editingTimeId=null;editingMaskRoom=null;render();}
-function roomTxAdd(room,v){v=v.trim();if(!v)return;const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);if(!o.treatment.includes(v))o.treatment.push(v);commitRoom(room);}}
-function roomTxRemove(room,i){const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);o.treatment.splice(i,1);commitRoom(room);}}
-function roomTxDone(room,i){const o=state.occ[room];if(!o)return;o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);const x=o.treatment.splice(i,1)[0];if(x)o.txDone.push(x);commitRoom(room);}
-function roomTxUndo(room,i){const o=state.occ[room];if(!o)return;o.txDone=txArr(o.txDone);o.treatment=txArr(o.treatment);const x=o.txDone.splice(i,1)[0];if(x)o.treatment.push(x);commitRoom(room);}
-function roomSetNext(room,v){const o=state.occ[room];if(o){o.nextRoom=v;commitRoom(room);}}
+  cloudPatch(Object.assign({["queue/"+id]:null},roomPatch(room)),q.customer+" → "+room);}
+function roomSetDoctor(room,v){const o=state.occ[room];if(o){o.doctor=v;const cp=setCustDoc(o.customer,v);editingDocRoom=null;cloudPatch(Object.assign(roomPatch(room),cp||{}),o.customer+": doctor → "+(v||"none"));}}
+function editDocRoom(room){editingDocRoom=room;editingDocId=null;editingTimeId=null;editingMaskRoom=null;editingQTheraId=null;render();}
+// Waiting-room therapist field: a plain name + pencil once assigned (matching how the doctor
+// field already works), so the full-width select doesn't sit there taking up a whole row once
+// there's nothing left to pick.
+function editQThera(id){editingQTheraId=id;editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;render();}
+function theraInlineWaiting(id,therapist){
+  if(editingQTheraId===id||!therapist)
+    return `<select id="activeEdit" onblur="cancelEdit()" onchange="qSetThera(${id},this.value)" style="flex:1;min-width:0">${thOptions(therapist)}</select>`;
+  return `<span class="docline">${esc(therapist)}</span><button class="docedit" title="change therapist" onclick="editQThera(${id})">✎</button>`;}
+function roomTxAdd(room,v){v=v.trim();if(!v)return;const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
+  // Same guard as the timer pills use: don't add something that's already sitting
+  // pending OR already marked done — that's what put "Oxy" in both lists at once.
+  if(!o.treatment.includes(v)&&!o.txDone.includes(v))o.treatment.push(v);commitRoom(room,o.customer+": + "+v);}}
+function roomTxRemove(room,i){const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);const tx=o.treatment.splice(i,1)[0];commitRoom(room,o.customer+": − "+(tx||"treatment"));}}
+function roomTxDone(room,i){const o=state.occ[room];if(!o)return;o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);const x=o.treatment.splice(i,1)[0];if(x)o.txDone.push(x);commitRoom(room,o.customer+": "+(x||"treatment")+" done");}
+function roomTxUndo(room,i){const o=state.occ[room];if(!o)return;o.txDone=txArr(o.txDone);o.treatment=txArr(o.treatment);const x=o.txDone.splice(i,1)[0];if(x)o.treatment.push(x);commitRoom(room,o.customer+": "+(x||"treatment")+" back to pending");}
+function roomSetNext(room,v){const o=state.occ[room];if(o){o.nextRoom=v;commitRoom(room,o.customer+": next room "+(v||"cleared"));}}
 function nextFor(room){for(const r of allRooms()){const o=state.occ[r];if(o&&o.nextRoom===room)return {customer:o.customer,from:r};}return null;}
-function maskSet(room,hm){const o=state.occ[room];if(!o||!hm)return; // mask overrules: Oxy done, no numbing, stage = Mask on
+function maskSet(room,hm){const o=state.occ[room];if(!o||!hm)return; // mask stops any running timer, but decides nothing about whether Oxy/SRW were finished
   o.mask=hm;o.oxy=null;o.numb="";o.consult=false;o.stage="Mask on";o.numbRemovedAt="";
-  markOxyDone(o);
-  editingNumbRoom=null;editingOxyRoom=null;editingMaskRoom=null;commitRoom(room);}
+  editingNumbRoom=null;editingOxyRoom=null;editingMaskRoom=null;commitRoom(room,o.customer+": mask off at "+hm12(hm));}
 function maskIn(room,mins){if(!state.occ[room])return;let m=(curMin()+mins)%1440;maskSet(room,pad(Math.floor(m/60))+":"+pad(m%60));}
-function maskClear(room){const o=state.occ[room];if(o){o.mask="";if(o.stage==="Mask on")o.stage="";commitRoom(room);}}
+function maskClear(room){const o=state.occ[room];if(o){o.mask="";if(o.stage==="Mask on")o.stage="";commitRoom(room,o.customer+": mask removed");}}
 function moveRoomToRoom(from,to){if(!to)return;if(state.occ[to]){toast(to+" is occupied");render();return;}const rv=nextFor(to);if(rv&&rv.from!==from){toast(to+" is reserved for "+rv.customer);render();return;}
   const cust=state.occ[from]?state.occ[from].customer:"";
   const prevNext=state.occ[from]?state.occ[from].nextRoom:""; // remember the reservation so undo can restore it
@@ -657,34 +879,42 @@ function moveRoomToRoom(from,to){if(!to)return;if(state.occ[to]){toast(to+" is o
   state.occ[to].consult=false;state.occ[to].consultant="";state.occ[to].consultTs=0; // moving rooms means treatment has commenced
   state.occ[to].numbRemovedAt="";
   state.occ[from]=null;
-  cloudPatch(Object.assign(roomPatch(from),roomPatch(to)));
+  cloudPatch(Object.assign(roomPatch(from),roomPatch(to)),cust+": "+from+" → "+to);
   toast(cust+" moved to "+to,()=>{
     if(state.occ[from]){toast(from+" is occupied \u2014 can't undo");return;}
     if(!state.occ[to]||state.occ[to].customer!==cust){toast("Too late to undo");return;}
     state.occ[from]=state.occ[to];state.occ[from].nextRoom=prevNext;state.occ[to]=null;
-    cloudPatch(Object.assign(roomPatch(from),roomPatch(to)));
+    cloudPatch(Object.assign(roomPatch(from),roomPatch(to)),cust+": moved back to "+from);
     toast("Moved back to "+from);});}
 function roomToQueue(room){const o=state.occ[room];if(!o)return;const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
   state.queue.push(q);state.occ[room]=null;
-  cloudPatch(Object.assign(queuePatch(q),roomPatch(room)));}
+  cloudPatch(Object.assign(queuePatch(q),roomPatch(room)),o.customer+": "+room+" → waiting room");}
 function clearRoom(room){const o=state.occ[room];if(o&&!o.therapist){toast("Assign a therapist before clearing the room");return;}if(o&&!confirm("Clear "+room+" and free it?"))return;
   let patch=roomPatch(room);
   if(o){const rec={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.txDone).concat(txArr(o.treatment)),room,at:nowHM()};
     state.completed.push(rec);state.occ[room]=null;patch=Object.assign(roomPatch(room),{["completed/"+rec.id]:rec});}
   else state.occ[room]=null;
-  cloudPatch(patch);}
+  cloudPatch(patch,o?(o.customer+" done — "+room+" freed"):(room+" freed"));}
 function assignFreeRoom(room,id){if(id)moveQueueToRoom(parseInt(id,10),room);}
 function toggleFilter(v){filterWindow=v;try{localStorage.setItem(LS_FILTER,v?"1":"0");}catch(e){}render();}
-function clearRooms(){if(!isCounter())return;if(!confirm("Move everyone out of rooms and back to appointments? Rooms become free and each customer returns to the appointments list — nobody is deleted. Appointments and today's records are kept."))return;
+function clearRooms(){if(!isCounter())return;if(!confirm("Move everyone out of rooms AND out of the waiting room, back to the appointments list? Rooms become free and nobody is deleted. Today's records are kept."))return;
   autoBackup();
-  const patch={};let n=0;
+  const patch={};let n=0,w=0;
+  // The waiting room is "checked in today" — a reset has to clear that too, or
+  // yesterday's arrivals stay marked as standing at the counter.
+  state.queue.forEach(q=>{if(q.arrivedAt){q.arrivedAt="";Object.assign(patch,queuePatch(q));w++;}});
   allRooms().forEach(r=>{const o=state.occ[r];if(!o)return;n++;
-    const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
+    // arrivedAt stays EMPTY so they land in Appointments, matching what this
+    // dialog has always promised. The other room->queue paths (per-room send
+    // back, a room deleted in Edit lists, load-from-file) still set it, because
+    // there the person really is in the clinic waiting.
+    const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:""};
     state.queue.push(q);state.occ[r]=null;
     Object.assign(patch,queuePatch(q));
     Object.assign(patch,roomPatch(r));
   });
-  cloudPatch(patch);toast(n?("Cleared "+n+" room"+(n===1?"":"s")):"No rooms were occupied");}
+  cloudPatch(patch,"cleared all rooms and the waiting room back to appointments");
+  toast((n||w)?("Cleared "+n+" room"+(n===1?"":"s")+(w?" and "+w+" from the waiting room":"")):"Nothing to clear");}
 
 /* ===== Oxy step engine =====
    o.oxy = {idx, ts, paused, pausedAt}. Position is COMPUTED from
@@ -693,69 +923,123 @@ function clearRooms(){if(!isCounter())return;if(!confirm("Move everyone out of r
    Taps re-anchor when reality deviates. */
 function oxyPos(o){const x=o&&o.oxy;if(!x)return null;
   const now=x.paused?(x.pausedAt||Date.now()):Date.now();
-  let el=Math.max(0,(now-x.ts)/1000);let i=x.idx||0;
-  while(i<OXY_STEPS.length&&el>=OXY_STEPS[i][1]*60){el-=OXY_STEPS[i][1]*60;i++;}
-  if(i>=OXY_STEPS.length)return {i:OXY_STEPS.length,remS:0,fin:true};
-  return {i,remS:Math.max(0,Math.ceil(OXY_STEPS[i][1]*60-el)),fin:false};}
+  const el=Math.max(0,(now-x.ts)/1000),total=(x.mins||0)*60;
+  return {remS:Math.max(0,Math.ceil(total-el)),fin:el>=total,mins:x.mins||0,kinds:txArr(x.kinds)};}
 function fmtRem(s){return Math.floor(s/60)+":"+pad(Math.floor(s%60));}
-function oxyLabel(p){const i=Math.min(p.i,OXY_STEPS.length-1);return "Oxy "+(i+1)+"/5 \u00b7 "+OXY_STEPS[i][0];}
-function oxyNum(p){return p.fin?"Oxy done":("Oxy "+(Math.min(p.i,OXY_STEPS.length-1)+1)+"/5");}
-function oxyStepName(p){return OXY_STEPS[Math.min(p.i,OXY_STEPS.length-1)][0];}
-function oxyStart(room){const o=state.occ[room];if(!o)return;o.oxy={idx:0,ts:Date.now(),paused:false,pausedAt:0};
-  o.stage="Treatment ongoing";o.numb="";o.mask="";o.consult=false;o.numbRemovedAt=""; // exclusive
-  if(!txArr(o.treatment).concat(txArr(o.txDone)).some(t=>/^oxy\b|^oxyinfus/i.test(t)))o.treatment=txArr(o.treatment).concat(["Oxy"]);
-  editingNumbRoom=null;editingMaskRoom=null;commitRoom(room);}
-function markOxyDone(o){o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
-  for(let i=o.treatment.length-1;i>=0;i--){if(/^oxy\b|^oxyinfus/i.test(o.treatment[i]))o.txDone.push(o.treatment.splice(i,1)[0]);}}
-function oxyNext(room){const o=state.occ[room];if(!o||!o.oxy)return;const p=oxyPos(o);
-  const ni=Math.min(p.i+1,OXY_STEPS.length);
-  o.oxy={idx:ni,ts:Date.now(),paused:false,pausedAt:0};
-  if(ni>=OXY_STEPS.length)markOxyDone(o); // all 5 steps complete -> Oxy moves to Done
-  commitRoom(room);}
-function oxyJump(room,i){const o=state.occ[room];if(!o)return;i=parseInt(i,10);if(isNaN(i))return;
-  if(!o.oxy)o.oxy={idx:0,ts:Date.now(),paused:false,pausedAt:0};
-  o.oxy={idx:i,ts:Date.now(),paused:false,pausedAt:0};
-  o.stage="Treatment ongoing";commitRoom(room);}
+function oxyKinds(o){return txArr(o&&o.oxy&&o.oxy.kinds);}
+// Nudge a running timer without restarting it: shifts the finish line only.
+function oxyBump(room,mins){const o=state.occ[room];if(!o||!o.oxy)return;
+  o.oxy.mins=Math.max(0,(o.oxy.mins||0)+mins);
+  commitRoom(room,o.customer+": "+oxyLabel(o)+" "+(mins>0?"+":"")+mins+"m");}
+function oxyLabel(o){const k=oxyKinds(o);return k.length?k.join(" + "):"Treatment";}
+// A treatment that has its own timer should also appear in the plan, so the
+// board still reads as "this customer is having Oxy" rather than just a clock.
+function ensureTxListed(o,key){const spec=TIMED_TX.find(t=>t.key===key);if(!spec)return;
+  o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
+  if(!o.treatment.concat(o.txDone).some(t=>spec.re.test(t)))o.treatment.push(key);}
+// Move the finished timed treatments out of "pending" and into "done".
+function markTimedDone(o,kinds){o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
+  txArr(kinds).forEach(key=>{const spec=TIMED_TX.find(t=>t.key===key);if(!spec)return;
+    let moved=false;
+    for(let i=o.treatment.length-1;i>=0;i--){if(spec.re.test(o.treatment[i])){o.txDone.push(o.treatment.splice(i,1)[0]);moved=true;}}
+    if(!moved&&!o.txDone.some(t=>spec.re.test(t)))o.txDone.push(key);});}
+// Deterministic: every device that runs this on the same room produces exactly
+// the same result, so the auto-complete tick is safe to fire on all of them.
+function timerComplete(o){const kinds=oxyKinds(o);if(!o.oxy)return kinds;
+  markTimedDone(o,kinds);o.oxy=null;o.stage=(kinds.length?kinds.join(" + "):"Treatment")+" done";
+  return kinds;}
+// Start a timed treatment, or fold it into one already running.
+function timerStart(room,key){const o=state.occ[room];if(!o)return;
+  const spec=TIMED_TX.find(t=>t.key===key);if(!spec)return;
+  const cur=o.oxy;
+  if(cur&&oxyKinds(o).indexOf(key)>-1){toast(key+" is already running");return;}
+  let label;
+  if(cur){
+    // Added part-way through: extend the time that's LEFT by this treatment's own
+    // length (remaining = mins*60 - elapsed, so bumping mins bumps remaining).
+    o.oxy={ts:cur.ts,mins:(cur.mins||0)+spec.mins,paused:!!cur.paused,pausedAt:cur.pausedAt||0,
+      kinds:txArr(cur.kinds).concat([key])};
+    label=o.customer+": + "+key+" (+"+spec.mins+"m, now "+o.oxy.kinds.join(" + ")+")";
+  }else{
+    o.oxy={ts:Date.now(),mins:spec.mins,paused:false,pausedAt:0,kinds:[key]};
+    o.numb="";o.mask="";o.consult=false;o.numbRemovedAt=""; // exclusive with mask/numbing
+    label=o.customer+": "+key+" started ("+spec.mins+"m)";
+  }
+  o.stage=oxyLabel(o)+" running";
+  ensureTxListed(o,key);
+  editingNumbRoom=null;editingMaskRoom=null;
+  commitRoom(room,label);}
+function oxyStart(room){timerStart(room,"Oxy");}
+function srwStart(room){timerStart(room,"SRW");}
+// Tapping a pill toggles that treatment's CLOCK. The Tx chip is deliberately
+// left alone: the pill means "the timer is running", the chip means "this is on
+// the plan". Taking something off the plan is what the chip's own ✕ is for.
+function timerToggle(room,key){const o=state.occ[room];if(!o)return;
+  if(oxyKinds(o).indexOf(key)>-1)timerDrop(room,key);else timerStart(room,key);}
+function timerDrop(room,key){const o=state.occ[room];if(!o||!o.oxy)return;
+  const spec=TIMED_TX.find(t=>t.key===key);if(!spec)return;
+  const kinds=oxyKinds(o).filter(k=>k!==key);
+  if(!kinds.length){ // nothing left on the clock — stop it, but mark nothing done
+    o.oxy=null;if(/ running$/.test(o.stage||""))o.stage="";
+    commitRoom(room,o.customer+": "+key+" timer stopped");return;}
+  o.oxy.kinds=kinds;o.oxy.mins=Math.max(0,(o.oxy.mins||0)-spec.mins);
+  o.stage=oxyLabel(o)+" running";
+  commitRoom(room,o.customer+": "+key+" off the timer (\u2212"+spec.mins+"m, now "+kinds.join(" + ")+")");}
+// The Oxy / SRW pills — shared by the board row and the therapist card.
+function timedPills(room,o,big){
+  return TIMED_TX.map(spec=>{const on=oxyKinds(o).indexOf(spec.key)>-1; return `<button class="tpill${big?' big':''}${on?' on':''}" title="${on?('tap to take '+spec.key+' off the timer'):('start '+spec.key+' ('+spec.mins+'m)')}" onclick="timerToggle('${jsq(room)}','${spec.key}')">${spec.key}</button>`;}).join('');}
 function oxyPause(room){const o=state.occ[room];if(!o||!o.oxy)return;const x=o.oxy;
   if(x.paused){x.ts+=Date.now()-(x.pausedAt||Date.now());x.paused=false;x.pausedAt=0;}
   else{x.paused=true;x.pausedAt=Date.now();}
-  commitRoom(room);}
-function oxyEnd(room){const o=state.occ[room];if(!o)return;const p=oxyPos(o);
-  if(p&&p.i>=OXY_STEPS.length-1)markOxyDone(o); // reached the last step \u2014 treat as finished even without a mask
-  o.oxy=null;if(o.stage==="Treatment ongoing")o.stage="";editingOxyRoom=null;commitRoom(room);}
-function oxyEndThenNumb(room){oxyEnd(room);numbToggle(room);}
-function oxyFinishToMask(room){maskIn(room,OXY_MASK_MIN);}
-function oxyDoneToMask(room){maskIn(room,OXY_MASK_MIN);} // one tap: finish last step + start mask
+  commitRoom(room,o.customer+": "+oxyLabel(o)+(x.paused?" paused":" resumed"));}
+// Finish early, by hand. Same result as letting the clock run out.
+function oxyDoneNow(room){const o=state.occ[room];if(!o||!o.oxy)return;
+  const kinds=timerComplete(o);editingOxyRoom=null;
+  commitRoom(room,o.customer+": "+kinds.join(" + ")+" done");}
+// Cancel the timer without marking anything done.
+function oxyEnd(room){const o=state.occ[room];if(!o||!o.oxy)return;const kinds=oxyKinds(o);
+  o.oxy=null;if(/ running$/.test(o.stage||""))o.stage="";editingOxyRoom=null;
+  commitRoom(room,o.customer+": "+kinds.join(" + ")+" timer cancelled");}
 
 // ---- therapist full-screen focus mode: Oxy/Numb/Mask as one big, deep-teal, tap-anywhere view ----
 let theraFocus=null; // {room,mode:'oxy'|'numb'|'mask'}
 function openFocus(room,mode){
   const o=state.occ[room];if(!o)return;
   if(mode==='oxy'&&!o.oxy)oxyStart(room);
+  if(mode==='srw'){srwStart(room);mode='oxy';} // SRW shares the one timer view
   theraFocus={room,mode};render();}
 function closeFocus(){theraFocus=null;render();}
 function theraModeRow(room,o){
   if(o.consult)return"";
-  const hasOxy=txArr(o.treatment).concat(txArr(o.txDone)).some(t=>/^oxy\b|^oxyinfus/i.test(t));
-  let main="",others=[];
+  // Oxy/SRW are toggle pills everywhere; Numb and Mask are always reachable.
+  const pills=timedPills(room,o,true);
+  const btn=(label,mode)=>`<button class="tpill big" onclick="openFocus('${jsq(room)}','${mode}')">${label}</button>`;
+  let main="",extra="";
   if(o.mask){const d=toMin(o.mask)-curMin();
-    main=`<button class="focusTrigger${d<0?' over':(d<=5?' soon':'')}" data-trig="${esc(room)}" data-trigmode="mask" onclick="openFocus('${jsq(room)}','mask')">Mask \u00b7 ${d<0?'overdue '+(-d)+'m':'in '+d+'m'}</button>`;
-    others=[['Numb','numb'],['Oxy','oxy']];
+    main=`<button class="focusTrigger${d<0?' over':(d<=5?' soon':' go')}" data-trig="${esc(room)}" data-trigmode="mask" onclick="openFocus('${jsq(room)}','mask')">▶ Mask · ${d<0?'overdue '+(-d)+'m':'in '+d+'m'}</button>`;
+    extra=pills+btn('Numb','numb');
   }else if(o.numb){const d=toMin(o.numb)-curMin();
-    main=`<button class="focusTrigger${d<0?' over':(d<=2?' soon':'')}" data-trig="${esc(room)}" data-trigmode="numb" onclick="openFocus('${jsq(room)}','numb')">Numb \u00b7 ${d<0?'done '+(-d)+'m ago':d+'m left'}</button>`;
-    others=[['Mask','mask'],['Oxy','oxy']];
+    main=`<button class="focusTrigger${d<0?' over':(d<=2?' soon':' go')}" data-trig="${esc(room)}" data-trigmode="numb" onclick="openFocus('${jsq(room)}','numb')">▶ Numb · ${d<0?'done '+(-d)+'m ago':d+'m left'}</button>`;
+    extra=pills+btn('Mask','mask');
   }else if(oxyPos(o)){const pp=oxyPos(o);
-    main=`<button class="focusTrigger go" data-trig="${esc(room)}" data-trigmode="oxy" onclick="openFocus('${jsq(room)}','oxy')">${pp.fin?'\u2713 Oxy done':'\u25b6 '+esc(oxyLabel(pp))}</button>`;
-    others=[['Numb','numb'],['Mask','mask']];
+    // Live status opens the full-screen timer; the pills switch each one on/off.
+    main=`<button class="focusTrigger go" data-trig="${esc(room)}" data-trigmode="oxy" onclick="openFocus('${jsq(room)}','oxy')">${pp.fin?'\u2713 '+esc(oxyLabel(o))+' done':'\u25b6 '+esc(oxyLabel(o))+' \u00b7 '+fmtRem(pp.remS)}</button>`;
+    extra=pills+btn('Numb','numb')+btn('Mask','mask');
   }else if(o.numbRemovedAt){
     main=`<button class="focusTrigger" onclick="openFocus('${jsq(room)}','numb')">Numb done</button>`;
-    others=[['Oxy','oxy'],['Mask','mask']];
+    extra=pills+btn('Mask','mask');
   }else{
-    main=`<button class="focusTrigger${hasOxy?' go':''}" onclick="openFocus('${jsq(room)}','oxy')">\u25b6 Start Oxy</button>`;
-    others=[['Numb','numb'],['Mask','mask']];
+    extra=pills+btn('Numb','numb')+btn('Mask','mask');
   }
-  return `<div class="stagechips">${main}${others.map(([label,mode])=>`<button class="chip" onclick="openFocus('${jsq(room)}','${mode}')">${label}</button>`).join('')}</div>`;}
-function focusStartMask(room){oxyDoneToMask(room);theraFocus={room,mode:'mask'};render();}
+  return `<div class="stagechips">${main}${extra}</div>`;}
+// Picking a duration (or an exact time) from the focus overlay is the whole
+// task — it shouldn't leave you staring at a follow-up screen you have to
+// separately dismiss, so these close the overlay the moment a value lands.
+function focusNumbIn(room,mins){numbIn(room,mins);closeFocus();}
+function focusNumbSet(room,v){if(!v)return;numbSet(room,v);closeFocus();}
+function focusMaskIn(room,mins){maskIn(room,mins);closeFocus();}
+function focusMaskSet(room,v){if(!v)return;maskSet(room,v);closeFocus();}
+function focusTimerDone(room){oxyDoneNow(room);closeFocus();}
 function focusNumbDone(room){numbDone(room);closeFocus();}
 function focusMaskDone(room){maskClear(room);closeFocus();}
 function renderFocusOverlay(){
@@ -763,62 +1047,68 @@ function renderFocusOverlay(){
   const {room,mode}=theraFocus;
   const o=state.occ[room];
   if(!o){theraFocus=null;return"";}
-  let body="";let needsCenter=false;
+  let body="";let needsCenter=false;let hasBottomClose=false; // the duration-picker screens have no bottom buttons, so they still need the header ✕
   if(mode==='oxy'){
     if(!o.oxy){theraFocus=null;return"";}
-    const p=oxyPos(o);const cur=p?p.i:0;
-    body=`<div class="focusSteps">`+OXY_STEPS.map((s,i)=>{
-      const done=p&&i<p.i;const active=p&&i===cur&&!p.fin;
-      return `<button class="focusStep${done?' done':''}${active?' active':''}" onclick="oxyJump('${jsq(room)}',${i})">${done?'\u2713 ':''}${i+1}. ${esc(s[0])}</button>`;}).join('')+
-      `</div>
-      <div class="focusBig" id="focusBigTxt">${p&&!p.fin?('~'+fmtRem(p.remS)+' left'):'Steps done'}</div>
-      <div class="focusRow">
-        <button class="focusPill" onclick="oxyPause('${jsq(room)}')">${o.oxy.paused?'\u25b6 Resume':'\u23f8 Pause'}</button>
-        <button class="focusPill go" onclick="focusStartMask('${jsq(room)}')">\u25b6 Start mask now</button>
+    const p=oxyPos(o);needsCenter=true;
+    const canAddSrw=oxyKinds(o).indexOf("SRW")<0,canAddOxy=oxyKinds(o).indexOf("Oxy")<0;
+    hasBottomClose=true;body=`<div class="focusSub" style="text-align:center;margin-bottom:6px">${esc(oxyLabel(o))}${o.oxy.mins?' \u00b7 '+o.oxy.mins+'m':''}</div>
+      <div class="focusBig${p.fin?' over':''}" id="focusBigTxt">${p.fin?'Done':('~'+fmtRem(p.remS)+' left')}</div>
+      ${p.fin?'':`<div class="focusRow">
+        <button class="focusPill" style="min-width:110px" onclick="oxyBump('${jsq(room)}',-1)">\u2212 1m</button>
+        <button class="focusPill" style="min-width:110px" onclick="oxyBump('${jsq(room)}',1)">+ 1m</button>
+      </div>`}
+      <div class="focusRow" style="margin-top:12px">
+        ${p.fin?'':`<button class="focusPill" style="min-width:110px" onclick="oxyPause('${jsq(room)}')">${o.oxy.paused?'\u25b6 Resume':'\u23f8 Pause'}</button>`}
+        ${canAddSrw?`<button class="focusPill" title="add SRW (+${SRW_MINS}m)" onclick="srwStart('${jsq(room)}')">+ SRW</button>`:''}
+        ${canAddOxy?`<button class="focusPill" title="add Oxy (+${OXY_MINS}m)" onclick="oxyStart('${jsq(room)}')">+ Oxy</button>`:''}
+      </div>
+      <div class="focusRow" style="margin-top:16px">
+        <button class="focusPill" style="flex:1;padding:20px;font-size:20px" onclick="closeFocus()">\u2715 Close</button>
+        <button class="focusPill go" style="flex:1;padding:20px;font-size:20px" onclick="focusTimerDone('${jsq(room)}')">\u2713 Done</button>
       </div>`;
   }else if(mode==='numb'){
     if(!o.numb){
       body=`<div class="focusBig">Numb for</div><div class="focusPicks">`+
-        [10,15,20].map(m=>`<button class="focusPill big" onclick="numbIn('${jsq(room)}',${m})">${m}m</button>`).join('')+
-        `<input class="focusInput" placeholder="e.g. 345" onchange="numbSet('${jsq(room)}',parseTimeInput(this.value))"></div>`;
+        [10,15,20].map(m=>`<button class="focusPill big" onclick="focusNumbIn('${jsq(room)}',${m})">${m}m</button>`).join('')+
+        `<input class="focusInput" placeholder="e.g. 345" onchange="focusNumbSet('${jsq(room)}',parseTimeInput(this.value))"></div>`;
     }else{const d=toMin(o.numb)-curMin();const done=d<0;
       needsCenter=true;
-      body=`<div class="focusBig${done?' over':''}" id="focusBigTxt">${done?('Done '+(-d)+'m ago'):('till '+esc(hm12(o.numb))+' \u00b7 '+d+'m left')}</div>
+      hasBottomClose=true;body=`<div class="focusBig${done?' over':''}" id="focusBigTxt">${done?('Done '+(-d)+'m ago'):('till '+esc(hm12(o.numb))+' \u00b7 '+d+'m left')}</div>
       <div class="focusRow" id="focusEditRow" style="${done?'display:none':''}">
         <button class="focusPill" onclick="numbBump('${jsq(room)}',-1)">\u2212 1m</button>
         <button class="focusPill" onclick="numbBump('${jsq(room)}',1)">+ 1m</button>
       </div>
       <div class="focusRow" style="margin-top:16px">
-        <button class="focusPill go" id="focusReadyBtn" style="width:100%;padding:20px;font-size:20px;${done?'':'display:none'}" onclick="focusNumbDone('${jsq(room)}')">\u2713 Ready</button>
-        <button class="focusPill" id="focusCloseBtn" style="width:100%;padding:20px;font-size:20px;${done?'display:none':''}" onclick="closeFocus()">\u2713 Done</button>
+        <button class="focusPill" style="flex:1;padding:20px;font-size:20px" onclick="closeFocus()">\u2715 Close</button>
+        <button class="focusPill go" style="flex:1;padding:20px;font-size:20px" onclick="focusNumbDone('${jsq(room)}')">\u2713 Done</button>
       </div>`;}
   }else if(mode==='mask'){
     if(!o.mask){
       body=`<div class="focusBig">Mask for</div><div class="focusPicks">`+
-        [5,10,15].map(m=>`<button class="focusPill big" onclick="maskIn('${jsq(room)}',${m})">${m}m</button>`).join('')+
-        `<input class="focusInput" placeholder="e.g. 345" onchange="maskSet('${jsq(room)}',parseTimeInput(this.value))"></div>`;
+        [5,10,15].map(m=>`<button class="focusPill big" onclick="focusMaskIn('${jsq(room)}',${m})">${m}m</button>`).join('')+
+        `<input class="focusInput" placeholder="e.g. 345" onchange="focusMaskSet('${jsq(room)}',parseTimeInput(this.value))"></div>`;
     }else{const d=toMin(o.mask)-curMin();const done=d<0;
       needsCenter=true;
-      body=`<div class="focusBig${done?' over':''}" id="focusBigTxt">${done?('overdue '+(-d)+'m'):('off '+esc(hm12(o.mask))+' \u00b7 in '+d+'m')}</div>
+      hasBottomClose=true;body=`<div class="focusBig${done?' over':''}" id="focusBigTxt">${done?('overdue '+(-d)+'m'):('off '+esc(hm12(o.mask))+' \u00b7 in '+d+'m')}</div>
       <div class="focusRow" id="focusEditRow" style="${done?'display:none':''}">
         <button class="focusPill" onclick="maskBump('${jsq(room)}',-1)">\u2212 1m</button>
         <button class="focusPill" onclick="maskBump('${jsq(room)}',1)">+ 1m</button>
       </div>
       <div class="focusRow" style="margin-top:16px">
-        <button class="focusPill go" id="focusReadyBtn" style="width:100%;padding:20px;font-size:20px;${done?'':'display:none'}" onclick="focusMaskDone('${jsq(room)}')">\u2713 Ready</button>
-        <button class="focusPill" id="focusCloseBtn" style="width:100%;padding:20px;font-size:20px;${done?'display:none':''}" onclick="closeFocus()">\u2713 Done</button>
+        <button class="focusPill" style="flex:1;padding:20px;font-size:20px" onclick="closeFocus()">\u2715 Close</button>
+        <button class="focusPill go" style="flex:1;padding:20px;font-size:20px" onclick="focusMaskDone('${jsq(room)}')">\u2713 Done</button>
       </div>`;}
   }
-  return `<div class="focusOverlay"><div class="focusHead"><div><b>${esc(o.customer)}</b><span class="focusSub">${esc(room)}</span></div><button class="focusClose" onclick="closeFocus()">\u2715</button></div><div class="focusBody${needsCenter?' center':''}">${body}</div></div>`;}
-function oxyDots(i){let s="";for(let k=0;k<OXY_STEPS.length;k++)s+=`<span class="${k<i?'on':(k===i?'on':'off')}">${k<i?'\u25cf':(k===i?'\u25c9':'\u25cb')}</span>`;return `<span class="oxydots">${s}</span>`;}
+  return `<div class="focusOverlay"><div class="focusHead"><div><b>${esc(o.customer)}</b><span class="focusSub">${esc(room)}</span></div>${hasBottomClose?'':`<button class="focusClose" onclick="closeFocus()">\u2715</button>`}</div><div class="focusBody${needsCenter?' center':''}">${body}</div></div>`;}
 let editingOxyRoom=null;
 let editingNoteRoom=null;
 function noteToggle(room){editingNoteRoom=editingNoteRoom===room?null:room;render();const el=$("activeNote");if(el){el.focus();el.select&&el.select();}}
-function noteSave(room,v){const o=state.occ[room];if(!o)return;o.note=v;editingNoteRoom=null;commitRoom(room);}
+function noteSave(room,v){const o=state.occ[room];if(!o)return;o.note=v;editingNoteRoom=null;commitRoom(room,o.customer+(v?": note saved":": note cleared"));}
 let editingConsultRoom=null;
 function consultToggle(room){editingConsultRoom=editingConsultRoom===room?null:room;render();const el=$("activeConsultant");if(el){el.focus();}}
-function consultEnd(room){const o=state.occ[room];if(!o)return;o.consult=false;o.consultant="";o.consultTs=0;editingConsultRoom=null;commitRoom(room);}
-function consultantSave(room,v){const o=state.occ[room];if(!o)return;o.consultant=v;editingConsultRoom=null;commitRoom(room);}
+function consultEnd(room){const o=state.occ[room];if(!o)return;o.consult=false;o.consultant="";o.consultTs=0;editingConsultRoom=null;commitRoom(room,o.customer+": consult ended — treatment started");}
+function consultantSave(room,v){const o=state.occ[room];if(!o)return;o.consultant=v;editingConsultRoom=null;commitRoom(room,o.customer+": consultant → "+(v||"none"));}
 function consultElapsed(o){if(!o.consultTs)return 0;return Math.max(0,Math.floor((Date.now()-o.consultTs)/60000));}
 function tsToHM(ts){const d=new Date(ts);return pad(d.getHours())+":"+pad(d.getMinutes());}
 function consultBlock(room,o){if(!o.consult)return"";
@@ -833,10 +1123,10 @@ function consultBlock(room,o){if(!o.consult)return"";
 // ---- queue-level (Waiting Room) consult tagging \u2014 set at check-in, carried into the room automatically ----
 function qConsultSet(id,on){const q=state.queue.find(x=>x.id==id);if(!q)return;q.consult=on;if(!on){q.consultant="";}else{
   q.treatment=txArr(q.treatment);["Goldius Glam","Oxy"].forEach(t=>{if(!q.treatment.includes(t))q.treatment.push(t);});}
-  commitQueue(q);}
+  commitQueue(q,q.customer+(on?": tagged for consult":": consult tag removed"));}
 let editingQConsultant=null;
 function qConsultantToggle(id){editingQConsultant=editingQConsultant===id?null:id;render();const el=$("activeQConsultant");if(el){el.focus();}}
-function qConsultantSave(id,v){const q=state.queue.find(x=>x.id==id);if(!q)return;q.consultant=v;editingQConsultant=null;commitQueue(q);}
+function qConsultantSave(id,v){const q=state.queue.find(x=>x.id==id);if(!q)return;q.consultant=v;editingQConsultant=null;commitQueue(q,q.customer+": consultant → "+(v||"none"));}
 function qConsultBadge(q){
   return `<button class="miniToggle${q.consult?' on':''}" title="${q.consult?'tap to remove consult tag':'tag this visit as a consult'}" onclick="qConsultSet(${q.id},${q.consult?'false':'true'})">\ud83e\ude7a</button>`;}
 function qConsultDetail(q){
@@ -848,22 +1138,6 @@ function qConsultDetail(q){
       (q.consultant?`<span class="notetext" title="click to edit" onclick="qConsultantToggle(${q.id})">${esc(q.consultant)}</span>`:`<button class="chip" style="padding:2px 7px;font-size:11px" onclick="qConsultantToggle(${q.id})">+ consultant</button>`))+
     (hasPL?'':`<button class="chip" style="padding:2px 7px;font-size:11px" title="add Pro Light" onclick="qTxAdd(${q.id},'Pro Light')">+ Pro Light</button>`)+
     `</div>`;}
-function oxyToggleEdit(room){editingOxyRoom=editingOxyRoom===room?null:room;render();}
-function oxyCtlRow(room,o,big){const isLast=(o.oxy.idx>=OXY_STEPS.length-1);
-  return `<div class="oxyctl${big?' big':''}">
-      ${isLast?`<button class="chip go" onclick="oxyDoneToMask('${jsq(room)}')">\u2713 Done \u2192 start mask</button><button class="chip" onclick="oxyPause('${jsq(room)}')">${o.oxy.paused?'\u25b6 Resume':'\u23f8 Pause'}</button>`:`<button class="chip go" onclick="oxyNext('${jsq(room)}')">\u2713 Done \u2192 next</button><button class="chip" onclick="oxyPause('${jsq(room)}')">${o.oxy.paused?'\u25b6 Resume':'\u23f8 Pause'}</button><button class="chip" title="skip the rest and start mask now" onclick="oxyDoneToMask('${jsq(room)}')">\u25b6 Start mask now</button>`}
-      <select onchange="oxyJump('${jsq(room)}',this.value);this.value=''"><option value="">jump to\u2026</option>${OXY_STEPS.map((s,i)=>`<option value="${i}">${i+1}. ${esc(s[0])}</option>`).join('')}</select>
-      <button class="maskx" title="cancel Oxy tracking" onclick="oxyEnd('${jsq(room)}')">\u2715</button>
-    </div>`;}
-function oxyBlock(room,o,mode){ // mode: 'phone' (big controls) | 'board' (minimised, therapist drives it)
-  const p=oxyPos(o);const phone=mode==='phone';
-  if(!p)return "";
-  if(p.fin)return ""; // handled inline by stageChipsRow now \u2014 no separate box
-  const remHtml=o.oxy.paused?'<span class="oxyrem">\u23f8 paused</span>':`<span class="oxyrem${p.remS<=60?' over':(p.remS<=120?' soon':'')}" data-oxyt="${esc(room)}">~${fmtRem(p.remS)} left</span>`;
-  const line=`<div class="oxyline">${oxyDots(p.i)} <span data-oxyl="${esc(room)}">${esc(oxyLabel(p))}</span> ${remHtml}</div>`;
-  if(phone)return `<div class="oxybox${o.oxy.paused?' paused':''}">${line}${oxyCtlRow(room,o,true)}</div>`;
-  const open=editingOxyRoom===room;
-  return `<div class="oxybox mini${o.oxy.paused?' paused':''}"><div style="display:flex;align-items:center;gap:5px;min-width:0"><div class="oxyline" style="min-width:0;flex-wrap:nowrap"><span style="flex:none">${oxyDots(p.i)}</span><span data-oxynm="${esc(room)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(oxyStepName(p))}</span><span style="flex:none">${remHtml}</span></div><span style="flex:1"></span><button class="docedit" title="adjust Oxy (normally the therapist does this from her phone)" onclick="oxyToggleEdit('${jsq(room)}')">${open?'\u25be':'\u270e'}</button></div>${open?oxyCtlRow(room,o,false):''}</div>`;}
 function statusFor(o){
   if(o.consult)return {t:"In consult"+(o.consultant?" \u00b7 "+o.consultant:""),cls:""};
   if(o.mask){const d=toMin(o.mask)-curMin();
@@ -871,17 +1145,24 @@ function statusFor(o){
     return {t:"Mask off "+hm12(o.mask)+" \u00b7 in "+d+"m",cls:d<=5?"soon":""};}
   const p=oxyPos(o);
   const paused=p&&o.oxy&&o.oxy.paused;
-  if(p&&!paused){if(p.fin)return {t:"Oxy done \u2014 start mask?",cls:""};
-    return {t:oxyLabel(p)+" \u00b7 ~"+fmtRem(p.remS)+" left",cls:""};}
+  if(p&&!paused){if(p.fin)return {t:oxyLabel(o)+" done",cls:""};
+    return {t:oxyLabel(o)+" \u00b7 ~"+fmtRem(p.remS)+" left",cls:""};}
   if(o.numb){const d=toMin(o.numb)-curMin();
     if(d<0)return {t:"Numb overdue "+(-d)+"m",cls:"mo"};
     return {t:"Numb done "+hm12(o.numb)+" \u00b7 in "+d+"m",cls:d<=2?"soon":""};}
-  if(paused)return {t:oxyLabel(p)+" \u00b7 \u23f8 paused",cls:""};
+  if(paused)return {t:oxyLabel(o)+" \u00b7 \u23f8 paused",cls:""};
   return {t:o.numbRemovedAt?("Numb removed at "+o.numbRemovedAt):(o.stage||"In room"),cls:""};}
 // Doctor's status bar: drop states that need no doctor action \u2014 a bare "In room"
 // (nothing happening) and "Oxy done \u2014 start mask?" (that's the therapist's call;
 // once Oxy finishes it auto-strikes to Done \u2014 see refreshTimers \u2014 so the doctor
 // sees it there instead of as a prompt here).
+// Treatments still outstanding that AREN'T the therapist-run timed ones. Oxy and
+// SRW are excluded on purpose: while they're pending a therapist has them in
+// hand, so they shouldn't pull the doctor's attention.
+function pendingForDoctor(o){return txArr(o.treatment).filter(t=>!TIMED_TX.some(s=>s.re.test(t))).length;}
+// Red border on the doctor's card: nothing is on a clock, no consult running,
+// and there is still non-timed treatment left to do.
+function doctorNeeded(o){return !o.mask&&!o.numb&&!oxyPos(o)&&!o.consult&&pendingForDoctor(o)>0;}
 function statusForDoctor(o){
   const st=statusFor(o);
   if(st.t==="In room"||st.t==="Oxy done \u2014 start mask?")return null;
@@ -891,35 +1172,35 @@ let editingNumbRoom=null;
 function numbToggle(room){editingNumbRoom=editingNumbRoom===room?null:room;render();}
 function numbIn(room,mins){const o=state.occ[room];if(!o)return;let m=(curMin()+mins)%1440;
   o.numb=pad(Math.floor(m/60))+":"+pad(m%60);o.stage="Numbing";o.mask="";o.oxy=null;o.consult=false;o.numbRemovedAt=""; // exclusive
-  editingNumbRoom=null;editingMaskRoom=null;editingOxyRoom=null;commitRoom(room);}
-function numbClear(room){const o=state.occ[room];if(!o)return;o.numb="";if(o.stage==="Numbing")o.stage="";editingNumbRoom=null;commitRoom(room);}
+  editingNumbRoom=null;editingMaskRoom=null;editingOxyRoom=null;commitRoom(room,o.customer+": numbing till "+hm12(o.numb));}
+function numbClear(room){const o=state.occ[room];if(!o)return;o.numb="";if(o.stage==="Numbing")o.stage="";editingNumbRoom=null;commitRoom(room,o.customer+": numbing cancelled");}
 function numbSet(room,hm){const o=state.occ[room];if(!o||!hm)return;
   o.numb=hm;o.stage="Numbing";o.mask="";o.oxy=null;o.consult=false;o.numbRemovedAt="";
-  editingNumbRoom=null;editingMaskRoom=null;editingOxyRoom=null;commitRoom(room);}
-function numbBump(room,delta){const o=state.occ[room];if(!o||!o.numb)return;let m=(toMin(o.numb)+delta+1440)%1440;o.numb=pad(Math.floor(m/60))+":"+pad(m%60);commitRoom(room);}
-function numbDone(room){const o=state.occ[room];if(!o)return;o.numb="";if(o.stage==="Numbing")o.stage="";o.numbRemovedAt=nowHM();commitRoom(room);}
-function numbAck(room){const o=state.occ[room];if(!o)return;o.numbRemovedAt="";commitRoom(room);}
+  editingNumbRoom=null;editingMaskRoom=null;editingOxyRoom=null;commitRoom(room,o.customer+": numbing till "+hm12(hm));}
+function numbBump(room,delta){const o=state.occ[room];if(!o||!o.numb)return;let m=(toMin(o.numb)+delta+1440)%1440;o.numb=pad(Math.floor(m/60))+":"+pad(m%60);commitRoom(room,o.customer+": numbing "+(delta>0?"+":"")+delta+"m");}
+function numbDone(room){const o=state.occ[room];if(!o)return;o.numb="";if(o.stage==="Numbing")o.stage="";o.numbRemovedAt=nowHM();commitRoom(room,o.customer+": numbing done");}
+function numbAck(room){const o=state.occ[room];if(!o)return;o.numbRemovedAt="";commitRoom(room,o.customer+": numbing acknowledged");}
 function cssEsc(s){return (window.CSS&&CSS.escape)?CSS.escape(s):String(s).replace(/"/g,'\\"');}
 function refreshTimers(){try{
   allRooms().forEach(r=>{const o=state.occ[r];if(!o)return;const p=oxyPos(o);
-    if(p&&p.fin&&txArr(o.treatment).some(t=>/^oxy\b|^oxyinfus/i.test(t))){
-      // Oxy's 5 steps finished on the clock — auto-strike it to Done, no tap needed.
-      // Self-limiting: once moved, this condition is false on the next tick.
-      markOxyDone(o);commitRoom(r);return;
+    if(p&&p.fin){
+      // Time is up: move Oxy/SRW into Done and label the room. No tap needed, and no
+      // "start mask?" prompt — what comes next is a free choice. timerComplete is
+      timerComplete(o);systemPatch(roomPatch(r));return; // deterministic, so concurrent devices agree; systemPatch = not logged, not undoable
     }
     if(p&&!p.fin&&o.oxy&&!o.oxy.paused){
       document.querySelectorAll(`[data-oxyt="${cssEsc(r)}"]`).forEach(el=>{el.textContent="~"+fmtRem(p.remS)+" left";});
-      document.querySelectorAll(`[data-oxyl="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyLabel(p);});
-      document.querySelectorAll(`[data-oxyn="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyNum(p);});
-      document.querySelectorAll(`[data-oxynm="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyStepName(p);});}
+      document.querySelectorAll(`[data-oxyl="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyLabel(o);});
+      document.querySelectorAll(`[data-oxyn="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyLabel(o);});
+      document.querySelectorAll(`[data-oxynm="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyLabel(o);});}
     document.querySelectorAll(`[data-oxys="${cssEsc(r)}"]`).forEach(el=>{const st=statusFor(o);el.textContent=st.t;el.className="pstatus"+(st.cls?" "+st.cls:"");});
     document.querySelectorAll(`[data-teta="${cssEsc(r)}"]`).forEach(el=>{el.textContent=roomEta(o).txt;});
     if(o.consult)document.querySelectorAll(`[data-constart="${cssEsc(r)}"]`).forEach(el=>{el.textContent=consultElapsed(o)+"m";});
     document.querySelectorAll(`[data-trig="${cssEsc(r)}"]`).forEach(el=>{
       const mode=el.getAttribute('data-trigmode');
-      if(mode==='mask'&&o.mask){const d=toMin(o.mask)-curMin();el.textContent="Mask \u00b7 "+(d<0?'overdue '+(-d)+'m':'in '+d+'m');el.classList.toggle('over',d<0);el.classList.toggle('soon',d>=0&&d<=5);}
-      else if(mode==='numb'&&o.numb){const d=toMin(o.numb)-curMin();el.textContent="Numb \u00b7 "+(d<0?'done '+(-d)+'m ago':d+'m left');el.classList.toggle('over',d<0);el.classList.toggle('soon',d>=0&&d<=2);}
-      else if(mode==='oxy'&&p)el.textContent=p.fin?"\u2713 Oxy done":"\u25b6 "+oxyLabel(p);
+      if(mode==='mask'&&o.mask){const d=toMin(o.mask)-curMin();el.textContent="▶ Mask \u00b7 "+(d<0?'overdue '+(-d)+'m':'in '+d+'m');el.classList.toggle('over',d<0);el.classList.toggle('soon',d>=0&&d<=5);}
+      else if(mode==='numb'&&o.numb){const d=toMin(o.numb)-curMin();el.textContent="▶ Numb \u00b7 "+(d<0?'done '+(-d)+'m ago':d+'m left');el.classList.toggle('over',d<0);el.classList.toggle('soon',d>=0&&d<=2);}
+      else if(mode==='oxy'&&p)el.textContent=p.fin?("\u2713 "+oxyLabel(o)+" done"):("\u25b6 "+oxyLabel(o)+" \u00b7 "+fmtRem(p.remS));
     });
   });
   if(typeof theraFocus!=='undefined'&&theraFocus){
@@ -927,81 +1208,63 @@ function refreshTimers(){try{
     if(o&&el){
       if(theraFocus.mode==='oxy'){const p=oxyPos(o);el.textContent=(p&&!p.fin)?("~"+fmtRem(p.remS)+" left"):"Steps done";}
       else if(theraFocus.mode==='numb'&&o.numb){const d=toMin(o.numb)-curMin();const done=d<0;el.textContent=done?("Done "+(-d)+"m ago"):("till "+hm12(o.numb)+" \u00b7 "+d+"m left");el.classList.toggle('over',done);
-        const rb=$("focusReadyBtn");if(rb)rb.style.display=done?'':'none';
-        const cb=$("focusCloseBtn");if(cb)cb.style.display=done?'none':'';
         const er=$("focusEditRow");if(er)er.style.display=done?'none':'';}
       else if(theraFocus.mode==='mask'&&o.mask){const d=toMin(o.mask)-curMin();const done=d<0;el.textContent=done?("overdue "+(-d)+"m"):("off "+hm12(o.mask)+" \u00b7 in "+d+"m");el.classList.toggle('over',done);
-        const rb=$("focusReadyBtn");if(rb)rb.style.display=done?'':'none';
-        const cb=$("focusCloseBtn");if(cb)cb.style.display=done?'none':'';
         const er=$("focusEditRow");if(er)er.style.display=done?'none':'';}
     }
   }
   }catch(e){}}
 function sameName(a,b){return String(a||"").trim().toLowerCase()===String(b||"").trim().toLowerCase();}
 
-/* ===== undo (board roles) ===== */
-function updateUndoBtn(){const b=$("undoBtn");if(!b)return;const n=undoStack.length;b.disabled=!n;b.textContent="↶ Undo"+(n?" ("+n+")":"");}
-function recordHistory(){const cur=JSON.stringify(state);if(cur===histLast)return;
-  if(histLast!=null){undoStack.push(histLast);while(undoStack.length>UNDO_MAX)undoStack.shift();}
-  histLast=cur;updateUndoBtn();}
-// Compares the snapshot we're restoring TO (restoring) against the state we're
-// leaving behind (leaving) and names the most likely single thing the undone
-// action did, so "Undo" isn't a total mystery. Best-effort, not exhaustive —
-// falls back to a generic message for anything it doesn't recognize.
-function describeUndo(restoring,leaving){
-  try{
-    const custOf=(id,snap)=>{const q=(snap.queue||[]).find(x=>x.id==id);return q?q.customer:null;};
-    const rQ=new Set((restoring.queue||[]).map(q=>q.id)),lQ=new Set((leaving.queue||[]).map(q=>q.id));
-    const vanished=[...rQ].filter(id=>!lQ.has(id)); // was in queue, isn't anymore
-    const appeared=[...lQ].filter(id=>!rQ.has(id)); // wasn't in queue, is now
-    const rooms=new Set([...Object.keys(restoring.occ||{}),...Object.keys(leaving.occ||{})]);
-    const roomLost=[],roomGained=[]; // customer present in restoring but not leaving / vice versa
-    rooms.forEach(r=>{const rO=restoring.occ&&restoring.occ[r],lO=leaving.occ&&leaving.occ[r];
-      if(rO&&!lO)roomLost.push({room:r,cust:rO.customer});
-      if(!rO&&lO)roomGained.push({room:r,cust:lO.customer});});
-    // Match up EVERY vanished/appeared queue id with a room change for the same customer —
-    // not just the first one — so a bulk action (Clear rooms undoing several people at once)
-    // doesn't silently only describe one of them.
-    const toRoom=[],leftoverVanished=[];const gainedLeft=roomGained.slice();
-    vanished.forEach(id=>{const cust=custOf(id,restoring);const i=cust?gainedLeft.findIndex(x=>x.cust===cust):-1;
-      if(i>-1)toRoom.push({cust,room:gainedLeft.splice(i,1)[0].room});else leftoverVanished.push(id);});
-    const toQueue=[],leftoverAppeared=[];const lostLeft=roomLost.slice();
-    appeared.forEach(id=>{const cust=custOf(id,leaving);const i=cust?lostLeft.findIndex(x=>x.cust===cust):-1;
-      if(i>-1)toQueue.push({cust,room:lostLeft.splice(i,1)[0].room});else leftoverAppeared.push(id);});
-    const nothingElse=!leftoverVanished.length&&!leftoverAppeared.length&&!lostLeft.length&&!gainedLeft.length;
-    if(nothingElse&&toRoom.length===1)return `Moved ${toRoom[0].cust} back from ${toRoom[0].room} to appointments`;
-    if(nothingElse&&toRoom.length>1)return `Moved ${toRoom.length} customers back to appointments`;
-    if(nothingElse&&toQueue.length===1)return `Restored ${toQueue[0].cust} to ${toQueue[0].room}`;
-    if(nothingElse&&toQueue.length>1)return `Restored ${toQueue.length} customers to their rooms`;
-    // Whatever's left over correlates with nothing — if BOTH appointments and rooms lost
-    // content in this same step, it's a broad wipe (Reset board), not a single edit.
-    if(leftoverVanished.length&&lostLeft.length)
-      return `Restored the board — ${leftoverVanished.length} appointment${leftoverVanished.length===1?'':'s'}, ${lostLeft.length} room${lostLeft.length===1?'':'s'}`;
-    if(leftoverVanished.length===1){const cust=custOf(leftoverVanished[0],restoring);if(cust)return `Restored ${cust} to appointments`;}
-    if(leftoverVanished.length>1)return `Restored ${leftoverVanished.length} appointments`;
-    if(leftoverAppeared.length===1){const cust=custOf(leftoverAppeared[0],leaving);if(cust)return `Removed ${cust} from appointments`;}
-    if(lostLeft.length===1)return `Restored ${lostLeft[0].cust} to ${lostLeft[0].room}`;
-    if(gainedLeft.length===1)return `${gainedLeft[0].cust} removed from ${gainedLeft[0].room}`;
-    for(const id of lQ){ // same item present both times but something on it changed (doctor, tx, time…)
-      if(rQ.has(id)){
-        const a=JSON.stringify((restoring.queue||[]).find(x=>x.id==id)),b=JSON.stringify((leaving.queue||[]).find(x=>x.id==id));
-        if(a!==b){const cust=custOf(id,leaving);return `Reverted a change for ${cust||'an appointment'}`;}
-      }
+/* ===== undo — per-device, single step =====
+   Reverts ONLY the paths this device's own last action wrote, using the values
+   they held beforehand. It writes with update() on those paths alone, so it can
+   never touch another device's room, another device's queue entry, or the
+   doctor/therapist/room lists (no ordinary action writes to `lists`). The button
+   is disabled until this device does something, enables for exactly one revert,
+   then disables again. Remote changes from other devices never enable it. */
+function updateUndoBtn(){const b=$("undoBtn");if(!b)return;
+  b.disabled=!lastAction;b.textContent="↶ Undo";
+  b.title=lastAction?("Undo: "+lastAction.label):"Nothing of yours to undo yet";}
+// Apply a path-patch straight into local state, so the revert shows instantly
+// instead of waiting for Firebase to echo back (and so it still works offline).
+// The listeners remain authoritative and will overwrite this a moment later.
+function applyPatchLocally(patch){
+  Object.keys(patch).forEach(path=>{
+    const v=patch[path],parts=path.split("/");
+    if(parts[0]==="occ"&&parts.length===2){
+      const room=allRooms().find(r=>fbKey(r)===parts[1])||(v&&v.room)||parts[1];
+      state.occ[room]=v?normRoomObj(Object.assign({},v)):null;
+    }else if(parts[0]==="queue"&&parts.length===2){
+      const i=state.queue.findIndex(q=>String(q.id)===parts[1]);
+      if(v==null){if(i>-1)state.queue.splice(i,1);}
+      else{const item=Object.assign({},v);item.treatment=txArr(item.treatment);
+        if(i>-1)state.queue[i]=item;
+        else{state.queue.push(item);state.queue.sort((a,b)=>(a.id||0)-(b.id||0));}}
+    }else if((parts[0]==="completed"||parts[0]==="removed")&&parts.length===2){
+      const arr=state[parts[0]],i=arr.findIndex(x=>String(x.id)===parts[1]);
+      if(v==null){if(i>-1)arr.splice(i,1);}
+      else{const item=Object.assign({},v);item.treatment=txArr(item.treatment);
+        if(i>-1)arr[i]=item;else arr.push(item);}
+    }else if(parts[0]==="lists"&&parts.length===2){
+      if(parts[1]==="groups")state.groups=v||JSON.parse(JSON.stringify(SEED.groups));
+      else if(parts[1]==="customers")state.customers=v||{};
+      else if(v&&v.length)state[parts[1]]=v;
+    }else if(parts[0]==="lists"&&parts[1]==="customers"&&parts.length===3){
+      const name=Object.keys(state.customers).find(n=>fbKey(n)===parts[2]);
+      if(v==null){if(name)delete state.customers[name];}
+      else state.customers[name||parts[2]]=v;
     }
-    for(const r of rooms){
-      const a=JSON.stringify(restoring.occ&&restoring.occ[r]),b=JSON.stringify(leaving.occ&&leaving.occ[r]);
-      if(a!==b){const cust=(leaving.occ&&leaving.occ[r]&&leaving.occ[r].customer)||(restoring.occ&&restoring.occ[r]&&restoring.occ[r].customer);
-        return `Reverted a change in ${r}${cust?' ('+cust+')':''}`;}
-    }
-    return "Undid last change";
-  }catch(e){return "Undid last change";}
+  });
 }
-function undo(){if(!undoStack.length){toast("Nothing to undo");return;}
-  const prev=undoStack.pop();let st;try{st=migrate(JSON.parse(prev));}catch(e){toast("Could not undo");return;}
-  const desc=describeUndo(st,state);
-  state=st;histLast=JSON.stringify(state);
-  if(baseRef){try{baseRef.set(fullStateObj(state));}catch(e){}}
-  saveLocal();render();updateUndoBtn();toast(desc);}
+function undo(){
+  if(!lastAction){toast("Nothing to undo");return;}
+  const a=lastAction;lastAction=null;
+  if(baseRef){try{baseRef.update(a.before);}catch(e){}}
+  Object.keys(a.before).forEach(p=>mirrorSet(p,a.before[p]));
+  applyPatchLocally(a.before);
+  logAction("undid: "+a.label);
+  saveLocal();render();updateUndoBtn();toast("Undone — "+a.label);}
 function toggleMenu(e){e.stopPropagation();const m=$("moreMenu");if(m)m.classList.toggle("show");}
 function closeMenu(){const m=$("moreMenu");if(m)m.classList.remove("show");}
 
@@ -1046,7 +1309,13 @@ function renderBoard(){
   if(__orph.length)html+=`<div class="group-title" style="color:#7b2cbf">⚠ Unlisted rooms (rename in Edit lists or move the customer)</div><div class="rooms-grid">`+__orph.map(roomCard).join('')+`</div>`;
   $("roomsHost").innerHTML=html;
   renderThera();renderWaiting();renderQueue();
-  const ae=$("activeEdit");if(ae){ae.focus();try{ae.showPicker&&ae.showPicker();}catch(e){}}
+  const ae=$("activeEdit");
+  // showPicker() manages focus itself as part of opening the list. Calling
+  // focus() first and then showPicker() raced with the field's own onblur
+  // handler on some real browsers — a spurious blur fired mid-open and closed
+  // the editor the instant it appeared, which read as "the pencil does
+  // nothing." Call ONE or the other, never both.
+  if(ae){if(ae.showPicker){try{ae.showPicker();}catch(e){ae.focus();}}else ae.focus();}
 }
 function roomCard(room){
   const o=state.occ[room];const nx=nextFor(room);
@@ -1067,10 +1336,9 @@ function roomCard(room){
       <div class="cust">${esc(o.customer)}</div>
       <div class="fieldrow"><label>Doctor</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${docEl}</div></div>
       ${o.consult?'':`<div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>`}
-      ${o.consult?'':`<div class="fieldrow"><label>${picking?(editingNumbRoom===room?'Numb for':'Mask for'):'Timer'}</label><div style="flex:1;display:flex;align-items:center;gap:6px;padding-top:4px;flex-wrap:wrap">${(oxyPos(o)&&!oxyPos(o).fin)?`<span style="font-weight:700;color:var(--head)" data-oxyn="${esc(room)}">${esc(oxyNum(oxyPos(o)))}</span>`:''}${picking?'':stageChipsRow(room,o)}</div></div>`}
+      ${o.consult?'':`<div class="fieldrow"><label>${picking?(editingNumbRoom===room?'Numb for':'Mask for'):'Timer'}</label><div style="flex:1;display:flex;align-items:center;gap:6px;padding-top:4px;flex-wrap:wrap">${picking?'':stageChipsRow(room,o)}</div></div>`}
       ${picking?`<div class="moderow">${stageChipsRow(room,o)}</div>`:''}
       ${consultBlock(room,o)}
-      ${oxyBlock(room,o,'board')}
       <div class="fieldrow"><label>Tx</label><div class="txwrap">${remChips}<input class="txin" list="txList" placeholder="+ add" onchange="roomTxAdd('${jsq(room)}',this.value);this.value=''"></div></div>
       ${doneChips?`<div class="fieldrow"><label>Done</label><div class="txwrap">${doneChips}</div></div>`:''}
       ${o.consult?`<div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>`:''}
@@ -1099,11 +1367,11 @@ function roomEta(o){ // minutes until this room needs no more therapist time, or
   if(o.mask){const d=toMin(o.mask)-curMin();return {m:Math.max(0,d),txt:d<0?"mask overdue "+(-d)+"m":"mask off "+hm12(o.mask),over:d<0};}
   const p=oxyPos(o);
   if(p&&!p.fin){
-    if(o.oxy&&o.oxy.paused)return {m:null,txt:oxyLabel(p)+" \u00b7 \u23f8 paused",over:false};
-    const stepsLeft=(OXY_STEPS.length-p.i-1)*5;
-    const m=Math.ceil(p.remS/60)+stepsLeft; // therapist is free once Oxy's 5 steps finish \u2014 mask after is someone else's job
-    return {m,txt:oxyLabel(p),over:false};}
-  if(p&&p.fin&&!o.mask)return {m:0,txt:"Oxy done",over:false};
+    if(o.oxy&&o.oxy.paused)return {m:null,txt:oxyLabel(o)+" \u00b7 \u23f8 paused",over:false};
+    // one timer now covers the whole treatment; a mask afterwards is someone else's job
+    const m=Math.ceil(p.remS/60);
+    return {m,txt:oxyLabel(o),over:false};}
+  if(p&&p.fin&&!o.mask)return {m:0,txt:oxyLabel(o)+" done",over:false};
   if(o.mask){const d=toMin(o.mask)-curMin();return {m:Math.max(0,d),txt:d<0?"mask overdue "+(-d)+"m":"mask off "+hm12(o.mask),over:d<0};}
   if(o.numb){const d=toMin(o.numb)-curMin();return {m:Math.max(0,d),txt:d<0?"numb overdue "+(-d)+"m":"numbing "+d+"m left",over:d<0};}
   const pend=txArr(o.treatment).length;
@@ -1125,7 +1393,8 @@ function renderThera(){
   let html="";
   const attn=attentionList();
   if(attn.length){html+=`<div class="section-title" style="color:#b3261e">\u26a0 Needs attention</div>`;
-    attn.forEach(it=>{html+=`<div class="attnrow2"><span class="aroom2">${esc(it.r)}</span><span class="acust">${esc(state.occ[it.r].customer)}</span><span class="areason2">${esc(it.txt)}</span>${it.act?`<button class="chip sel attnbtn" onclick="attnAction('${it.act}','${jsq(it.r)}')">${esc(it.label)}</button>`:''}</div>`;});}
+    attn.forEach(it=>{const ao=state.occ[it.r];
+      html+=`<div class="attnrow2"><span class="aroom2">${esc(it.r)}</span><span class="acust">${esc(ao.customer)}</span><span class="areason2">${esc(it.txt)}</span>${it.act?`<button class="chip sel attnbtn" onclick="attnAction('${it.act}','${jsq(it.r)}')">${esc(it.label)}</button>`:''}</div>`;});}
   let noTh=allRooms().filter(r=>state.occ[r]&&!state.occ[r].therapist&&!state.occ[r].consult);
   if(noTh.length){html+=`<div class="section-title" style="margin-top:${attn.length?'10px':'0'};color:#7b2cbf">\u26a0 No therapist yet</div>`+noTh.map(r=>`<span class="tag warn">${esc(r)} \u00b7 ${esc(state.occ[r].customer)}</span>`).join('');}
   html+=`<div class="section-title" style="margin-top:${(attn.length||noTh.length)?'10px':'0'}">Therapists \u2014 free soonest first</div>`;
@@ -1143,7 +1412,8 @@ function renderWaiting(){
   if(!w.length){html+=`<div class="hint">No one checked in. Tap “✓ Arrived” on an appointment.</div>`;}
   w.forEach(({q,wait})=>{const cls=wait>=40?'wlong':wait>=20?'wmed':'';
     html+=`<div class="witem ${cls}"><div class="wtop"><b>${esc(q.customer)}</b><span class="wmin">${wait}m</span></div>
-      <div class="qmeta" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)">${docInline(q.id,q.doctor)}${q.appt?' · '+esc(hm12(q.appt)):''}<span style="flex:1"></span>${qConsultBadge(q)}<select style="width:96px;flex:none" onchange="qSetThera(${q.id},this.value)">${thOptions(q.therapist)}</select></div>
+      <div class="qmeta" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);min-width:0">${docInline(q.id,q.doctor)}${q.appt?' · '+esc(hm12(q.appt)):''}</div>
+      <div class="qmeta" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:3px">${qConsultBadge(q)}${theraInlineWaiting(q.id,q.therapist)}</div>
       ${qConsultDetail(q)}
       <div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}<input class="txin" list="txList" placeholder="+ tx" onchange="qTxAdd(${q.id},this.value);this.value=''"></div>
       <div style="display:flex;gap:6px;align-items:center"><select onchange="moveQueueToRoom(${q.id},this.value)" style="flex:1">${sendRoomOpts('→ room ▾')}</select><button class="btn sm grey" title="Clicked Arrived by mistake — send back to appointments" onclick="qCheckIn(${q.id})">↩ appts</button><button class="btn sm grey" title="Remove customer (logged in Records)" onclick="removeQueue(${q.id})">✕</button></div></div>`;});
@@ -1227,15 +1497,22 @@ function stageChipsRow(room,o){
       `<input class="timein" style="width:66px" title="exact time" placeholder="345" onchange="maskSet('${jsq(room)}',parseTimeInput(this.value))">`+
       `<button class="maskx" title="cancel" onclick="maskToggle('${jsq(room)}')">\u2715</button></div></div>`;}
   const oxp=oxyPos(o);
-  if(oxp&&!oxp.fin)return ""; // Oxy actively counting down \u2014 its own bar holds the controls
-  if(oxp&&oxp.fin)
-    return `<div class="stagechips"><span class="slabel">Oxy done \u2192</span><button class="chip" onclick="oxyEndThenNumb('${jsq(room)}')">Numb</button><button class="chip go" onclick="oxyFinishToMask('${jsq(room)}')">Mask</button><button class="maskx" title="dismiss" onclick="oxyEnd('${jsq(room)}')">\u2715</button></div>`;
+  if(oxp&&!oxp.fin){ // same shape as the Numb/Mask rows — no separate box
+    const paused=!!o.oxy.paused;
+    return `<div class="stagechips timerrow"><span class="pillrow">${timedPills(room,o)}</span>`+
+      (paused?`<b>\u23f8 paused</b>`:`<b data-oxyt="${esc(room)}">~${fmtRem(oxp.remS)} left</b>`)+
+      `<span class="mstep"><button title="+1 min" onclick="oxyBump('${jsq(room)}',1)">\u25b2</button><button title="-1 min" onclick="oxyBump('${jsq(room)}',-1)">\u25bc</button></span>`+
+      `<button class="chip go" title="finish now" onclick="oxyDoneNow('${jsq(room)}')">✓</button>`+
+      `<button class="chip" title="${paused?'resume':'pause'}" onclick="oxyPause('${jsq(room)}')">${paused?'\u25b6':'\u23f8'}</button>`+
+      `<button class="maskx" title="cancel this timer without marking it done" onclick="oxyEnd('${jsq(room)}')">\u2715</button></div>`;}
+  if(oxp&&oxp.fin) // time is up and it already marked itself done — nothing to prompt for
+    return `<div class="stagechips"><span class="slabel">${esc(oxyLabel(o))} done</span><button class="chip go" onclick="oxyDoneNow('${jsq(room)}')">\u2713 clear</button></div>`;
   if(o.numbRemovedAt)
-    return `<div class="stagechips"><span class="slabel">Numb done</span><button class="chip" onclick="oxyStart('${jsq(room)}')">Oxy</button><button class="chip go" onclick="maskToggle('${jsq(room)}')">Mask</button><button class="maskx" title="dismiss" onclick="numbAck('${jsq(room)}')">\u2715</button></div>`;
+    return `<div class="stagechips"><span class="slabel">Numb done</span>${timedPills(room,o)}<button class="tpill" onclick="maskToggle('${jsq(room)}')">Mask</button><button class="maskx" title="dismiss" onclick="numbAck('${jsq(room)}')">✕</button></div>`;
   let h=`<div class="stagechips">`;
-  h+=`<button class="chip" title="start a numbing timer" onclick="numbToggle('${jsq(room)}')">Numb</button>`;
-  h+=`<button class="chip" title="start Oxy steps" onclick="oxyStart('${jsq(room)}')">Oxy</button>`;
-  h+=`<button class="chip" title="start mask timer" onclick="maskToggle('${jsq(room)}')">Mask</button>`;
+  h+=timedPills(room,o);
+  h+=`<button class="tpill" title="start a numbing timer" onclick="numbToggle('${jsq(room)}')">Numb</button>`;
+  h+=`<button class="tpill" title="start mask timer" onclick="maskToggle('${jsq(room)}')">Mask</button>`;
   return h+`</div>`;}
 function maskToggle(room){editingMaskRoom=editingMaskRoom===room?null:room;editingNumbRoom=null;render();}
 
@@ -1252,8 +1529,8 @@ function renderDoctorView(){
   html+=`<div class="section-title" style="margin-top:14px">In rooms (${mine.length})</div>`;
   if(!mine.length)html+=`<div class="empty">No customers in rooms.</div>`;
   mine.forEach(r=>{const o=state.occ[r];const st=statusForDoctor(o);
-    html+=`<div class="pcard${(!o.mask&&!o.numb&&!oxyPos(o)&&!o.consult)?' alert':''}"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
-      ${st?`<div class="pstatus ${st.cls}" data-oxys="${esc(r)}">${esc(st.t)}</div>`:''}
+    html+=`<div class="pcard${doctorNeeded(o)?' alert':''}"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
+      <div class="pmeta docmeta">${o.therapist?esc(o.therapist):'<span class="hint">no therapist yet</span>'}${st?`<span class="pstatus ${st.cls}" data-oxys="${esc(r)}">${esc(st.t)}</span>`:''}</div>
       ${consultBlock(r,o)}
       <div class="pmeta">Tap a treatment to mark done / undo:</div>
       ${phoneTxChips(r,o,true,true)}
@@ -1279,6 +1556,7 @@ function renderTheraView(){
   if(!mine.length)html+=`<div class="empty">No rooms right now.</div>`;
   mine.forEach(r=>{const o=state.occ[r];
     html+=`<div class="pcard"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
+      <div class="pmeta">${o.doctor?esc(o.doctor):'<span class="hint">no doctor yet</span>'}</div>
       ${theraModeRow(r,o)}
       ${consultBlock(r,o)}
       <div class="pmeta">Treatments \u2014 tap to mark done / undo:</div>
@@ -1311,7 +1589,8 @@ function renderConsultantPhone(){
   // needs attention first — the whole reason they're checking the phone mid-rush
   const attn=attentionList();
   if(attn.length){html+=`<div class="section-title" style="color:#b3261e">\u26a0 Needs attention (${attn.length})</div>`;
-    attn.forEach(it=>{html+=`<div class="attnrow2"><span class="aroom2">${esc(it.r)}</span><span class="acust">${esc(state.occ[it.r].customer)}</span><span class="areason2">${esc(it.txt)}</span>${it.act?`<button class="chip sel attnbtn" onclick="attnAction('${it.act}','${jsq(it.r)}')">${esc(it.label)}</button>`:''}</div>`;});}
+    attn.forEach(it=>{const ao=state.occ[it.r];
+      html+=`<div class="attnrow2"><span class="aroom2">${esc(it.r)}</span><span class="acust">${esc(ao.customer)}</span><span class="areason2">${esc(it.txt)}</span>${it.act?`<button class="chip sel attnbtn" onclick="attnAction('${it.act}','${jsq(it.r)}')">${esc(it.label)}</button>`:''}</div>`;});}
   // waiting room next — who's here, how long, so they know who to wash first
   const w=state.queue.filter(q=>q.arrivedAt).map(q=>({q,wait:Math.max(0,nowM-toMin(q.arrivedAt))})).sort((a,b)=>b.wait-a.wait);
   html+=`<div class="section-title" style="margin-top:${attn.length?'14px':'0'}">Waiting (${w.length})</div>`;
@@ -1332,7 +1611,6 @@ function renderConsultantPhone(){
       ${o.therapist?'':`<select onchange="roomSetTherapist('${jsq(r)}',this.value)">${thOptions('')}</select>`}
       ${o.consult?'':stageChipsRow(r,o)}
       ${consultBlock(r,o)}
-      ${oxyBlock(r,o,'phone')}
       ${phoneTxChips(r,o,false)}
       ${txAddRow(r,o)}
       ${noteRow(r,o,'Note')}
@@ -1373,8 +1651,8 @@ function tlogText(){const g=therapistGroups();const order=state.therapists.conca
 function copyTLog(){copyStr(tlogText());}
 function clearLog(){if(!isCounter()){toast("Only the counter PC can clear the log");return;}
   if(confirm("Clear today's completed therapist log?")){state.completed=[];
-    if(baseRef){try{baseRef.update({completed:null});}catch(e){}}
-    saveLocal();recordHistory();render();openTLog();toast("Log cleared");}}
+    cloudPatch({completed:null},"cleared today's therapist log");
+    openTLog();toast("Log cleared");}}
 function openRecords(){
   let html=`<div class="tlog-th">Completed / Done (${state.completed.length})</div>`;
   if(!state.completed.length)html+='<div class="hint">none yet</div>';
@@ -1385,8 +1663,8 @@ function openRecords(){
   $("recBody").innerHTML=html;$("recModal").classList.add("show");applyRoleChrome();}
 function clearRecords(){if(!isCounter()){toast("Only the counter PC can clear records");return;}
   if(confirm("Clear today's records (completed + cancelled)?")){state.completed=[];state.removed=[];
-    if(baseRef){try{baseRef.update({completed:null,removed:null});}catch(e){}}
-    saveLocal();recordHistory();render();openRecords();toast("Records cleared");}}
+    cloudPatch({completed:null,removed:null},"cleared today's records");
+    openRecords();toast("Records cleared");}}
 
 function copyStr(str){if(navigator.clipboard){navigator.clipboard.writeText(str).then(()=>toast("Copied"),()=>{});}else{const ta=document.createElement('textarea');ta.value=str;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast("Copied");}catch(e){}ta.remove();}}
 
@@ -1397,15 +1675,31 @@ function openSettings(){if(!isCounter())return;const dn=state.groups.find(g=>g.n
 function saveSettings(){const lines=t=>t.value.split("\n").map(x=>x.trim()).filter(Boolean);
   const cleanRoom=x=>fbKey(x);
   const newGroups=[{name:"Downstairs",rooms:lines($("setDown")).map(cleanRoom)},{name:"Upstairs",rooms:lines($("setUp")).map(cleanRoom)}];
-  state.doctors=lines($("setDoctors"));state.therapists=lines($("setTherapists"));state.treatments=lines($("setTreatments"));
-  const newRooms=newGroups.flatMap(g=>g.rooms);const occ={};newRooms.forEach(r=>occ[r]=state.occ[r]||null);
+  const newDoctors=lines($("setDoctors")),newTherapists=lines($("setTherapists")),newTreatments=lines($("setTreatments"));
+  const newRooms=newGroups.flatMap(g=>g.rooms);
+  // Never let a populated list be saved as empty. A blank box here nearly always
+  // means the page hadn't finished loading from Firebase, or a field was cleared
+  // by accident — and saving it would blank that list on every device at once.
+  const emptied=[];
+  if(!newDoctors.length&&state.doctors.length)emptied.push("Doctors");
+  if(!newTherapists.length&&state.therapists.length)emptied.push("Therapists");
+  if(!newTreatments.length&&state.treatments.length)emptied.push("Treatments");
+  if(!newRooms.length&&allRooms().length)emptied.push("Rooms");
+  if(emptied.length){toast(emptied.join(" / ")+" can't be saved empty — nothing was changed");return;}
+  // Losing most of a list in one save is likelier to be a mistake than an edit.
+  const shrink=[];
+  const bigCut=(before,after,label)=>{if(before.length>=4&&after.length<Math.ceil(before.length/2))shrink.push(label+": "+before.length+" → "+after.length);};
+  bigCut(state.doctors,newDoctors,"Doctors");bigCut(state.therapists,newTherapists,"Therapists");bigCut(allRooms(),newRooms,"Rooms");
+  if(shrink.length&&!confirm("This removes a lot at once:\n\n  "+shrink.join("\n  ")+"\n\nSave anyway?"))return;
+  state.doctors=newDoctors;state.therapists=newTherapists;state.treatments=newTreatments;
+  const occ={};newRooms.forEach(r=>occ[r]=state.occ[r]||null);
   const patch=listsPatch();
   allRooms().forEach(r=>{if(!newRooms.includes(r)&&state.occ[r]){const o=state.occ[r];const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
     state.queue.push(q);Object.assign(patch,queuePatch(q));patch["occ/"+fbKey(r)]=null;}});
   state.groups=newGroups;state.occ=occ;
   Object.assign(patch,{"lists/groups":state.groups});
   newRooms.forEach(r=>{Object.assign(patch,roomPatch(r));});
-  closeModal('settingsModal');cloudPatch(patch);toast("Lists saved");}
+  closeModal('settingsModal');cloudPatch(patch,"edited lists (doctors/therapists/treatments/rooms)");toast("Lists saved");}
 function closeModal(id){$(id).classList.remove("show");}
 
 /* ===== import (counter only) ===== */
@@ -1494,15 +1788,17 @@ function afterAuth(){
 function tick(){$("clock").textContent=nowHM();if(!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))render();}
 $("arriveName").addEventListener("keydown",e=>{if(e.key==="Enter")arrive();});
 document.addEventListener("click",e=>{const m=$("moreMenu");if(m&&m.classList.contains("show")&&!e.target.closest(".menu-wrap"))m.classList.remove("show");});
-$("clock").textContent=nowHM();histLast=JSON.stringify(state);updateUndoBtn();
+// Seed the mirror from local state so undo has sane "before" values even before
+// Firebase's first snapshot lands (and if the board is ever running offline).
+$("clock").textContent=nowHM();cloudMirror=JSON.parse(JSON.stringify(fullStateObj(state)));updateUndoBtn();
 if(FIREBASE_CONFIG&&window.firebase){$("loginOverlay").classList.add("show");}
-applyRoleChrome();render();
+applyRoleChrome();updateAddMode();render();
 initCloud();
 setInterval(()=>{$("clock").textContent=nowHM();},1000);
 setInterval(tick,20000);
 setInterval(refreshTimers,1000);
 window.addEventListener("resize",()=>{applyRoleChrome();render();});
-autoBackup();setInterval(autoBackup,600000);
+autoBackup();cloudBackup();setInterval(()=>{autoBackup();cloudBackup();pruneLog();},600000);
 </script>
 </body>
 </html>
