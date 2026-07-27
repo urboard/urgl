@@ -693,10 +693,11 @@ function pruneLog(){
   }).catch(()=>{});}catch(e){}}
 
 /* ===== backups (local, unchanged) ===== */
-const BK_KEY="roomFlowBoard_v5_backups",BK_MAX=18;
+const BK_KEY=LS_KEY+"_backups",BK_MAX=18; // per-board: all boards share one origin, so a fixed key cross-contaminated them
+const BK_BOARD=LS_KEY; // stamped into every snapshot so it can never be restored onto another board
 function loadBackups(){try{const a=JSON.parse(localStorage.getItem(BK_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return [];}}
 function autoBackup(){try{const json=JSON.stringify(state);const arr=loadBackups();const last=arr[arr.length-1];
-  if(last&&last.json===json)last.t=Date.now();else arr.push({t:Date.now(),json});
+  if(last&&last.json===json)last.t=Date.now();else arr.push({t:Date.now(),json,board:BK_BOARD});
   while(arr.length>BK_MAX)arr.shift();localStorage.setItem(BK_KEY,JSON.stringify(arr));}catch(e){}}
 /* ===== cloud backups =====
    The counter device writes a snapshot every 10 minutes. The key is derived from
@@ -765,6 +766,9 @@ function openBackups(){const arr=loadBackups().slice().reverse();
     '<div class="tlog-th">In the cloud (every device can see these)</div><div id="cloudBkBody"><div class="hint">Loading…</div></div>';
   $("backupModal").classList.add("show");loadCloudBackups();}
 function restoreBackup(t){const b=loadBackups().find(x=>x.t===t);if(!b)return;
+  // Belt and braces: even if a foreign snapshot somehow reaches this list, never
+  // let it overwrite this board. An unstamped one predates the per-board key.
+  if(b.board&&b.board!==BK_BOARD){toast("That snapshot belongs to another board — not restored");return;}
   if(!confirm("Restore the board to the snapshot from "+bkTime(t)+"?\nThis replaces the current board"+(cloudOn?" on ALL connected devices":"")+"."))return;
   try{autoBackup();pushFullState(JSON.parse(b.json));closeModal('backupModal');toast("Backup restored");}catch(e){toast("Could not restore backup");}}
 
@@ -1750,8 +1754,15 @@ function connectCloud(){
       // First run on v2: migrate the old single-blob board if it exists.
       db.ref(OLD_PATH).once('value').then(os=>{
         let st=null;try{if(typeof os.val()==='string')st=migrate(JSON.parse(os.val()));}catch(e){}
-        pushFullState(st||state);attachListeners();
-      }).catch(()=>{pushFullState(state);attachListeners();});
+        // ONLY seed the cloud when there is a genuine previous board to carry over.
+        // The old code fell back to pushFullState(state) here, which published THIS
+        // FILE's built-in SEED as if it were the clinic's real roster — that is how
+        // GL's doctor/therapist/room lists got replaced the first time it connected.
+        // With nothing to migrate we just listen; the counter fills the lists in via
+        // Edit Lists, and the first real action creates the nodes.
+        if(st)pushFullState(st);
+        attachListeners();
+      }).catch(()=>{attachListeners();});
     } else attachListeners();
   }).catch(()=>{attachListeners();});
 }
