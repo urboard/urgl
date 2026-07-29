@@ -17,6 +17,43 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Room Flow Board">
 <!-- Firebase -->
+<script>
+/* Boot watchdog: if the main script below ever throws before it finishes, say so
+   instead of leaving a silent blank board that looks like lost data.
+   The badge is TAPPABLE on purpose -- a title tooltip does not exist on an iPad
+   or a phone, and the whole point is that staff can read the real cause and
+   send it on rather than just reporting "the board is empty". */
+window.__rfErr=null;window.__rfShown=false;
+function __rfShowFailure(){
+  /* The badge lives in <body>, this script runs in <head>. An error thrown inside
+     one of the Firebase scripts below therefore arrives BEFORE the badge exists.
+     Remember the message and try again once the document is parsed -- latching on
+     the first error without showing it would swallow the real app failure and
+     leave exactly the silent blank board this watchdog exists to prevent. */
+  if(window.__rfShown||!window.__rfErr)return false;
+  var b=document.getElementById("syncst");
+  if(!b)return false;
+  b.textContent="app failed to start - tap";
+  b.className="syncst err";
+  b.title=window.__rfErr;
+  b.style.cursor="pointer";
+  b.onclick=function(){alert(
+    "This board could not start on THIS device.\n\n"+window.__rfErr+
+    "\n\nNothing is lost - the appointments live in the cloud, not on this device."+
+    "\n\n1. Reload the page."+
+    "\n2. Still failing? Check another phone or laptop."+
+    "\n   - others work  -> this device's browser settings"+
+    "\n   - all broken   -> the last upload; roll it back"+
+    "\n\nScreenshot this message and send it.");};
+  window.__rfShown=true;return true;
+}
+window.addEventListener("error",function(ev){
+  if(window.__rfBooted)return;
+  if(!window.__rfErr)window.__rfErr=(ev&&ev.message)||"unknown error";  // keep the FIRST, it is the cause
+  __rfShowFailure();
+});
+document.addEventListener("DOMContentLoaded",function(){if(!window.__rfBooted)__rfShowFailure();});
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -170,6 +207,9 @@
   #phoneMain{max-width:560px}
   .pcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:7px}
   .pcard.alert{border-color:#e57373;box-shadow:0 0 0 3px #ffcdd2}
+  .pcard.soon{border-color:#f0d48a;background:#fff8e1}
+  .pcard.over{border-color:#e9a3a3;background:#fdeaea}
+  .pcard .noth{color:#7b2cbf}
   .pcard .ptop{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
   .pcard .pname{font-size:17px;font-weight:800}
   .pcard .proom{font-size:13px;font-weight:800;color:var(--accent);background:#e3eef0;border-radius:10px;padding:2px 9px;flex:none}
@@ -233,6 +273,60 @@
   .tpill:hover{border-color:var(--accent)}
   .tpill.on{background:#9fd0e6;border-color:#5aa8c6;color:#0d3d52}
   .tpill.big{padding:10px 16px;font-size:14px;border-radius:10px;margin:2px 0}
+  /* Role pills: 💧 = washing the face only, 🖐 = therapist in charge of everything.
+     Water goes grey (nobody) -> blue (washing now) -> green tick (face washed). */
+  .wpill{background:#f3f6f7;border:1px solid var(--line);border-radius:12px;padding:2px 8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:3px;white-space:nowrap;flex:none;line-height:1.45}
+  .wpill:hover{border-color:var(--accent)}
+  .wpill.washing{background:#2f96c4;border-color:#22789f;color:#fff;box-shadow:inset 0 -1px 0 rgba(0,0,0,.12)}
+  .wpill.washed{background:#3fa86c;border-color:#2f8853;color:#fff;box-shadow:inset 0 -1px 0 rgba(0,0,0,.12)}
+  .wpill.hand.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:inset 0 -1px 0 rgba(0,0,0,.12)}
+  /* The select must stay readable: let the row wrap the pills onto a second line
+     rather than squeezing the dropdown down to its arrow. */
+  .rolerow{display:flex;align-items:center;gap:5px;min-width:0;flex-wrap:wrap;flex:1}
+  /* .rsel outranks the later `.fieldrow select{min-width:0}` rule, which would
+     otherwise let the dropdown collapse to its arrow inside a room card. */
+  .rolerow select.rsel{flex:1;min-width:73px}
+  .tstat.wash{color:#1c5a72}
+  .dupbadge{background:#fdeede;border:1px solid #f0d48a;color:#8a5212;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;white-space:nowrap}
+  /* Rooms tab — one dense line per room, board order, like the sheet they know */
+  .rgrp{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:10px 2px 4px}
+  .sline{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:#fff;cursor:pointer}
+  .sline .sbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .sline .stop{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .sline.free{background:#f4faf6;color:var(--muted)}
+  .sline.over{border-color:#e9a3a3;background:#fdeaea}
+  .sline.open{border-color:var(--accent)}
+  .sline .sroom{font-weight:800;font-size:12px;min-width:56px;flex:none;padding-top:1px}
+  .sline .scust{font-weight:700;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sline .swho{font-size:11px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sline .swho .noth{color:#7b2cbf}
+  .sline .sstat{font-size:11px;font-weight:700;color:var(--muted);text-align:right;white-space:nowrap;flex:none}
+  .sline .stx{font-size:11px;font-weight:600;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sline .stx s{opacity:.6}
+  .sline .snote{font-size:11px;font-weight:700;color:#8a5212;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sline .sstat.note{color:#8a5212;max-width:46%;overflow:hidden;text-overflow:ellipsis}
+  .sline .sstat.over{color:#b3261e}
+  .sline .sstat.wash{color:#1c5a72}
+  .sline .snext{font-size:11px;font-weight:700;color:#1565c0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+  .sline.waitline{background:#f9fbfb}
+  .sline.free .sbody{flex-direction:row;justify-content:space-between;align-items:baseline}
+  .sline.waitline.warm{background:#fff8e1;border-color:#f0d48a}
+  .sline .txline{color:var(--muted);font-weight:600}
+
+  .sline.open{border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0;border-bottom-color:transparent}
+  .sdetail{border:1px solid var(--accent);border-top:0;border-radius:0 0 8px 8px;padding:2px 10px 9px;margin:0 0 5px;background:#fff;display:flex;flex-direction:column;gap:6px}
+  .sdetail .fieldrow{padding:0}
+  .sdetail .fieldrow label{display:none}
+  /* therapist phone tabs */
+  .freeline{background:#eef7f0;border:1px solid #bcdcc6;color:#1c6b39;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;margin:14px 0 0}
+  .freeline.none{background:#fdeaea;border-color:#e9a3a3;color:#b3261e}
+  .needline{background:#fdeede;border:1px solid #f0d48a;color:#8a5212;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;margin-bottom:10px}
+  .tabbar{display:flex;gap:6px;margin:0 0 12px}
+  .tabbtn{flex:1;background:#f3f6f7;border:1px solid var(--line);border-radius:9px;padding:10px 6px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .tabbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .tabcount{background:#fff;border-radius:9px;padding:1px 7px;font-size:11px;color:var(--muted);border:1px solid var(--line)}
+  .tabbtn.on .tabcount{border-color:transparent}
+  .tabcount b{color:#b3261e}
   .stagechips .pillrow{flex-basis:100%;display:flex;gap:4px;flex-wrap:wrap}
   .pcard .docmeta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
   .pcard .docmeta .pstatus{padding:2px 8px}
@@ -430,6 +524,26 @@
 
 <script>
 "use strict";
+/* ===== Safe storage =====
+   Some devices refuse site data (Chrome "Don't allow sites to save data", a
+   privacy extension, Safari private mode, a locked-down MDM profile). On those
+   devices touching localStorage THROWS, and because the very first thing this
+   script did was read it, the whole script died and the board rendered as a
+   dead HTML shell: frozen clock, no rooms, no login box. All six boards live
+   on one origin, so one blocked setting killed every board on that device.
+   Fall back to an in-memory store instead: the board still runs off the cloud,
+   it just forgets per-device preferences when the tab closes. */
+const LS=(function(){
+  try{const t="__rf_probe";localStorage.setItem(t,"1");localStorage.removeItem(t);return localStorage;}
+  catch(e){
+    const mem=Object.create(null);
+    try{console.warn("Site data is blocked in this browser - running without local storage.",e);}catch(_){}
+    return {getItem:k=>(k in mem?mem[k]:null),
+            setItem:(k,v)=>{mem[k]=String(v);},
+            removeItem:k=>{delete mem[k];},
+            blocked:true};
+  }
+})();
 /* ============================================================
    Room Flow Board — v2
    - Per-node Firebase sync (occ/queue/lists/completed/removed)
@@ -470,17 +584,33 @@ const SEED={
 // Timed treatments share ONE countdown. Running both simply adds their minutes
 // together (Oxy 30 + SRW 5 = 35), and adding the second one part-way through
 // extends whatever time is left rather than restarting the clock.
-const OXY_MINS=30,SRW_MINS=5;
+const OXY_MINS=30,SRW_MINS=10;
 const TIMED_TX=[{key:"Oxy",mins:OXY_MINS,re:/^oxy\b|^oxyinfus/i},{key:"SRW",mins:SRW_MINS,re:/^srw\b/i}];
 
-let state=migrate(load())||freshState();
-let filterWindow=(localStorage.getItem(LS_FILTER)??"1")==="1";
-let addWalkIn=localStorage.getItem(LS_ADDMODE)==="1"; // remembered per device
+/* A cached board that migrate() chokes on must not kill the page either -- drop it and let the cloud repopulate. */
+let state=(function(){try{return migrate(load())||freshState();}catch(e){try{console.error("Saved board was unreadable, starting fresh.",e);LS.removeItem(LS_KEY);}catch(_){}return freshState();}})();
+/* Written only as "1"/"0" by toggleFilter; null means never set, so default ON.
+   Spelled out rather than using the nullish-coalescing operator, so older
+   iPads can still parse this file. */
+let filterWindow=(LS.getItem(LS_FILTER)===null?"1":LS.getItem(LS_FILTER))==="1";
+let addWalkIn=LS.getItem(LS_ADDMODE)==="1"; // remembered per device
 let ROLE=null,MYNAME="";
-try{const r=JSON.parse(localStorage.getItem(LS_ROLE)||"null");if(r&&r.role){ROLE=r.role;MYNAME=r.name||"";}}catch(e){}
+try{const r=JSON.parse(LS.getItem(LS_ROLE)||"null");if(r&&r.role){ROLE=r.role;MYNAME=r.name||"";}}catch(e){}
 let pendingRole=null;
 let expandedQ=null;
 let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null,editingMaskRoom=null,editingQTheraId=null;
+// Which tab the therapist phone view is on, remembered per device.
+// Always opens on Mine — that's the tab they need first. The choice is kept for
+// the rest of the session but not across reloads.
+let theraTab=1;
+let expandedStatusRoom=null; // which room is opened out on the Rooms tab
+let expandedWaitId=null;     // …and which waiting customer
+let editingQNote=null;
+// id -> the Firebase key that queue entry actually lives under. The board reads
+// the queue by VALUE (Object.values), so a record whose `id` field disagreed
+// with its key would render but never delete — a permanent waiting-room ghost.
+// Deleting by both closes that off.
+let queueKeys={};
 let db=null,baseRef=null,cloudOn=false;
 /* Undo is PER-DEVICE and SINGLE-STEP. `lastAction` holds only the paths this
    device's own last write touched, plus the value each held beforehand, so an
@@ -504,8 +634,20 @@ let notifReady=false,seenAlerts={},activeNotifs=[];
 function freshState(){const occ={};SEED.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
   return {doctors:[...SEED.doctors],therapists:[...SEED.therapists],treatments:[...SEED.treatments],groups:JSON.parse(JSON.stringify(SEED.groups)),customers:{},occ,queue:[],completed:[],removed:[]};}
 function txArr(t){return Array.isArray(t)?t.slice():(t?[t]:[]);}
+/* One therapist name, one role: "" | "wash" | "washed" | "full". Older records
+   held a separate washBy/washDone pair alongside the therapist; fold those in.
+   Where both existed the in-charge therapist wins and the washer's name is
+   dropped — by design, nobody needs to know afterwards who washed. */
+function roleMigrate(o){
+  if(typeof o.role==="string"&&!o.washBy)
+    return (o.role==="wash"||o.role==="washed"||o.role==="full")?o.role:"";
+  let r=o.therapist?"full":"";
+  if(o.washBy&&!o.therapist){o.therapist=o.washBy;r=o.washDone?"washed":"wash";}
+  delete o.washBy;delete o.washDone;
+  return r;}
 function normRoomObj(o){if(!o)return null;if(o.note===undefined)o.note="";if(o.nextRoom===undefined)o.nextRoom="";if(o.stage===undefined)o.stage="";if(o.numb===undefined)o.numb="";if(o.consult===undefined)o.consult=false;if(o.consultant===undefined)o.consultant="";if(o.consultTs===undefined)o.consultTs=0;if(o.numbRemovedAt===undefined)o.numbRemovedAt="";
   o.doctor=o.doctor||"";o.therapist=o.therapist||"";o.mask=o.mask||"";o.numb=o.numb||"";o.appt=o.appt||"";o.customer=o.customer||"";
+  o.role=roleMigrate(o);
   o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
   if(o.oxy&&typeof o.oxy==="object"){if(!o.oxy.ts)o.oxy.ts=Date.now();o.oxy.paused=!!o.oxy.paused;
     o.oxy.kinds=txArr(o.oxy.kinds);if(!o.oxy.kinds.length)o.oxy.kinds=["Oxy"]; // rooms left running under the old 5-step model
@@ -515,25 +657,37 @@ function normRoomObj(o){if(!o)return null;if(o.note===undefined)o.note="";if(o.n
   if(!o.mask&&!o.numb&&!o.oxy&&o.stage&&!/ done$/.test(o.stage))o.stage=""; // no timer running -> drop the label, but keep an "… done" result
   if(o.mask){o.numb="";o.oxy=null;}else if(o.oxy){o.numb="";} // exclusive: mask > oxy > numbing
   return o;}
-function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.removed)s.removed=[];if(!s.treatments||!s.treatments.length)s.treatments=[...SEED.treatments];
-  if(!s.doctors||!s.doctors.length)s.doctors=[...SEED.doctors];
-  if(!s.therapists||!s.therapists.length)s.therapists=[...SEED.therapists];
-  if(!s.groups||!s.groups.length)s.groups=JSON.parse(JSON.stringify(SEED.groups));
+function migrate(s){if(!s)return null;if(!Array.isArray(s.completed))s.completed=[];if(!Array.isArray(s.removed))s.removed=[];if(!Array.isArray(s.treatments)||!s.treatments.length)s.treatments=[...SEED.treatments];
+  if(!Array.isArray(s.doctors)||!s.doctors.length)s.doctors=[...SEED.doctors];
+  if(!Array.isArray(s.therapists)||!s.therapists.length)s.therapists=[...SEED.therapists];
+  if(!Array.isArray(s.groups)||!s.groups.length)s.groups=JSON.parse(JSON.stringify(SEED.groups));
+  /* Every list below is walked with .forEach/.filter further down. These guards
+     used to test TRUTHINESS, so a saved board where one of them was an object
+     rather than an array sailed through and then threw -- killing the whole
+     script and leaving a dead page on that one device, for that one board.
+     Test the TYPE, and repair a malformed group instead of trusting it. */
+  s.groups=s.groups.filter(g=>g&&typeof g==='object')
+    .map(g=>Object.assign({},g,{name:g.name||"",rooms:(Array.isArray(g.rooms)?g.rooms:[]).filter(r=>typeof r==='string'&&r)}));
+  if(!s.groups.length)s.groups=JSON.parse(JSON.stringify(SEED.groups));
   if(!s.customers||typeof s.customers!=='object')s.customers={};
   if(!Array.isArray(s.queue))s.queue=[];
   if(!s.occ||typeof s.occ!=='object')s.occ={};
+  /* A room must hold an object or nothing. Anything else (a bare name saved by
+     some older path) hits a property assignment below and, under "use strict",
+     throws -- which took the whole board down. */
+  Object.keys(s.occ).forEach(r=>{const o=s.occ[r];if(o!==null&&(typeof o!=='object'||Array.isArray(o)))s.occ[r]=null;});
   s.groups.forEach(g=>g.rooms.forEach(r=>{if(!(r in s.occ))s.occ[r]=null;}));
   // Rescue occupants of rooms that no longer exist in the lists (e.g. after a rename):
   // runs only on single-writer paths (local load, import, undo, restore) — never from sync,
   // where every connected device would duplicate the queue entry.
-  const __rooms=s.groups.flatMap(g=>g.rooms);Object.keys(s.occ).forEach(r=>{const o=s.occ[r];if(o&&!__rooms.includes(r)){s.queue.push({id:nextId(),customer:o.customer,doctor:o.doctor||"",therapist:o.therapist||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});delete s.occ[r];}});
+  const __rooms=s.groups.flatMap(g=>g.rooms);Object.keys(s.occ).forEach(r=>{const o=s.occ[r];if(o&&!__rooms.includes(r)){s.queue.push({id:nextId(),customer:o.customer,doctor:o.doctor||"",therapist:o.therapist||"",role:o.role||"",note:o.note||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});delete s.occ[r];}});
   (s.queue||[]).forEach(q=>{if(q.arrivedAt===undefined)q.arrivedAt="";q.doctor=q.doctor||"";q.therapist=q.therapist||"";q.treatment=txArr(q.treatment);q.consult=!!q.consult;q.consultant=q.consultant||"";});
   Object.keys(s.occ||{}).forEach(r=>{s.occ[r]=normRoomObj(s.occ[r]);});
   Object.values(s.customers||{}).forEach(c=>{if(c){c.doctor=c.doctor||"";c.therapist=c.therapist||"";}});
   (s.completed||[]).forEach(c=>{c.doctor=c.doctor||"";c.treatment=txArr(c.treatment);});
   (s.removed||[]).forEach(c=>{c.treatment=txArr(c.treatment);});return s;}
-function load(){try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
-function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
+function load(){try{const s=LS.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+function saveLocal(){try{LS.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 function nextId(){return Date.now()*100+Math.floor(Math.random()*100);}
 function fbKey(s){return String(s).replace(/[.#$/\[\]]/g,'_').trim()||"_";}
 
@@ -576,11 +730,15 @@ function cloudPatch(patch,label){
   Object.keys(patch).forEach(p=>{mirrorSet(p,patch[p]);});
   updateUndoBtn();logAction(label);
   if(baseRef){try{baseRef.update(patch);}catch(e){}}
-  saveLocal();render();}
+  render();saveLocal();}
 function roomPatch(room){const o=state.occ[room];const v=o?Object.assign({},o,{room}):null;
   return {["occ/"+fbKey(room)]:v};}
 function commitRoom(room,label){cloudPatch(roomPatch(room),label);}
 function queuePatch(q){return {["queue/"+q.id]:q};}
+// Removing a queue entry: clear its id-path AND the key it actually lives under,
+// in case the two ever disagree (see queueKeys).
+function queueDelPatch(id){const p={["queue/"+id]:null};const k=queueKeys[id];
+  if(k!=null&&String(k)!==String(id))p["queue/"+k]=null;return p;}
 function commitQueue(q,label){cloudPatch(queuePatch(q),label);}
 function custPatch(name){return {["lists/customers/"+fbKey(name)]:state.customers[name]||null};}
 function listsPatch(){return {"lists/doctors":state.doctors,"lists/therapists":state.therapists,"lists/treatments":state.treatments,"lists/groups":state.groups,"lists/customers":state.customers};}
@@ -601,10 +759,26 @@ function pushFullState(st){state=migrate(st)||freshState();
   if(baseRef){try{baseRef.set(obj);}catch(e){}}
   cloudMirror=JSON.parse(JSON.stringify(obj));
   lastAction=null;updateUndoBtn();
-  saveLocal();render();}
+  render();saveLocal();}
 
 /* ===== cloud read layer ===== */
+/* Apply a remote section, then draw. If drawing fails, put the previous values
+   back and cache nothing -- otherwise the unusable section stays in `state` and
+   the next successful action writes it to localStorage anyway, which is how a bad
+   update ends up as a dead page on somebody's next reload. mirrorSection() is
+   deliberately NOT rolled back: the cloud really does hold that data, it is only
+   this device that cannot display it. */
+function applyRemote(keys,fn){
+  const prev={};keys.forEach(k=>prev[k]=state[k]);const prevLists=listsFromCloud;
+  try{fn();render();saveLocal();}
+  catch(e){
+    keys.forEach(k=>state[k]=prev[k]);listsFromCloud=prevLists;
+    console.error("Ignored an unusable board update from the cloud - kept the previous board.",e);
+    try{render();}catch(_){}
+  }
+}
 function applyLists(v){mirrorSection("lists",v);cloudReady=true;v=v||{};
+  applyRemote(["doctors","therapists","treatments","groups","customers","occ"],function(){
   state.doctors=(v.doctors||[]).filter(Boolean);const gotDoctors=state.doctors.length>0;if(!gotDoctors)state.doctors=[...SEED.doctors];
   state.therapists=(v.therapists||[]).filter(Boolean);const gotThera=state.therapists.length>0;if(!gotThera)state.therapists=[...SEED.therapists];
   listsFromCloud=gotDoctors&&gotThera;
@@ -614,14 +788,18 @@ function applyLists(v){mirrorSection("lists",v);cloudReady=true;v=v||{};
   Object.values(state.customers).forEach(c=>{if(c){c.doctor=c.doctor||"";c.therapist=c.therapist||"";}});
   state.groups.forEach(g=>g.rooms.forEach(r=>{if(!(r in state.occ))state.occ[r]=null;}));
   if(pendingRole)fillRoleNames();
-  saveLocal();render();}
-function applyOcc(v){mirrorSection("occ",v);const occ={};state.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
+  });}
+function applyOcc(v){mirrorSection("occ",v);applyRemote(["occ"],function(){const occ={};state.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
   Object.entries(v||{}).forEach(([k,o])=>{if(!o)return;const name=o.room||k;occ[name]=normRoomObj(o);});
-  state.occ=occ;scanAlerts();saveLocal();render();}
-function applyQueue(v){mirrorSection("queue",v);state.queue=Object.values(v||{}).filter(Boolean).map(q=>{q.treatment=txArr(q.treatment);q.arrivedAt=q.arrivedAt||"";q.doctor=q.doctor||"";q.therapist=q.therapist||"";q.consult=!!q.consult;q.consultant=q.consultant||"";return q;}).sort((a,b)=>(a.id||0)-(b.id||0));
-  scanAlerts();saveLocal();render();}
-function applyRecs(which,v){mirrorSection(which,v);state[which]=Object.values(v||{}).filter(Boolean).map(c=>{c.treatment=txArr(c.treatment);return c;}).sort((a,b)=>(a.id||0)-(b.id||0));
-  saveLocal();render();}
+  state.occ=occ;scanAlerts();});}
+function applyQueue(v){mirrorSection("queue",v);applyRemote(["queue"],function(){queueKeys={};
+  state.queue=Object.entries(v||{}).filter(([k,q])=>!!q).map(([k,q])=>{q.treatment=txArr(q.treatment);q.arrivedAt=q.arrivedAt||"";q.doctor=q.doctor||"";q.therapist=q.therapist||"";q.consult=!!q.consult;q.consultant=q.consultant||"";
+    q.role=roleMigrate(q);q.note=q.note||"";
+    if(q.id==null)q.id=k; // keyless legacy record: fall back to its key so it can still be acted on
+    queueKeys[q.id]=k;return q;}).sort((a,b)=>(a.id||0)-(b.id||0));
+  scanAlerts();});}
+function applyRecs(which,v){mirrorSection(which,v);applyRemote([which],function(){state[which]=Object.values(v||{}).filter(Boolean).map(c=>{c.treatment=txArr(c.treatment);return c;}).sort((a,b)=>(a.id||0)-(b.id||0));
+  });}
 
 /* ===== doctor notifications (in-app; fires while the app is open) ===== */
 function scanAlerts(){
@@ -662,7 +840,7 @@ function logAction(msg){
 function systemPatch(patch){
   Object.keys(patch).forEach(p=>mirrorSet(p,patch[p]));
   if(baseRef){try{baseRef.update(patch);}catch(e){}}
-  saveLocal();render();}
+  render();saveLocal();}
 const LOG_SHOW=60;
 function logTime(t){const d=new Date(t||0);return pad(d.getHours())+":"+pad(d.getMinutes());}
 function openLog(){
@@ -695,10 +873,10 @@ function pruneLog(){
 /* ===== backups (local, unchanged) ===== */
 const BK_KEY=LS_KEY+"_backups",BK_MAX=18; // per-board: all boards share one origin, so a fixed key cross-contaminated them
 const BK_BOARD=LS_KEY; // stamped into every snapshot so it can never be restored onto another board
-function loadBackups(){try{const a=JSON.parse(localStorage.getItem(BK_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return [];}}
+function loadBackups(){try{const a=JSON.parse(LS.getItem(BK_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return [];}}
 function autoBackup(){try{const json=JSON.stringify(state);const arr=loadBackups();const last=arr[arr.length-1];
   if(last&&last.json===json)last.t=Date.now();else arr.push({t:Date.now(),json,board:BK_BOARD});
-  while(arr.length>BK_MAX)arr.shift();localStorage.setItem(BK_KEY,JSON.stringify(arr));}catch(e){}}
+  while(arr.length>BK_MAX)arr.shift();LS.setItem(BK_KEY,JSON.stringify(arr));}catch(e){}}
 /* ===== cloud backups =====
    The counter device writes a snapshot every 10 minutes. The key is derived from
    the CLOCK (slot_<10-min window>), not generated per write, so if two devices
@@ -807,18 +985,48 @@ function sendRoomOpts(label){return ['<option value="">'+label+'</option>'].conc
 function isCounter(){return ROLE==='counter';}
 function isBoardRole(){return ROLE==='counter'||ROLE==='consultant';}
 
+/* ===== duplicate names =====
+   The CRM can hand the same customer two slots under one doctor, and the counter
+   can type a walk-in for someone who already has an appointment. Either way the
+   name ends up on the board twice, and sending one copy to a room leaves the
+   other sitting in the waiting room looking like a ghost. */
+function dupQueueEntries(name,exceptId){return state.queue.filter(q=>q.id!=exceptId&&sameName(q.customer,name));}
+function dupCount(name){let n=state.queue.filter(q=>sameName(q.customer,name)).length;
+  allRooms().forEach(r=>{const o=state.occ[r];if(o&&sameName(o.customer,name))n++;});return n;}
+function dupBadge(name){return dupCount(name)>1?'<span class="dupbadge" title="This name is on the board more than once">⧉ dup</span>':'';}
+function whereIsName(name){const q=state.queue.find(x=>sameName(x.customer,name));
+  if(q)return q.arrivedAt?"the waiting room":"the appointments list";
+  const r=allRooms().find(x=>state.occ[x]&&sameName(state.occ[x].customer,name));
+  return r||"";}
+// Sweep the other copies of a name out of the queue. They go into Records
+// (Cancelled/Deleted) rather than vanishing, so there is always a trail.
+function sweepDupsInto(patch,name,keepId){
+  const dups=dupQueueEntries(name,keepId);
+  dups.forEach((d,i)=>{
+    // nextId()'s low digits are random; +i*100 steps to the next millisecond
+    // slot instead, so ids in this loop can't collide with each other.
+    const rec={id:nextId()+i*100,customer:d.customer,doctor:d.doctor,treatment:txArr(d.treatment),appt:d.appt,at:nowHM(),reason:"duplicate name"};
+    state.removed.push(rec);
+    Object.assign(patch,queueDelPatch(d.id),{["removed/"+rec.id]:rec});});
+  if(dups.length)state.queue=state.queue.filter(x=>!dups.some(d=>d.id===x.id));
+  return dups;}
+
 /* ===== queue & room actions ===== */
 function addToQueue(nameRaw,doc,timeRaw,txRaw,walkIn){const name=fbKey(String(nameRaw||"").trim());if(!name||name==="_"){toast("Type a name first");return false;}
+  const already=whereIsName(name);
+  if(already&&!confirm(name+" is already in "+already+".\n\nAdd a second entry anyway?"))return false;
   if(!state.customers[name])state.customers[name]={doctor:"",therapist:""};
   if(doc)state.customers[name].doctor=doc;
   const c=state.customers[name];
   const txs=String(txRaw||"").split(",").map(s=>s.trim()).filter(Boolean);
-  const q={id:nextId(),customer:name,doctor:doc||c.doctor||"",therapist:c.therapist||"",treatment:txs,appt:parseTimeInput(timeRaw),arrivedAt:walkIn?nowHM():""};
+    // c.therapist is this customer's REMEMBERED therapist — a suggestion, not an
+  // assignment. role stays empty so neither pill lights until someone taps one.
+  const q={id:nextId(),customer:name,doctor:doc||c.doctor||"",therapist:c.therapist||"",role:"",note:"",treatment:txs,appt:parseTimeInput(timeRaw),arrivedAt:walkIn?nowHM():""};
   state.queue.push(q);
   cloudPatch(Object.assign(queuePatch(q),custPatch(name)),(walkIn?"walk-in: ":"added ")+name);return true;}
 // Appointment = not here yet (Appointments list). Walk-in = standing at the
 // counter now (Waiting room). Same fields either way; the toggle picks which.
-function setAddMode(walk){addWalkIn=!!walk;try{localStorage.setItem(LS_ADDMODE,addWalkIn?"1":"0");}catch(e){}updateAddMode();}
+function setAddMode(walk){addWalkIn=!!walk;try{LS.setItem(LS_ADDMODE,addWalkIn?"1":"0");}catch(e){}updateAddMode();}
 function updateAddMode(){
   const a=$("addModeAppt"),w=$("addModeWalk"),b=$("arriveBtn");
   if(a)a.classList.toggle("on",!addWalkIn);
@@ -830,38 +1038,140 @@ function arrive(){
 function setCustDoc(name,v){if(!name)return null;state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].doctor=v;return custPatch(name);}
 function setCustThera(name,v){if(!name)return null;state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].therapist=v;return custPatch(name);}
 function qSetDoctor(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.doctor=v;const cp=setCustDoc(q.customer,v);editingDocId=null;cloudPatch(Object.assign(queuePatch(q),cp||{}),q.customer+": doctor → "+(v||"none"));}}
-function qSetThera(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.therapist=v;const cp=setCustThera(q.customer,v);editingQTheraId=null;cloudPatch(Object.assign(queuePatch(q),cp||{}),q.customer+": therapist → "+(v||"none"));}}
+function qSetThera(id,v){const q=state.queue.find(x=>x.id==id);if(!q)return;
+  q.therapist=v;if(!v)q.role="";else if(!q.role)q.role="full"; // picking a name with no role set means the ordinary thing: in charge
+  const cp=setCustThera(q.customer,v);editingQTheraId=null;
+  cloudPatch(Object.assign(queuePatch(q),cp||{}),q.customer+": therapist → "+(v||"none"));}
 function qSetAppt(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.appt=v;editingTimeId=null;commitQueue(q,q.customer+": time → "+(v?hm12(v):"none"));}}
 function editDoc(id){editingDocId=id;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;editingQTheraId=null;render();}
 function editTime(id){editingTimeId=id;editingDocId=null;editingDocRoom=null;editingTheraRoom=null;editingMaskRoom=null;editingQTheraId=null;render();const el=$("activeEdit");if(el){el.focus();el.select&&el.select();}}
 function editTheraRoom(room){editingTheraRoom=room;editingDocId=null;editingDocRoom=null;editingTimeId=null;editingMaskRoom=null;editingQTheraId=null;render();}
 function maskBump(room,delta){const o=state.occ[room];if(!o||!o.mask)return;let m=(toMin(o.mask)+delta+1440)%1440;o.mask=pad(Math.floor(m/60))+":"+pad(m%60);commitRoom(room,o.customer+": mask "+(delta>0?"+":"")+delta+"m");}
-function roomSetTherapist(room,v){const o=state.occ[room];if(o){o.therapist=v;editingTheraRoom=null;commitRoom(room,o.customer+": therapist → "+(v||"none"));}}
+function roomSetTherapist(room,v){const o=state.occ[room];if(!o)return;
+  o.therapist=v;if(!v)o.role="";else if(!o.role)o.role="full";
+  editingTheraRoom=null;commitRoom(room,o.customer+": therapist → "+(v||"none"));}
 function toggleQ(id){expandedQ=expandedQ===id?null:id;render();}
-function cancelEdit(){editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;editingQTheraId=null;render();}
+function cancelEdit(){editingQNote=null;editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;editingQTheraId=null;render();}
 function qTxAdd(id,v){v=v.trim();if(!v)return;const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);if(!q.treatment.includes(v))q.treatment.push(v);commitQueue(q,q.customer+": + "+v);}}
 function qTxRemove(id,i){const q=state.queue.find(x=>x.id==id);if(q){q.treatment=txArr(q.treatment);const tx=q.treatment.splice(i,1)[0];commitQueue(q,q.customer+": − "+(tx||"treatment"));}}
+/* Notes on a waiting-room entry. Rooms have had these all along; waiting entries
+   didn't, so therapists had nowhere to leave a remark before the customer goes in. */
+function qNoteToggle(id){editingQNote=(editingQNote===id)?null:id;render();const el=$("activeNote");if(el){el.focus();el.select&&el.select();}}
+function qNoteSave(id,v){const q=state.queue.find(x=>x.id==id);if(!q)return;q.note=v;editingQNote=null;commitQueue(q,q.customer+(v?": note saved":": note cleared"));}
+function qNoteRow(q){
+  if(editingQNote===q.id)
+    return `<input id="activeNote" class="note-in" value="${esc(q.note||'')}" placeholder="remark…" onkeydown="if(event.key==='Enter')this.blur()" onblur="qNoteSave(${q.id},this.value)">`;
+  if(q.note)return `<div class="pmeta"><span class="notetext" title="tap to edit" onclick="qNoteToggle(${q.id})">📝 ${esc(q.note)}</span></div>`;
+  return `<div><button class="notelink" onclick="qNoteToggle(${q.id})">＋ note</button></div>`;}
 function qCheckIn(id){const q=state.queue.find(x=>x.id==id);if(q){q.arrivedAt=q.arrivedAt?"":nowHM();commitQueue(q,q.customer+(q.arrivedAt?" arrived":": arrival undone"));}}
 function removeQueue(id){const q=state.queue.find(x=>x.id==id);if(!q)return;
   const rec={id:nextId(),customer:q.customer,doctor:q.doctor,treatment:txArr(q.treatment),appt:q.appt,at:nowHM()};
   state.removed.push(rec);state.queue=state.queue.filter(x=>x.id!=id);
-  cloudPatch({["queue/"+id]:null,["removed/"+rec.id]:rec},"removed "+q.customer+" from appointments");}
+  cloudPatch(Object.assign(queueDelPatch(id),{["removed/"+rec.id]:rec}),"removed "+q.customer+" from appointments");}
 function moveQueueToRoom(id,room){if(!room)return;const i=state.queue.findIndex(x=>x.id==id);if(i<0)return;
   if(state.occ[room]){toast(room+" is occupied");render();return;}const rv=nextFor(room);if(rv){toast(room+" is reserved for "+rv.customer);render();return;}const q=state.queue[i];
-  state.occ[room]=normRoomObj({customer:q.customer,doctor:q.doctor,therapist:q.therapist,treatment:txArr(q.treatment),txDone:[],mask:"",appt:q.appt||"",note:"",nextRoom:"",stage:"",oxy:null,
+  state.occ[room]=normRoomObj({customer:q.customer,doctor:q.doctor,therapist:q.therapist,treatment:txArr(q.treatment),txDone:[],mask:"",appt:q.appt||"",note:q.note||"",nextRoom:"",stage:"",oxy:null,
+    role:q.role||"",
     consult:!!q.consult,consultant:q.consultant||"",consultTs:q.consult?Date.now():0});
   state.queue.splice(i,1);
-  cloudPatch(Object.assign({["queue/"+id]:null},roomPatch(room)),q.customer+" → "+room);}
+  const patch=Object.assign(queueDelPatch(id),roomPatch(room));
+  // Whoever went into the room is the real one; any other copy of that name is a
+  // duplicate slot and goes automatically, so it can't linger in the waiting room.
+  const dups=sweepDupsInto(patch,q.customer,id);
+  cloudPatch(patch,q.customer+" → "+room+(dups.length?" (+"+dups.length+" duplicate removed)":""));
+  if(dups.length)toast(dups.length===1?("Removed a duplicate entry for "+q.customer):("Removed "+dups.length+" duplicate entries for "+q.customer));}
 function roomSetDoctor(room,v){const o=state.occ[room];if(o){o.doctor=v;const cp=setCustDoc(o.customer,v);editingDocRoom=null;cloudPatch(Object.assign(roomPatch(room),cp||{}),o.customer+": doctor → "+(v||"none"));}}
 function editDocRoom(room){editingDocRoom=room;editingDocId=null;editingTimeId=null;editingMaskRoom=null;editingQTheraId=null;render();}
 // Waiting-room therapist field: a plain name + pencil once assigned (matching how the doctor
 // field already works), so the full-width select doesn't sit there taking up a whole row once
 // there's nothing left to pick.
 function editQThera(id){editingQTheraId=id;editingDocId=null;editingDocRoom=null;editingTimeId=null;editingTheraRoom=null;editingMaskRoom=null;render();}
-function theraInlineWaiting(id,therapist){
-  if(editingQTheraId===id||!therapist)
-    return `<select id="activeEdit" onblur="cancelEdit()" onchange="qSetThera(${id},this.value)" style="flex:1;min-width:0">${thOptions(therapist)}</select>`;
-  return `<span class="docline">${esc(therapist)}</span><button class="docedit" title="change therapist" onclick="editQThera(${id})">✎</button>`;}
+
+/* ===== therapist role: ONE name, ONE role =====
+   A customer has exactly one therapist name and one role for that person:
+     ""       nobody has taken a role
+     "wash"   💧 blue  — this person is washing the face, and nothing else
+     "washed" 💧 green — they've finished washing; still nobody in charge
+     "full"   🖐 on    — this person is the therapist in charge of everything
+   The two icons are the same field, so they can never both be lit. Changing the
+   role never touches the name and changing the name never touches the role.
+   The POINT of the wash role is the therapist panel: someone washing a face is
+   busy, and without this they'd show as free and get handed a room. */
+function roleOf(o){return (o&&o.role)||"";}
+// "Has a therapist" means someone is IN CHARGE. A room whose only person is
+// washing the face still counts as unassigned — that's deliberate, the counter
+// needs to see it in the ⚠ list.
+function hasThera(o){return !!(o&&o.therapist&&o.role==="full");}
+function isWashing(o){return roleOf(o)==="wash";}
+function roleT(kind,key){return kind==="q"?state.queue.find(x=>x.id==key):state.occ[key];}
+function roleCommit(kind,key,label,extra){const t=roleT(kind,key);if(!t)return;
+  const base=(kind==="q")?queuePatch(t):roomPatch(key);
+  cloudPatch(Object.assign(base,extra||{}),label);}
+function editTheraFor(kind,key){if(kind==="q")editQThera(key);else editTheraRoom(key);}
+// Picking a name from the dropdown. Picking someone when no role is set means the
+// ordinary thing — they're in charge — which is how this dropdown has always
+// behaved. An existing role is left exactly as it is.
+function roleSetName(kind,key,v){if(kind==="q")qSetThera(key,v);else roomSetTherapist(key,v);}
+// 💧 on the board. No name yet? open the picker — you can't wash without a washer.
+function roleWashTap(kind,key){const t=roleT(kind,key);if(!t)return;
+  const r=roleOf(t);
+  // a washed face belongs to the customer, not to a person — no name needed to clear it
+  if(r==="washed"){t.role="";roleCommit(kind,key,t.customer+": face wash cleared");return;}
+  if(!t.therapist){editTheraFor(kind,key);return;}
+  if(r==="wash"){const who=t.therapist;t.role="washed";t.therapist="";
+    roleCommit(kind,key,t.customer+": face washed by "+who+" — therapist box freed");return;}
+  t.role="wash";roleCommit(kind,key,t.customer+": "+t.therapist+" washing face");}
+// 🖐 on the board.
+function roleHandTap(kind,key){const t=roleT(kind,key);if(!t)return;
+  if(!t.therapist){editTheraFor(kind,key);return;}
+  t.role=(roleOf(t)==="full")?"":"full";
+  roleCommit(kind,key,t.customer+": "+(t.role==="full"?(t.therapist+" in charge"):"therapist released"));}
+// The therapist's own phone: a tap puts ME on it. Taking a customer off someone
+// else always asks first.
+// Tapped the wrong customer? Put them back on the pile. Only ever releases YOUR
+// own — it can't be used to take a customer off someone else.
+function roleRelease(kind,key){const t=roleT(kind,key);if(!t)return;
+  if(!sameName(t.therapist,MYNAME)){toast("That one isn't yours");return;}
+  t.therapist="";t.role="";
+  const cp=(kind==="q")?setCustThera(t.customer,""):null;
+  roleCommit(kind,key,t.customer+": released by "+MYNAME,cp||{});
+  toast(t.customer+" is back on the Everyone tab");}
+function releaseBtn(kind,key){const k=(kind==="q")?String(key):`'${jsq(key)}'`;
+  return `<button class="btn sm grey" title="not mine — put this customer back" onclick="roleRelease('${kind}',${k})">↩ not mine</button>`;}
+function roleClaim(kind,key,want){const t=roleT(kind,key);if(!t)return;
+  if(!MYNAME){toast("Sign in with your name first");return;}
+  const r=roleOf(t),mine=sameName(t.therapist,MYNAME);
+  // clearing a finished wash needs no ownership — there's nobody on it to take it from
+  if(want==="wash"&&r==="washed"){t.role="";roleCommit(kind,key,t.customer+": face wash cleared");return;}
+  if(t.therapist&&!mine&&!confirm(t.therapist+" is on "+t.customer+".\n\nTake over?"))return;
+  if(want==="wash"){
+    if(mine&&r==="wash"){ // done washing — hand the customer back so the empty box shows
+      t.role="washed";t.therapist="";
+      roleCommit(kind,key,t.customer+": face washed by "+MYNAME+" — therapist box freed");return;}
+    t.role="wash";t.therapist=MYNAME;
+    roleCommit(kind,key,t.customer+": "+MYNAME+" washing face");return;}
+  t.role=(mine&&r==="full")?"":"full"; // tapping my own 🖐 hands them back
+  t.therapist=t.role?MYNAME:"";
+  // only a real assignment updates this customer's remembered therapist
+  const cp=(kind==="q")?setCustThera(t.customer,t.therapist):null;
+  roleCommit(kind,key,t.customer+": "+(t.role==="full"?(MYNAME+" in charge"):"therapist released"),cp||{});}
+/* The shared row: the one name, then the two role buttons.
+   `phone` renders the therapist's own view — no dropdown, the pills claim for ME,
+   and their own name is left off (on their phone it's always them). */
+function roleRow(kind,key,o,phone){
+  const r=roleOf(o);
+  const kq=(kind==="q"),k=kq?String(key):`'${jsq(key)}'`;
+  const editingT=kq?(editingQTheraId===key):(editingTheraRoom===key);
+  let nameEl;
+  if(phone)nameEl=(o.therapist&&!sameName(o.therapist,MYNAME))?`<span class="docline">${esc(o.therapist)}</span>`:(o.therapist?'':'<span class="hint">nobody yet</span>');
+  else if(editingT||!o.therapist)nameEl=`<select class="rsel" ${editingT?'id="activeEdit" onblur="cancelEdit()"':''} onchange="roleSetName('${kind}',${k},this.value)" style="flex:1">${thOptions(o.therapist)}</select>`;
+  else nameEl=`<span class="docline">${esc(o.therapist)}</span><button class="docedit" title="change therapist" onclick="editTheraFor('${kind}',${k})">✎</button>`;
+  const wCls=(r==="wash")?' washing':((r==="washed")?' washed':'');
+  const wTitle=(r==="wash")?(kq?'waiting to wash face':'washing now — tap when washed'):((r==="washed")?'face washed — tap to clear':'wash face only');
+  const wPill=`<button class="wpill${wCls}" title="${wTitle}" onclick="${phone?`roleClaim('${kind}',${k},'wash')`:`roleWashTap('${kind}',${k})`}">💧${r==="washed"?' ✓':''}</button>`;
+  const hTitle=(r==="full")?'in charge — tap to release':'take charge';
+  const hPill=`<button class="wpill hand${r==="full"?' on':''}" title="${hTitle}" onclick="${phone?`roleClaim('${kind}',${k},'full')`:`roleHandTap('${kind}',${k})`}">🖐</button>`;
+  return `<div class="rolerow">${nameEl}${wPill}${hPill}</div>`;}
 function roomTxAdd(room,v){v=v.trim();if(!v)return;const o=state.occ[room];if(o){o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
   // Same guard as the timer pills use: don't add something that's already sitting
   // pending OR already marked done — that's what put "Oxy" in both lists at once.
@@ -890,29 +1200,34 @@ function moveRoomToRoom(from,to){if(!to)return;if(state.occ[to]){toast(to+" is o
     state.occ[from]=state.occ[to];state.occ[from].nextRoom=prevNext;state.occ[to]=null;
     cloudPatch(Object.assign(roomPatch(from),roomPatch(to)),cust+": moved back to "+from);
     toast("Moved back to "+from);});}
-function roomToQueue(room){const o=state.occ[room];if(!o)return;const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
+function roomToQueue(room){const o=state.occ[room];if(!o)return;const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM(),role:o.role||"",note:o.note||""};
   state.queue.push(q);state.occ[room]=null;
   cloudPatch(Object.assign(queuePatch(q),roomPatch(room)),o.customer+": "+room+" → waiting room");}
-function clearRoom(room){const o=state.occ[room];if(o&&!o.therapist){toast("Assign a therapist before clearing the room");return;}if(o&&!confirm("Clear "+room+" and free it?"))return;
+function clearRoom(room){const o=state.occ[room];if(o&&!hasThera(o)){toast("Assign a therapist in charge (\ud83d\udd90) before clearing the room");return;}if(o&&!confirm("Clear "+room+" and free it?"))return;
   let patch=roomPatch(room);
   if(o){const rec={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.txDone).concat(txArr(o.treatment)),room,at:nowHM()};
     state.completed.push(rec);state.occ[room]=null;patch=Object.assign(roomPatch(room),{["completed/"+rec.id]:rec});}
   else state.occ[room]=null;
   cloudPatch(patch,o?(o.customer+" done — "+room+" freed"):(room+" freed"));}
 function assignFreeRoom(room,id){if(id)moveQueueToRoom(parseInt(id,10),room);}
-function toggleFilter(v){filterWindow=v;try{localStorage.setItem(LS_FILTER,v?"1":"0");}catch(e){}render();}
+function toggleFilter(v){filterWindow=v;try{LS.setItem(LS_FILTER,v?"1":"0");}catch(e){}render();}
 function clearRooms(){if(!isCounter())return;if(!confirm("Move everyone out of rooms AND out of the waiting room, back to the appointments list? Rooms become free and nobody is deleted. Today's records are kept."))return;
   autoBackup();
   const patch={};let n=0,w=0;
   // The waiting room is "checked in today" — a reset has to clear that too, or
   // yesterday's arrivals stay marked as standing at the counter.
-  state.queue.forEach(q=>{if(q.arrivedAt){q.arrivedAt="";Object.assign(patch,queuePatch(q));w++;}});
+  state.queue.forEach(q=>{const wasIn=!!q.arrivedAt;
+    if(!wasIn&&!q.role)return;
+    if(wasIn){q.arrivedAt="";w++;}
+    q.therapist="";q.role=""; // yesterday's roles are never carried over
+    Object.assign(patch,queuePatch(q));});
   allRooms().forEach(r=>{const o=state.occ[r];if(!o)return;n++;
     // arrivedAt stays EMPTY so they land in Appointments, matching what this
     // dialog has always promised. The other room->queue paths (per-room send
     // back, a room deleted in Edit lists, load-from-file) still set it, because
     // there the person really is in the clinic waiting.
-    const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:""};
+    const q={id:nextId(),customer:o.customer,doctor:"",therapist:"",role:"",note:"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:""};
+    q.doctor=o.doctor; // the doctor is the appointment; the therapist role is today's and resets
     state.queue.push(q);state.occ[r]=null;
     Object.assign(patch,queuePatch(q));
     Object.assign(patch,roomPatch(r));
@@ -1199,6 +1514,10 @@ function refreshTimers(){try{
       document.querySelectorAll(`[data-oxynm="${cssEsc(r)}"]`).forEach(el=>{el.textContent=oxyLabel(o);});}
     document.querySelectorAll(`[data-oxys="${cssEsc(r)}"]`).forEach(el=>{const st=statusFor(o);el.textContent=st.t;el.className="pstatus"+(st.cls?" "+st.cls:"");});
     document.querySelectorAll(`[data-teta="${cssEsc(r)}"]`).forEach(el=>{el.textContent=roomEta(o).txt;});
+    document.querySelectorAll(`[data-rstat="${cssEsc(r)}"]`).forEach(el=>{const ov=roomStatusOver(o),st=roomStatus(o),nt=el.getAttribute('data-rnote')||'';
+      el.textContent=st||(nt?('📝 '+nt):'');   // the note holds the slot only while no timer needs it
+      el.classList.toggle('over',ov&&!!st);el.classList.toggle('wash',isWashing(o));el.classList.toggle('note',!st&&!!nt);});
+    document.querySelectorAll(`[data-purg="${cssEsc(r)}"]`).forEach(el=>{const u=cardUrgency(o).trim();el.classList.toggle('soon',u==='soon');el.classList.toggle('over',u==='over');});
     if(o.consult)document.querySelectorAll(`[data-constart="${cssEsc(r)}"]`).forEach(el=>{el.textContent=consultElapsed(o)+"m";});
     document.querySelectorAll(`[data-trig="${cssEsc(r)}"]`).forEach(el=>{
       const mode=el.getAttribute('data-trigmode');
@@ -1268,7 +1587,7 @@ function undo(){
   Object.keys(a.before).forEach(p=>mirrorSet(p,a.before[p]));
   applyPatchLocally(a.before);
   logAction("undid: "+a.label);
-  saveLocal();render();updateUndoBtn();toast("Undone — "+a.label);}
+  render();saveLocal();updateUndoBtn();toast("Undone — "+a.label);}
 function toggleMenu(e){e.stopPropagation();const m=$("moreMenu");if(m)m.classList.toggle("show");}
 function closeMenu(){const m=$("moreMenu");if(m)m.classList.remove("show");}
 
@@ -1331,13 +1650,12 @@ function roomCard(room){
   const nextOpts=['<option value="">set next room…</option>'].concat(allRooms().filter(r=>r!==room).map(r=>`<option ${o.nextRoom===r?'selected':''}>${esc(r)}</option>`)).join('');
   const goBtn=o.nextRoom?`<button class="btn sm" onclick="moveRoomToRoom('${jsq(room)}','${jsq(o.nextRoom)}')">→ ${esc(o.nextRoom)} now</button>`:'';
   const docEl=editingDocRoom===room?`<select id="activeEdit" onblur="cancelEdit()" onchange="roomSetDoctor('${jsq(room)}',this.value)" style="flex:1">${docOptions(o.doctor)}</select>`:`<span class="docline">${esc(o.doctor)||'no doctor'}</span><button class="docedit" title="change doctor" onclick="editDocRoom('${jsq(room)}')">✎</button>`;
-  const editingT=editingTheraRoom===room;
-  const theraEl=(!o.therapist||editingT)?`<select class="selCompact" ${editingT?'id="activeEdit" onblur="cancelEdit()"':''} onchange="roomSetTherapist('${jsq(room)}',this.value)">${thOptions(o.therapist)}</select>`:`<span class="docline">${esc(o.therapist)}</span><button class="docedit" title="change therapist" onclick="editTheraRoom('${jsq(room)}')">✎</button>`;
+  const theraEl=roleRow("r",room,o);
   const remChips=txArr(o.treatment).map((x,i)=>`<span class="txchip"><span class="txname" title="tap when done" onclick="roomTxDone('${jsq(room)}',${i})">${esc(x)}</span><b title="remove" onclick="roomTxRemove('${jsq(room)}',${i})">✕</b></span>`).join('');
   const doneChips=txArr(o.txDone).map((x,i)=>`<span class="txchip done"><span class="txname" title="tap to undo" onclick="roomTxUndo('${jsq(room)}',${i})">${esc(x)}</span></span>`).join('');
-  return `<div class="room occ${maskClass(o)}${(o.therapist||o.consult)?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">${o.consult?'CONSULT':(o.mask&&toMin(o.mask)-curMin()<0?'MASK OFF':(o.numb&&toMin(o.numb)-curMin()<0?'NUMB DONE':'IN USE'))}</span></div>
-    <div class="body">${nb}${(o.therapist||o.consult)?'':'<div class="noTheraBanner">⚠ No therapist assigned</div>'}
-      <div class="cust">${esc(o.customer)}</div>
+  return `<div class="room occ${maskClass(o)}${(hasThera(o)||o.consult)?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">${o.consult?'CONSULT':(o.mask&&toMin(o.mask)-curMin()<0?'MASK OFF':(o.numb&&toMin(o.numb)-curMin()<0?'NUMB DONE':'IN USE'))}</span></div>
+    <div class="body">${nb}${(hasThera(o)||o.consult)?'':'<div class="noTheraBanner">⚠ No therapist assigned</div>'}
+      <div class="cust">${esc(o.customer)} ${dupBadge(o.customer)}</div>
       <div class="fieldrow"><label>Doctor</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${docEl}</div></div>
       ${o.consult?'':`<div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>`}
       ${o.consult?'':`<div class="fieldrow"><label>${picking?(editingNumbRoom===room?'Numb for':'Mask for'):'Timer'}</label><div style="flex:1;display:flex;align-items:center;gap:6px;padding-top:4px;flex-wrap:wrap">${picking?'':stageChipsRow(room,o)}</div></div>`}
@@ -1380,34 +1698,85 @@ function roomEta(o){ // minutes until this room needs no more therapist time, or
   if(o.numb){const d=toMin(o.numb)-curMin();return {m:Math.max(0,d),txt:d<0?"numb overdue "+(-d)+"m":"numbing "+d+"m left",over:d<0};}
   const pend=txArr(o.treatment).length;
   return {m:null,pend,txt:(o.stage||"in room")+(pend?" \u00b7 "+pend+" tx pending":""),over:false};}
+/* Status for the Rooms tab. Unlike roomEta (which answers "when is this therapist
+   free?") this spells out WHICH timer is running — Oxy / SRW / Numb / Mask — and
+   says nothing at all when there is nothing to report. "in room" told them
+   something they could already see. */
+function roomStatus(o){
+  if(!o)return"";
+  if(o.consult)return "consult"+(o.consultant?" · "+o.consultant:"");
+  const r=roleOf(o);
+  if(r==="wash")return "💧 washing";
+  const p=oxyPos(o);
+  if(p&&!p.fin)return o.oxy&&o.oxy.paused?(oxyLabel(o)+" · ⏸"):(oxyLabel(o)+" · "+fmtRem(p.remS));
+  if(p&&p.fin)return oxyLabel(o)+" done";
+  if(o.mask){const d=toMin(o.mask)-curMin();return d<0?("Mask overdue "+(-d)+"m"):("Mask · off "+hm12(o.mask));}
+  if(o.numb){const d=toMin(o.numb)-curMin();return d<0?("Numb done "+(-d)+"m ago"):("Numb · "+d+"m left");}
+  if(r==="washed"&&!hasThera(o))return "💧 washed";
+  return "";}
+function roomStatusOver(o){
+  if(!o)return false;
+  if(o.mask)return toMin(o.mask)-curMin()<0;
+  if(o.numb)return toMin(o.numb)-curMin()<0;
+  const p=oxyPos(o);return !!(p&&p.fin);}
+// How urgent is this card — drives the yellow / red border on a therapist's own
+// cards, the same signal the counter's room tiles already use.
+function cardUrgency(o){
+  if(!o)return"";
+  if(o.mask){const d=toMin(o.mask)-curMin();if(d<0)return" over";if(d<=5)return" soon";}
+  if(o.numb){const d=toMin(o.numb)-curMin();if(d<0)return" over";if(d<=2)return" soon";}
+  const p=oxyPos(o);
+  if(p&&!(o.oxy&&o.oxy.paused)){if(p.fin)return" over";if(p.remS<=120)return" soon";}
+  return"";}
 function etaLabel(m){if(m===null)return "no timer";if(m<=0)return "now";return "~"+m+"m";}
-function renderThera(){
-  const rooms={};allRooms().forEach(r=>{const o=state.occ[r];if(o&&o.therapist)(rooms[o.therapist]=rooms[o.therapist]||[]).push(r);});
-  const rows=state.therapists.map(t=>{const rs=rooms[t]||[];
+// Everyone currently washing a face, keyed by therapist name. A wash has no timer,
+// but it still means that person is NOT free — without this the panel would show
+// them as available and someone would hand them a room.
+// A wash on a WAITING-ROOM entry is a job lined up, not one under way — the
+// customer isn't in a room yet. Only a room wash is actually "washing".
+function washWord(kind){return kind==="q"?"waiting to wash":"washing";}
+function washJobs(){const out={};
+  allRooms().forEach(r=>{const o=state.occ[r];if(o&&isWashing(o))(out[o.therapist]=out[o.therapist]||[]).push({kind:"r",key:r,where:r,cust:o.customer});});
+  state.queue.forEach(q=>{if(isWashing(q))(out[q.therapist]=out[q.therapist]||[]).push({kind:"q",key:q.id,where:"waiting room",cust:q.customer});});
+  return out;}
+function renderThera(){$("theraPanel").innerHTML=theraPanelHtml();}
+// hideNoThera: the therapist phone already lists those rooms as full cards at the
+// top of its floor tab, so the compact tag list would just repeat them.
+function theraPanelHtml(hideNoThera,hideAttn){
+  const rooms={};allRooms().forEach(r=>{const o=state.occ[r];if(hasThera(o))(rooms[o.therapist]=rooms[o.therapist]||[]).push(r);});
+  const washes=washJobs();
+  // A washer who isn't on the therapist list (renamed, or typed in) still has to
+  // appear, or their wash would silently count for nobody.
+  const roster=state.therapists.slice();
+  Object.keys(washes).forEach(n=>{if(!roster.some(x=>sameName(x,n)))roster.push(n);});
+  const rows=roster.map(t=>{const rs=rooms[t]||[],ws=washes[t]||[];
     const items=rs.map(r=>({room:r,eta:roomEta(state.occ[r]),cust:state.occ[r].customer}));
-    let free=!rs.length,eta=0,unknown=false;
+    let free=!rs.length&&!ws.length,eta=0,unknown=false;
     items.forEach(it=>{if(it.eta.m===null)unknown=true;else eta=Math.max(eta,it.eta.m);});
-    return {t,items,free,eta:free?0:(unknown?null:eta)};});
+    return {t,items,ws,free,washOnly:!rs.length&&ws.length>0,eta:rs.length?(unknown?null:eta):0};});
   rows.forEach(r=>{r.pend=r.free?0:r.items.reduce((s,it)=>s+(it.eta.pend||0),0);});
   rows.sort((a,b)=>{
-    const av=a.free?-1:(a.eta===null?9999:a.eta),bv=b.free?-1:(b.eta===null?9999:b.eta);
+    // free first, then washing-only (a face wash is short and untimed, so they're
+    // nearly free), then everyone else by how soon their rooms finish
+    const av=a.free?-1:(a.washOnly?-0.5:(a.eta===null?9999:a.eta)),bv=b.free?-1:(b.washOnly?-0.5:(b.eta===null?9999:b.eta));
     if(av!==bv)return av-bv;
     return a.pend-b.pend; // among unknown/no-timer rooms, fewer pending treatments ranks higher
   });
   let html="";
-  const attn=attentionList();
+  const attn=hideAttn?[]:attentionList();
   if(attn.length){html+=`<div class="section-title" style="color:#b3261e">\u26a0 Needs attention</div>`;
     attn.forEach(it=>{const ao=state.occ[it.r];
       html+=`<div class="attnrow2"><span class="aroom2">${esc(it.r)}</span><span class="acust">${esc(ao.customer)}</span><span class="areason2">${esc(it.txt)}</span>${it.act?`<button class="chip sel attnbtn" onclick="attnAction('${it.act}','${jsq(it.r)}')">${esc(it.label)}</button>`:''}</div>`;});}
-  let noTh=allRooms().filter(r=>state.occ[r]&&!state.occ[r].therapist&&!state.occ[r].consult);
+  let noTh=hideNoThera?[]:allRooms().filter(r=>state.occ[r]&&!hasThera(state.occ[r])&&!state.occ[r].consult);
   if(noTh.length){html+=`<div class="section-title" style="margin-top:${attn.length?'10px':'0'};color:#7b2cbf">\u26a0 No therapist yet</div>`+noTh.map(r=>`<span class="tag warn">${esc(r)} \u00b7 ${esc(state.occ[r].customer)}</span>`).join('');}
   html+=`<div class="section-title" style="margin-top:${(attn.length||noTh.length)?'10px':'0'}">Therapists \u2014 free soonest first</div>`;
   if(!rows.length)html+='<span class="hint">no therapists in list</span>';
-  rows.forEach(r=>{const cls=r.free?'free':((r.eta!==null&&r.eta<=10)?'soon':'');
-    html+=`<div class="trow ${cls}"><div class="ttop"><span class="tname">${esc(r.t)}</span><span class="teta${r.eta===null&&!r.free?' unk':''}">${r.free?'FREE':etaLabel(r.eta)}</span></div>`;
+  rows.forEach(r=>{const cls=r.free?'free':(r.washOnly?'soon':((r.eta!==null&&r.eta<=10)?'soon':''));
+    html+=`<div class="trow ${cls}"><div class="ttop"><span class="tname">${esc(r.t)}</span><span class="teta${(r.eta===null&&!r.free&&!r.washOnly)?' unk':''}">${r.free?'FREE':(r.washOnly?('💧 '+(r.ws.some(w=>w.kind==="r")?'washing':'to wash')):etaLabel(r.eta))}</span></div>`;
     r.items.forEach(it=>{html+=`<div class="tline"><span class="troom">${esc(it.room)}</span><span class="tstat${it.eta.over?' over':''}" data-teta="${esc(it.room)}">${esc(it.eta.txt)}</span></div>`;});
+    r.ws.forEach(w=>{html+=`<div class="tline"><span class="troom">${esc(w.where)}</span><span class="tstat wash">💧 ${washWord(w.kind)} · ${esc(w.cust)}</span></div>`;});
     html+=`</div>`;});
-  $("theraPanel").innerHTML=html;
+  return html;
 }
 function renderWaiting(){
   const nowM=curMin();
@@ -1415,9 +1784,9 @@ function renderWaiting(){
   let html=`<div class="section-title">Waiting room — longest first (${w.length})</div>`;
   if(!w.length){html+=`<div class="hint">No one checked in. Tap “✓ Arrived” on an appointment.</div>`;}
   w.forEach(({q,wait})=>{const cls=wait>=40?'wlong':wait>=20?'wmed':'';
-    html+=`<div class="witem ${cls}"><div class="wtop"><b>${esc(q.customer)}</b><span class="wmin">${wait}m</span></div>
-      <div class="qmeta" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);min-width:0">${docInline(q.id,q.doctor)}${q.appt?' · '+esc(hm12(q.appt)):''}</div>
-      <div class="qmeta" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:3px">${qConsultBadge(q)}${theraInlineWaiting(q.id,q.therapist)}</div>
+    html+=`<div class="witem ${cls}"><div class="wtop"><b>${esc(q.customer)} ${dupBadge(q.customer)}</b><span class="wmin">${wait}m</span></div>
+      <div class="qmeta" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);min-width:0">${docInline(q.id,q.doctor)}${q.appt?' · '+esc(hm12(q.appt)):''}${qConsultBadge(q)}</div>
+      <div class="qmeta" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:3px">${roleRow("q",q.id,q)}</div>
       ${qConsultDetail(q)}
       <div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}<input class="txin" list="txList" placeholder="+ tx" onchange="qTxAdd(${q.id},this.value);this.value=''"></div>
       <div style="display:flex;gap:6px;align-items:center"><select onchange="moveQueueToRoom(${q.id},this.value)" style="flex:1">${sendRoomOpts('→ room ▾')}</select><button class="btn sm grey" title="Clicked Arrived by mistake — send back to appointments" onclick="qCheckIn(${q.id})">↩ appts</button><button class="btn sm grey" title="Remove customer (logged in Records)" onclick="removeQueue(${q.id})">✕</button></div></div>`;});
@@ -1442,7 +1811,7 @@ function qCard(q){
     ? `<select id="activeEdit" onblur="cancelEdit()" onchange="qSetDoctor(${q.id},this.value)" style="flex:1">${docOptions(q.doctor)}</select>`
     : `<span>${esc(q.doctor)||'\u2014'}</span>${open?`<button class="docedit" title="change doctor" onclick="editDoc(${q.id})">\u270e</button><select class="theraSel" title="therapist" onchange="qSetThera(${q.id},this.value)">${thOptions(q.therapist)}</select>`:''}`;
   let h=`<div class="qitem compact"><div class="qtop2">
-      <div class="qleft">${timeEl}<span class="qname">${esc(q.customer)}</span><span class="qdoc">${docEl}</span></div>
+      <div class="qleft">${timeEl}<span class="qname">${esc(q.customer)}</span>${dupBadge(q.customer)}<span class="qdoc">${docEl}</span></div>
       <div class="qright"><button class="chip" onclick="qCheckIn(${q.id})">\u2713 Arrived</button><button class="qmore" title="more" onclick="toggleQ(${q.id})">${open?'\u25b4 less':'\u22ef more'}</button></div>
     </div>`;
   if(open){h+=`<div class="qexp"><div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}<input class="txin" list="txList" placeholder="+ treatment" onchange="qTxAdd(${q.id},this.value);this.value=''"></div><div class="qrowB"><select class="sendSel" onchange="moveQueueToRoom(${q.id},this.value)">${sendRoomOpts('Send to room \u25be')}</select><button class="qx" title="Remove" onclick="removeQueue(${q.id})">\u2715</button></div></div>`;}
@@ -1534,7 +1903,7 @@ function renderDoctorView(){
   if(!mine.length)html+=`<div class="empty">No customers in rooms.</div>`;
   mine.forEach(r=>{const o=state.occ[r];const st=statusForDoctor(o);
     html+=`<div class="pcard${doctorNeeded(o)?' alert':''}"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
-      <div class="pmeta docmeta">${o.therapist?esc(o.therapist):'<span class="hint">no therapist yet</span>'}${st?`<span class="pstatus ${st.cls}" data-oxys="${esc(r)}">${esc(st.t)}</span>`:''}</div>
+      <div class="pmeta docmeta">${hasThera(o)?esc(o.therapist):'<span class="hint">no therapist yet</span>'}${st?`<span class="pstatus ${st.cls}" data-oxys="${esc(r)}">${esc(st.t)}</span>`:''}</div>
       ${consultBlock(r,o)}
       <div class="pmeta">Tap a treatment to mark done / undo:</div>
       ${phoneTxChips(r,o,true,true)}
@@ -1552,14 +1921,145 @@ function renderDoctorView(){
   $("phoneHost").innerHTML=html;
 }
 
+/* The therapist phone has two tabs: their own customers, and the floor — who's
+   waiting and what everyone else is doing, so they can see who needs help and
+   claim a job themselves when nobody's at the counter. */
+function setTheraTab(n){theraTab=(n===2||n===3)?n:1;render();}
+// Everyone nobody has taken charge of yet — in a room OR standing in the waiting
+// room. This is the "someone needs to act" number, so it counts both.
+function needsSomeone(){
+  let n=state.queue.filter(q=>q.arrivedAt&&!hasThera(q)).length;
+  allRooms().forEach(r=>{const o=state.occ[r];if(o&&!hasThera(o)&&!o.consult)n++;});
+  return n;}
 function renderTheraView(){
+  const need=needsSomeone();
+  const html=`<div class="tabbar">
+      <button class="tabbtn${theraTab===1?' on':''}" onclick="setTheraTab(1)">Mine</button>
+      <button class="tabbtn${theraTab===2?' on':''}" onclick="setTheraTab(2)">Everyone${need?`<span class="tabcount" title="${need} customer(s) with nobody in charge"><b>${need}</b></span>`:''}</button>
+      <button class="tabbtn${theraTab===3?' on':''}" onclick="setTheraTab(3)">Rooms</button>
+    </div>`+(theraTab===3?theraRoomsTab():(theraTab===2?theraFloorTab():theraMineTab()));
+  $("phoneHost").innerHTML=html;
+}
+/* Tab 3 — every room on one screen, the way their old spreadsheet read: one line
+   per room, in board order. Tap a line to open the detail underneath it. */
+function theraRoomsTab(){
+  let html=`<div class="section-title">All rooms (${allRooms().filter(r=>state.occ[r]).length} in use / ${allRooms().length})</div>`;
+  state.groups.forEach(g=>{
+    html+=`<div class="rgrp">${esc(g.name)}</div>`;
+    g.rooms.forEach(r=>{const o=state.occ[r];const open=expandedStatusRoom===r;
+      if(!o){const nx=nextFor(r);
+        html+=`<div class="sline free" onclick="statusToggle('${jsq(r)}')"><span class="sroom">${esc(r)}</span><div class="sbody"><span class="scust hint">${nx?'reserved for '+esc(nx.customer):'—'}</span><span class="sstat">FREE</span></div></div>`;
+        return;}
+      const over=roomStatusOver(o);const wash=isWashing(o);
+      const stat=roomStatus(o);
+      const who=hasThera(o)?esc(o.therapist):'<b class="noth">no therapist</b>';
+      const nx=nextFor(r);
+      // Treatments read left to right, done ones struck through. The note sits in the
+      // status slot whenever no timer needs it, and drops to its own row when one does —
+      // it must never be hidden, it's how they tell each other what's running.
+      const txLine=txArr(o.treatment).map(esc).concat(txArr(o.txDone).map(x=>'<s>'+esc(x)+'</s>')).join(', ');
+      const noteInStat=!stat&&!!o.note;
+      html+=`<div class="sline${over?' over':''}${open?' open':''}" onclick="statusToggle('${jsq(r)}')">
+          <span class="sroom">${esc(r)}</span>
+          <div class="sbody">
+            <div class="stop"><span class="scust">${esc(o.customer)}</span>
+              <span class="sstat${over?' over':''}${wash?' wash':''}${noteInStat?' note':''}" data-rstat="${esc(r)}" data-rnote="${esc(o.note||'')}">${noteInStat?('📝 '+esc(o.note)):esc(stat)}</span></div>
+            <div class="swho">${esc(o.doctor)||'—'} · ${who}</div>
+            ${txLine?`<div class="stx">${txLine}</div>`:''}
+            ${(o.note&&!noteInStat)?`<div class="snote">📝 ${esc(o.note)}</div>`:''}
+            ${nx?`<div class="snext">⏭ Next: ${esc(nx.customer)} (from ${esc(nx.from)})</div>`:''}
+          </div></div>`;
+      if(open){
+        html+=`<div class="sdetail">
+          ${(txArr(o.treatment).length||txArr(o.txDone).length)?phoneTxChips(r,o,true):`<div class="txwrap">${txAddSel(r)}<span class="hint">no treatment set</span></div>`}
+          ${noteRow(r,o,'Note')}
+        </div>`;}
+    });
+  });
+  const nowM=curMin();
+  const w=state.queue.filter(q=>q.arrivedAt).map(q=>({q,wait:Math.max(0,nowM-toMin(q.arrivedAt))})).sort((a,b)=>b.wait-a.wait);
+  html+=`<div class="rgrp" style="margin-top:12px">Waiting room (${w.length})</div>`;
+  if(!w.length)html+=`<div class="sline waitline free"><span class="sroom">—</span><div class="sbody"><span class="scust hint">nobody checked in</span><span class="sstat"></span></div></div>`;
+  w.forEach(({q,wait})=>{const r=roleOf(q);const open=expandedWaitId===q.id;
+    const stat=(r==="washed")?'💧 washed':((r==="wash")?'💧 to wash':'');
+    const tx=txArr(q.treatment);
+    const noteInStat=!stat&&!!q.note;
+    html+=`<div class="sline waitline${wait>=40?' over':(wait>=20?' warm':'')}${open?' open':''}" onclick="waitToggle(${q.id})">
+        <span class="sroom">${wait}m</span>
+        <div class="sbody">
+          <div class="stop"><span class="scust">${esc(q.customer)}</span>
+            <span class="sstat${r==="wash"?' wash':''}${noteInStat?' note':''}">${noteInStat?('📝 '+esc(q.note)):esc(stat)}</span></div>
+          <div class="swho">${esc(q.doctor)||'no doctor'}${q.appt?' · '+esc(hm12(q.appt)):''}${hasThera(q)?' · '+esc(q.therapist):''}</div>
+          ${tx.length?`<div class="stx">${tx.map(esc).join(', ')}</div>`:''}
+          ${(q.note&&!noteInStat)?`<div class="snote">📝 ${esc(q.note)}</div>`:''}
+        </div></div>`;
+    if(open)html+=`<div class="sdetail">
+        ${roleRow("q",q.id,q,true)}
+        <div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}${qTxAddSel(q.id)}</div>
+        ${qNoteRow(q)}
+        <div class="qactions"><select onchange="moveQueueToRoom(${q.id},this.value)" style="flex:1"><option value="">→ bring to room…</option>${freeRooms().map(r2=>`<option>${esc(r2)}</option>`).join('')}</select></div>
+      </div>`;});
+  return html;
+}
+function statusToggle(room){expandedStatusRoom=(expandedStatusRoom===room)?null:room;expandedWaitId=null;render();}
+function waitToggle(id){expandedWaitId=(expandedWaitId===id)?null:id;expandedStatusRoom=null;render();}
+function theraFloorTab(){
+  const nowM=curMin();let html="";
+  // The tab badge is just a number, and a number with nothing beside it is a
+  // riddle — say plainly what it counts and where those customers are.
+  const nRoom=allRooms().filter(r=>state.occ[r]&&!hasThera(state.occ[r])&&!state.occ[r].consult).length;
+  const nWait=state.queue.filter(q=>q.arrivedAt&&!hasThera(q)).length;
+  if(nRoom+nWait)html+=`<div class="needline">${nRoom+nWait} with nobody in charge — ${nRoom} in rooms, ${nWait} waiting</div>`;
+  // Anything overdue comes first — this tab exists so they can help each other,
+  // and that only works if the therapist whose room it is gets named.
+  const attn=attentionList();
+  if(attn.length){html+=`<div class="section-title" style="color:#b3261e">⚠ Needs attention (${attn.length})</div>`;
+    attn.forEach(it=>{const ao=state.occ[it.r];if(!ao)return;
+      html+=`<div class="pcard over"><div class="ptop"><span class="pname">${esc(ao.customer)}</span><span class="proom">${esc(it.r)}</span></div>
+        <div class="pmeta">${hasThera(ao)?('<b>'+esc(ao.therapist)+'</b>'):'<b class="noth">no therapist</b>'} · <b style="color:#b3261e">${esc(it.txt)}</b></div>
+        ${it.act?`<div class="qactions"><button class="btn sm" style="flex:1" onclick="attnAction('${it.act}','${jsq(it.r)}')">${esc(it.label)}</button></div>`:''}</div>`;});}
+  // rooms with a customer but nobody in charge — the literal "who needs help" list
+  const noTh=allRooms().filter(r=>state.occ[r]&&!hasThera(state.occ[r])&&!state.occ[r].consult);
+  html+=`<div class="section-title" style="color:#7b2cbf${attn.length?';margin-top:14px':''}">⚠ Rooms with no therapist (${noTh.length})</div>`;
+  if(!noTh.length)html+=`<div class="empty">Every room in use has someone.</div>`;
+  noTh.forEach(r=>{const o=state.occ[r];
+    html+=`<div class="pcard alert"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
+      <div class="pmeta">${o.doctor?esc(o.doctor):'<span class="hint">no doctor yet</span>'}</div>
+      ${roleRow("r",r,o,true)}</div>`;});
+  const w=state.queue.filter(q=>q.arrivedAt).map(q=>({q,wait:Math.max(0,nowM-toMin(q.arrivedAt))})).sort((a,b)=>b.wait-a.wait);
+  // Only worth the space when rooms are getting scarce; with plenty free it's noise.
+  const fr=freeRooms();
+  if(fr.length<4)html+=`<div class="freeline${fr.length?'':' none'}">${fr.length?('🟢 Free now: '+fr.map(esc).join(' · ')):'⚠ No free rooms right now'}</div>`;
+  html+=`<div class="section-title" style="margin-top:14px">Waiting room — longest first (${w.length})</div>`;
+  if(!w.length)html+=`<div class="empty">Nobody checked in.</div>`;
+  w.forEach(({q,wait})=>{html+=`<div class="pcard${wait>=20?' alert':''}"><div class="ptop"><span class="pname">${esc(q.customer)} ${dupBadge(q.customer)}</span><span class="wmin">${wait}m</span></div>
+    <div class="pmeta">${q.doctor?esc(q.doctor)+' · ':''}${q.appt?'appt '+esc(hm12(q.appt)):'no time'}</div>
+    ${roleRow("q",q.id,q,true)}
+    <div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}${qTxAddSel(q.id)}</div>
+    ${qNoteRow(q)}
+    <div class="qactions"><select onchange="moveQueueToRoom(${q.id},this.value)" style="flex:1"><option value="">→ bring to room…</option>${freeRooms().map(r=>`<option>${esc(r)}</option>`).join('')}</select></div></div>`;});
+  html+=`<div style="margin-top:14px">${theraPanelHtml(true,true)}</div>`;
+  return html;
+}
+function theraMineTab(){
   const me=MYNAME;const nowM=curMin();
   let html="";
-  const mine=allRooms().filter(r=>state.occ[r]&&sameName(state.occ[r].therapist,me));
-  html+=`<div class="section-title">My rooms (${mine.length})</div>`;
+  // Faces I'm washing right now — my job too, and it isn't a room of mine, so it
+  // would otherwise only show on the other tab.
+  const washing=(washJobs()[me]||[]);
+  if(washing.length){
+    html+=`<div class="section-title">💧 Face wash (${washing.length})</div>`;
+    washing.forEach(w=>{const kind=w.kind,key=w.key;const t=roleT(kind,key);
+      if(!t)return;
+      html+=`<div class="pcard"><div class="ptop"><span class="pname">${esc(w.cust)}</span><span class="proom">${esc(w.where)}</span></div>
+        ${roleRow(kind,key,t,true)}
+        <div class="pmeta hint">${w.kind==="q"?"Waiting to wash — bring them to a room first.":"Tap 💧 when the face is washed."}</div>
+        <div class="qactions">${releaseBtn(kind,key)}</div></div>`;});}
+  const mine=allRooms().filter(r=>hasThera(state.occ[r])&&sameName(state.occ[r].therapist,me));
+  html+=`<div class="section-title"${washing.length?' style="margin-top:14px"':''}>My rooms (${mine.length})</div>`;
   if(!mine.length)html+=`<div class="empty">No rooms right now.</div>`;
   mine.forEach(r=>{const o=state.occ[r];
-    html+=`<div class="pcard"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
+    html+=`<div class="pcard${cardUrgency(o)}" data-purg="${esc(r)}"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
       <div class="pmeta">${o.doctor?esc(o.doctor):'<span class="hint">no doctor yet</span>'}</div>
       ${theraModeRow(r,o)}
       ${consultBlock(r,o)}
@@ -1567,19 +2067,19 @@ function renderTheraView(){
       ${phoneTxChips(r,o,true)}
       ${noteRow(r,o,'Note')}
       ${o.nextRoom?`<div class="pmeta" style="margin-top:8px">Next \u2014 reserved for <b>${esc(o.nextRoom)}</b></div><div class="qactions"><button class="btn sm" style="flex:1" onclick="moveRoomToRoom('${jsq(r)}','${jsq(o.nextRoom)}')">\u2192 Move to ${esc(o.nextRoom)}</button></div>`:''}
-      <div class="qactions"><button class="btn sm red" onclick="clearRoom('${jsq(r)}')">Clear room \u2014 treatment done</button></div>
+      <div class="qactions"><button class="btn sm red" style="flex:1" onclick="clearRoom('${jsq(r)}')">Clear room \u2014 treatment done</button>${releaseBtn("r",r)}</div>
     </div>`;});
-  const next=state.queue.filter(q=>sameName(q.therapist,me)).map(q=>({q,wait:q.arrivedAt?Math.max(0,nowM-toMin(q.arrivedAt)):-1})).sort((a,b)=>b.wait-a.wait);
+  const next=state.queue.filter(q=>hasThera(q)&&sameName(q.therapist,me)).map(q=>({q,wait:q.arrivedAt?Math.max(0,nowM-toMin(q.arrivedAt)):-1})).sort((a,b)=>b.wait-a.wait);
   html+=`<div class="section-title" style="margin-top:14px">Assigned to me \u2014 up next (${next.length})</div>`;
   if(!next.length)html+=`<div class="empty">No one assigned yet. The consultant assigns from the board.</div>`;
   next.forEach(({q,wait})=>{html+=`<div class="pcard${wait>=20?' alert':''}"><div class="ptop"><span class="pname">${esc(q.customer)}</span>${wait>=0?`<span class="wmin">${wait}m wait</span>`:`<span class="qtime">${q.appt?esc(hm12(q.appt)):'no time'}</span>`}</div>
     <div class="pmeta">${q.doctor?esc(q.doctor)+' \u00b7 ':''}${wait>=0?'in waiting room':'not arrived yet'}</div>
     <div class="txwrap">${txArr(q.treatment).map(x=>`<span class="txchip">${esc(x)}</span>`).join('')||'<span class="hint">no treatment set</span>'}</div>
-    ${wait>=0?`<div class="qactions"><select onchange="moveQueueToRoom(${q.id},this.value)" style="flex:1"><option value="">\u2192 bring to room\u2026</option>${freeRooms().map(r=>`<option>${esc(r)}</option>`).join('')}</select></div>`:`<div class="pmeta hint">Check in from the board once they arrive</div>`}</div>`;});
+    <div class="qactions">${wait>=0?`<select onchange="moveQueueToRoom(${q.id},this.value)" style="flex:1"><option value="">\u2192 bring to room\u2026</option>${freeRooms().map(r=>`<option>${esc(r)}</option>`).join('')}</select>`:'<span class="pmeta hint" style="flex:1">Check in from the board once they arrive</span>'}${releaseBtn("q",q.id)}</div></div>`;});
   const done=state.completed.filter(c=>sameName(c.therapist,me));
   html+=`<div class="section-title" style="margin-top:14px">Done today (${done.length})</div>`;
   done.slice().reverse().forEach(c=>{html+=`<div class="rec-item">\u2713 ${esc(c.at||'')} \u00b7 ${esc(c.customer)}${txArr(c.treatment).length?' / '+esc(txDisp(c.treatment)):''}</div>`;});
-  $("phoneHost").innerHTML=html;
+  return html;
 }
 
 function roomUrgency(o){const p=oxyPos(o);
@@ -1611,8 +2111,8 @@ function renderConsultantPhone(){
   if(!occR.length)html+=`<div class="empty">All rooms free.</div>`;
   occR.forEach(r=>{const o=state.occ[r];const urgent=roomUrgency(o)<4;
     html+=`<div class="pcard${urgent?' alert':''}"><div class="ptop"><span class="pname">${esc(o.customer)}</span><span class="proom">${esc(r)}</span></div>
-      <div class="pmeta">${esc(o.doctor)||'no doctor'} \u00b7 ${o.therapist?esc(o.therapist):'<b style="color:#7b2cbf">\u26a0 no therapist</b>'}</div>
-      ${o.therapist?'':`<select onchange="roomSetTherapist('${jsq(r)}',this.value)">${thOptions('')}</select>`}
+      <div class="pmeta">${esc(o.doctor)||'no doctor'} \u00b7 ${hasThera(o)?esc(o.therapist):'<b style="color:#7b2cbf">\u26a0 no therapist</b>'}</div>
+      ${hasThera(o)?'':`<select onchange="roomSetTherapist('${jsq(r)}',this.value)">${thOptions(o.therapist)}</select>`}
       ${o.consult?'':stageChipsRow(r,o)}
       ${consultBlock(r,o)}
       ${phoneTxChips(r,o,false)}
@@ -1638,7 +2138,7 @@ function renderConsultantPhone(){
 /* ===== therapist log / records (board roles) ===== */
 function therapistGroups(){
   let g={};const add=(t,o)=>{t=t||"— (no therapist)";(g[t]=g[t]||[]).push(o);};
-  allRooms().forEach(r=>{const o=state.occ[r];if(o)add(o.therapist,{customer:o.customer,treatment:txDisp(o.treatment),status:'now',room:r});});
+  allRooms().forEach(r=>{const o=state.occ[r];if(o)add(hasThera(o)?o.therapist:"",{customer:o.customer,treatment:txDisp(o.treatment),status:'now',room:r});});
   state.completed.forEach(c=>add(c.therapist,{customer:c.customer,treatment:txDisp(c.treatment),status:'done',time:c.at,room:c.room}));
   Object.keys(g).forEach(t=>{let seen={};g[t]=g[t].filter(o=>{if(seen[o.customer]==='now')return false;if(seen[o.customer]&&o.status==='done')return false;seen[o.customer]=o.status;return true;});});
   return g;
@@ -1698,7 +2198,7 @@ function saveSettings(){const lines=t=>t.value.split("\n").map(x=>x.trim()).filt
   state.doctors=newDoctors;state.therapists=newTherapists;state.treatments=newTreatments;
   const occ={};newRooms.forEach(r=>occ[r]=state.occ[r]||null);
   const patch=listsPatch();
-  allRooms().forEach(r=>{if(!newRooms.includes(r)&&state.occ[r]){const o=state.occ[r];const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
+  allRooms().forEach(r=>{if(!newRooms.includes(r)&&state.occ[r]){const o=state.occ[r];const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,role:o.role||"",note:o.note||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
     state.queue.push(q);Object.assign(patch,queuePatch(q));patch["occ/"+fbKey(r)]=null;}});
   state.groups=newGroups;state.occ=occ;
   Object.assign(patch,{"lists/groups":state.groups});
@@ -1722,7 +2222,7 @@ function importState(ev){const f=ev.target.files[0];if(!f)return;const r=new Fil
     const occ={};state.groups.forEach(g=>g.rooms.forEach(rm=>{
       const incoming=(inc.occ&&inc.occ[rm])||null;
       if(!incoming&&state.occ[rm]){const o=state.occ[rm];
-        inc.queue.push({id:nextId(),customer:o.customer,doctor:o.doctor||"",therapist:o.therapist||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});}
+        inc.queue.push({id:nextId(),customer:o.customer,doctor:o.doctor||"",therapist:o.therapist||"",role:o.role||"",note:o.note||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()});}
       occ[rm]=incoming;}));
     inc.occ=occ;
     pushFullState(inc);toast("Appointments loaded (your lists kept; current room occupants moved to queue)");
@@ -1739,7 +2239,7 @@ function fillRoleNames(){if(!pendingRole)return;const list=pendingRole==='doctor
   $("roleNameSel").innerHTML=list.map(n=>`<option>${esc(n)}</option>`).join('')||'<option value="">(list is empty — counter must add names in Edit lists)</option>';}
 function confirmRole(){const n=$("roleNameSel").value;if(!n){toast("No name selected");return;}setRole(pendingRole,n);}
 function setRole(role,name){ROLE=role;MYNAME=name;pendingRole=null;
-  try{localStorage.setItem(LS_ROLE,JSON.stringify({role,name}));}catch(e){}
+  try{LS.setItem(LS_ROLE,JSON.stringify({role,name}));}catch(e){}
   notifReady=false;seenAlerts={};activeNotifs=[];
   closeModal('roleOverlay');applyRoleChrome();render();
   setTimeout(()=>{scanAlerts();notifReady=true;},1500);
@@ -1803,13 +2303,23 @@ document.addEventListener("click",e=>{const m=$("moreMenu");if(m&&m.classList.co
 // Firebase's first snapshot lands (and if the board is ever running offline).
 $("clock").textContent=nowHM();cloudMirror=JSON.parse(JSON.stringify(fullStateObj(state)));updateUndoBtn();
 if(FIREBASE_CONFIG&&window.firebase){$("loginOverlay").classList.add("show");}
-applyRoleChrome();updateAddMode();render();
+applyRoleChrome();updateAddMode();
+/* A saved board that cannot be displayed must not take the page down with it:
+   drop it and start clean, and the cloud refills everything a moment later. */
+try{render();}catch(e){console.error("Saved board could not be displayed - starting clean.",e);
+  try{LS.removeItem(LS_KEY);}catch(_){}state=freshState();
+  /* If even a clean board will not draw, carry on anyway: the clock, the sign-in
+     box and the cloud listener all still work, and the next good snapshot from
+     the cloud may well render. Throwing here would kill boot outright, which is
+     the exact outcome this guard exists to avoid. */
+  try{render();}catch(e2){console.error("A clean board could not be displayed either.",e2);}}
 initCloud();
 setInterval(()=>{$("clock").textContent=nowHM();},1000);
 setInterval(tick,20000);
 setInterval(refreshTimers,1000);
 window.addEventListener("resize",()=>{applyRoleChrome();render();});
 autoBackup();cloudBackup();setInterval(()=>{autoBackup();cloudBackup();pruneLog();},600000);
+window.__rfBooted=true;
 </script>
 </body>
 </html>
