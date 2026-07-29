@@ -17,43 +17,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Room Flow Board">
 <!-- Firebase -->
-<script>
-/* Boot watchdog: if the main script below ever throws before it finishes, say so
-   instead of leaving a silent blank board that looks like lost data.
-   The badge is TAPPABLE on purpose -- a title tooltip does not exist on an iPad
-   or a phone, and the whole point is that staff can read the real cause and
-   send it on rather than just reporting "the board is empty". */
-window.__rfErr=null;window.__rfShown=false;
-function __rfShowFailure(){
-  /* The badge lives in <body>, this script runs in <head>. An error thrown inside
-     one of the Firebase scripts below therefore arrives BEFORE the badge exists.
-     Remember the message and try again once the document is parsed -- latching on
-     the first error without showing it would swallow the real app failure and
-     leave exactly the silent blank board this watchdog exists to prevent. */
-  if(window.__rfShown||!window.__rfErr)return false;
-  var b=document.getElementById("syncst");
-  if(!b)return false;
-  b.textContent="app failed to start - tap";
-  b.className="syncst err";
-  b.title=window.__rfErr;
-  b.style.cursor="pointer";
-  b.onclick=function(){alert(
-    "This board could not start on THIS device.\n\n"+window.__rfErr+
-    "\n\nNothing is lost - the appointments live in the cloud, not on this device."+
-    "\n\n1. Reload the page."+
-    "\n2. Still failing? Check another phone or laptop."+
-    "\n   - others work  -> this device's browser settings"+
-    "\n   - all broken   -> the last upload; roll it back"+
-    "\n\nScreenshot this message and send it.");};
-  window.__rfShown=true;return true;
-}
-window.addEventListener("error",function(ev){
-  if(window.__rfBooted)return;
-  if(!window.__rfErr)window.__rfErr=(ev&&ev.message)||"unknown error";  // keep the FIRST, it is the cause
-  __rfShowFailure();
-});
-document.addEventListener("DOMContentLoaded",function(){if(!window.__rfBooted)__rfShowFailure();});
-</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -524,26 +487,6 @@ document.addEventListener("DOMContentLoaded",function(){if(!window.__rfBooted)__
 
 <script>
 "use strict";
-/* ===== Safe storage =====
-   Some devices refuse site data (Chrome "Don't allow sites to save data", a
-   privacy extension, Safari private mode, a locked-down MDM profile). On those
-   devices touching localStorage THROWS, and because the very first thing this
-   script did was read it, the whole script died and the board rendered as a
-   dead HTML shell: frozen clock, no rooms, no login box. All six boards live
-   on one origin, so one blocked setting killed every board on that device.
-   Fall back to an in-memory store instead: the board still runs off the cloud,
-   it just forgets per-device preferences when the tab closes. */
-const LS=(function(){
-  try{const t="__rf_probe";localStorage.setItem(t,"1");localStorage.removeItem(t);return localStorage;}
-  catch(e){
-    const mem=Object.create(null);
-    try{console.warn("Site data is blocked in this browser - running without local storage.",e);}catch(_){}
-    return {getItem:k=>(k in mem?mem[k]:null),
-            setItem:(k,v)=>{mem[k]=String(v);},
-            removeItem:k=>{delete mem[k];},
-            blocked:true};
-  }
-})();
 /* ============================================================
    Room Flow Board — v2
    - Per-node Firebase sync (occ/queue/lists/completed/removed)
@@ -587,15 +530,11 @@ const SEED={
 const OXY_MINS=30,SRW_MINS=10;
 const TIMED_TX=[{key:"Oxy",mins:OXY_MINS,re:/^oxy\b|^oxyinfus/i},{key:"SRW",mins:SRW_MINS,re:/^srw\b/i}];
 
-/* A cached board that migrate() chokes on must not kill the page either -- drop it and let the cloud repopulate. */
-let state=(function(){try{return migrate(load())||freshState();}catch(e){try{console.error("Saved board was unreadable, starting fresh.",e);LS.removeItem(LS_KEY);}catch(_){}return freshState();}})();
-/* Written only as "1"/"0" by toggleFilter; null means never set, so default ON.
-   Spelled out rather than using the nullish-coalescing operator, so older
-   iPads can still parse this file. */
-let filterWindow=(LS.getItem(LS_FILTER)===null?"1":LS.getItem(LS_FILTER))==="1";
-let addWalkIn=LS.getItem(LS_ADDMODE)==="1"; // remembered per device
+let state=migrate(load())||freshState();
+let filterWindow=(localStorage.getItem(LS_FILTER)===null?"1":localStorage.getItem(LS_FILTER))==="1";
+let addWalkIn=localStorage.getItem(LS_ADDMODE)==="1"; // remembered per device
 let ROLE=null,MYNAME="";
-try{const r=JSON.parse(LS.getItem(LS_ROLE)||"null");if(r&&r.role){ROLE=r.role;MYNAME=r.name||"";}}catch(e){}
+try{const r=JSON.parse(localStorage.getItem(LS_ROLE)||"null");if(r&&r.role){ROLE=r.role;MYNAME=r.name||"";}}catch(e){}
 let pendingRole=null;
 let expandedQ=null;
 let editingDocId=null,editingDocRoom=null,editingTimeId=null,editingTheraRoom=null,editingMaskRoom=null,editingQTheraId=null;
@@ -657,25 +596,13 @@ function normRoomObj(o){if(!o)return null;if(o.note===undefined)o.note="";if(o.n
   if(!o.mask&&!o.numb&&!o.oxy&&o.stage&&!/ done$/.test(o.stage))o.stage=""; // no timer running -> drop the label, but keep an "… done" result
   if(o.mask){o.numb="";o.oxy=null;}else if(o.oxy){o.numb="";} // exclusive: mask > oxy > numbing
   return o;}
-function migrate(s){if(!s)return null;if(!Array.isArray(s.completed))s.completed=[];if(!Array.isArray(s.removed))s.removed=[];if(!Array.isArray(s.treatments)||!s.treatments.length)s.treatments=[...SEED.treatments];
-  if(!Array.isArray(s.doctors)||!s.doctors.length)s.doctors=[...SEED.doctors];
-  if(!Array.isArray(s.therapists)||!s.therapists.length)s.therapists=[...SEED.therapists];
-  if(!Array.isArray(s.groups)||!s.groups.length)s.groups=JSON.parse(JSON.stringify(SEED.groups));
-  /* Every list below is walked with .forEach/.filter further down. These guards
-     used to test TRUTHINESS, so a saved board where one of them was an object
-     rather than an array sailed through and then threw -- killing the whole
-     script and leaving a dead page on that one device, for that one board.
-     Test the TYPE, and repair a malformed group instead of trusting it. */
-  s.groups=s.groups.filter(g=>g&&typeof g==='object')
-    .map(g=>Object.assign({},g,{name:g.name||"",rooms:(Array.isArray(g.rooms)?g.rooms:[]).filter(r=>typeof r==='string'&&r)}));
-  if(!s.groups.length)s.groups=JSON.parse(JSON.stringify(SEED.groups));
+function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.removed)s.removed=[];if(!s.treatments||!s.treatments.length)s.treatments=[...SEED.treatments];
+  if(!s.doctors||!s.doctors.length)s.doctors=[...SEED.doctors];
+  if(!s.therapists||!s.therapists.length)s.therapists=[...SEED.therapists];
+  if(!s.groups||!s.groups.length)s.groups=JSON.parse(JSON.stringify(SEED.groups));
   if(!s.customers||typeof s.customers!=='object')s.customers={};
   if(!Array.isArray(s.queue))s.queue=[];
   if(!s.occ||typeof s.occ!=='object')s.occ={};
-  /* A room must hold an object or nothing. Anything else (a bare name saved by
-     some older path) hits a property assignment below and, under "use strict",
-     throws -- which took the whole board down. */
-  Object.keys(s.occ).forEach(r=>{const o=s.occ[r];if(o!==null&&(typeof o!=='object'||Array.isArray(o)))s.occ[r]=null;});
   s.groups.forEach(g=>g.rooms.forEach(r=>{if(!(r in s.occ))s.occ[r]=null;}));
   // Rescue occupants of rooms that no longer exist in the lists (e.g. after a rename):
   // runs only on single-writer paths (local load, import, undo, restore) — never from sync,
@@ -686,8 +613,8 @@ function migrate(s){if(!s)return null;if(!Array.isArray(s.completed))s.completed
   Object.values(s.customers||{}).forEach(c=>{if(c){c.doctor=c.doctor||"";c.therapist=c.therapist||"";}});
   (s.completed||[]).forEach(c=>{c.doctor=c.doctor||"";c.treatment=txArr(c.treatment);});
   (s.removed||[]).forEach(c=>{c.treatment=txArr(c.treatment);});return s;}
-function load(){try{const s=LS.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
-function saveLocal(){try{LS.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
+function load(){try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 function nextId(){return Date.now()*100+Math.floor(Math.random()*100);}
 function fbKey(s){return String(s).replace(/[.#$/\[\]]/g,'_').trim()||"_";}
 
@@ -730,7 +657,7 @@ function cloudPatch(patch,label){
   Object.keys(patch).forEach(p=>{mirrorSet(p,patch[p]);});
   updateUndoBtn();logAction(label);
   if(baseRef){try{baseRef.update(patch);}catch(e){}}
-  render();saveLocal();}
+  saveLocal();render();}
 function roomPatch(room){const o=state.occ[room];const v=o?Object.assign({},o,{room}):null;
   return {["occ/"+fbKey(room)]:v};}
 function commitRoom(room,label){cloudPatch(roomPatch(room),label);}
@@ -759,26 +686,10 @@ function pushFullState(st){state=migrate(st)||freshState();
   if(baseRef){try{baseRef.set(obj);}catch(e){}}
   cloudMirror=JSON.parse(JSON.stringify(obj));
   lastAction=null;updateUndoBtn();
-  render();saveLocal();}
+  saveLocal();render();}
 
 /* ===== cloud read layer ===== */
-/* Apply a remote section, then draw. If drawing fails, put the previous values
-   back and cache nothing -- otherwise the unusable section stays in `state` and
-   the next successful action writes it to localStorage anyway, which is how a bad
-   update ends up as a dead page on somebody's next reload. mirrorSection() is
-   deliberately NOT rolled back: the cloud really does hold that data, it is only
-   this device that cannot display it. */
-function applyRemote(keys,fn){
-  const prev={};keys.forEach(k=>prev[k]=state[k]);const prevLists=listsFromCloud;
-  try{fn();render();saveLocal();}
-  catch(e){
-    keys.forEach(k=>state[k]=prev[k]);listsFromCloud=prevLists;
-    console.error("Ignored an unusable board update from the cloud - kept the previous board.",e);
-    try{render();}catch(_){}
-  }
-}
 function applyLists(v){mirrorSection("lists",v);cloudReady=true;v=v||{};
-  applyRemote(["doctors","therapists","treatments","groups","customers","occ"],function(){
   state.doctors=(v.doctors||[]).filter(Boolean);const gotDoctors=state.doctors.length>0;if(!gotDoctors)state.doctors=[...SEED.doctors];
   state.therapists=(v.therapists||[]).filter(Boolean);const gotThera=state.therapists.length>0;if(!gotThera)state.therapists=[...SEED.therapists];
   listsFromCloud=gotDoctors&&gotThera;
@@ -788,18 +699,18 @@ function applyLists(v){mirrorSection("lists",v);cloudReady=true;v=v||{};
   Object.values(state.customers).forEach(c=>{if(c){c.doctor=c.doctor||"";c.therapist=c.therapist||"";}});
   state.groups.forEach(g=>g.rooms.forEach(r=>{if(!(r in state.occ))state.occ[r]=null;}));
   if(pendingRole)fillRoleNames();
-  });}
-function applyOcc(v){mirrorSection("occ",v);applyRemote(["occ"],function(){const occ={};state.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
+  saveLocal();render();}
+function applyOcc(v){mirrorSection("occ",v);const occ={};state.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
   Object.entries(v||{}).forEach(([k,o])=>{if(!o)return;const name=o.room||k;occ[name]=normRoomObj(o);});
-  state.occ=occ;scanAlerts();});}
-function applyQueue(v){mirrorSection("queue",v);applyRemote(["queue"],function(){queueKeys={};
+  state.occ=occ;scanAlerts();saveLocal();render();}
+function applyQueue(v){mirrorSection("queue",v);queueKeys={};
   state.queue=Object.entries(v||{}).filter(([k,q])=>!!q).map(([k,q])=>{q.treatment=txArr(q.treatment);q.arrivedAt=q.arrivedAt||"";q.doctor=q.doctor||"";q.therapist=q.therapist||"";q.consult=!!q.consult;q.consultant=q.consultant||"";
     q.role=roleMigrate(q);q.note=q.note||"";
     if(q.id==null)q.id=k; // keyless legacy record: fall back to its key so it can still be acted on
     queueKeys[q.id]=k;return q;}).sort((a,b)=>(a.id||0)-(b.id||0));
-  scanAlerts();});}
-function applyRecs(which,v){mirrorSection(which,v);applyRemote([which],function(){state[which]=Object.values(v||{}).filter(Boolean).map(c=>{c.treatment=txArr(c.treatment);return c;}).sort((a,b)=>(a.id||0)-(b.id||0));
-  });}
+  scanAlerts();saveLocal();render();}
+function applyRecs(which,v){mirrorSection(which,v);state[which]=Object.values(v||{}).filter(Boolean).map(c=>{c.treatment=txArr(c.treatment);return c;}).sort((a,b)=>(a.id||0)-(b.id||0));
+  saveLocal();render();}
 
 /* ===== doctor notifications (in-app; fires while the app is open) ===== */
 function scanAlerts(){
@@ -840,7 +751,7 @@ function logAction(msg){
 function systemPatch(patch){
   Object.keys(patch).forEach(p=>mirrorSet(p,patch[p]));
   if(baseRef){try{baseRef.update(patch);}catch(e){}}
-  render();saveLocal();}
+  saveLocal();render();}
 const LOG_SHOW=60;
 function logTime(t){const d=new Date(t||0);return pad(d.getHours())+":"+pad(d.getMinutes());}
 function openLog(){
@@ -873,10 +784,10 @@ function pruneLog(){
 /* ===== backups (local, unchanged) ===== */
 const BK_KEY=LS_KEY+"_backups",BK_MAX=18; // per-board: all boards share one origin, so a fixed key cross-contaminated them
 const BK_BOARD=LS_KEY; // stamped into every snapshot so it can never be restored onto another board
-function loadBackups(){try{const a=JSON.parse(LS.getItem(BK_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return [];}}
+function loadBackups(){try{const a=JSON.parse(localStorage.getItem(BK_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return [];}}
 function autoBackup(){try{const json=JSON.stringify(state);const arr=loadBackups();const last=arr[arr.length-1];
   if(last&&last.json===json)last.t=Date.now();else arr.push({t:Date.now(),json,board:BK_BOARD});
-  while(arr.length>BK_MAX)arr.shift();LS.setItem(BK_KEY,JSON.stringify(arr));}catch(e){}}
+  while(arr.length>BK_MAX)arr.shift();localStorage.setItem(BK_KEY,JSON.stringify(arr));}catch(e){}}
 /* ===== cloud backups =====
    The counter device writes a snapshot every 10 minutes. The key is derived from
    the CLOCK (slot_<10-min window>), not generated per write, so if two devices
@@ -1026,7 +937,7 @@ function addToQueue(nameRaw,doc,timeRaw,txRaw,walkIn){const name=fbKey(String(na
   cloudPatch(Object.assign(queuePatch(q),custPatch(name)),(walkIn?"walk-in: ":"added ")+name);return true;}
 // Appointment = not here yet (Appointments list). Walk-in = standing at the
 // counter now (Waiting room). Same fields either way; the toggle picks which.
-function setAddMode(walk){addWalkIn=!!walk;try{LS.setItem(LS_ADDMODE,addWalkIn?"1":"0");}catch(e){}updateAddMode();}
+function setAddMode(walk){addWalkIn=!!walk;try{localStorage.setItem(LS_ADDMODE,addWalkIn?"1":"0");}catch(e){}updateAddMode();}
 function updateAddMode(){
   const a=$("addModeAppt"),w=$("addModeWalk"),b=$("arriveBtn");
   if(a)a.classList.toggle("on",!addWalkIn);
@@ -1210,7 +1121,7 @@ function clearRoom(room){const o=state.occ[room];if(o&&!hasThera(o)){toast("Assi
   else state.occ[room]=null;
   cloudPatch(patch,o?(o.customer+" done — "+room+" freed"):(room+" freed"));}
 function assignFreeRoom(room,id){if(id)moveQueueToRoom(parseInt(id,10),room);}
-function toggleFilter(v){filterWindow=v;try{LS.setItem(LS_FILTER,v?"1":"0");}catch(e){}render();}
+function toggleFilter(v){filterWindow=v;try{localStorage.setItem(LS_FILTER,v?"1":"0");}catch(e){}render();}
 function clearRooms(){if(!isCounter())return;if(!confirm("Move everyone out of rooms AND out of the waiting room, back to the appointments list? Rooms become free and nobody is deleted. Today's records are kept."))return;
   autoBackup();
   const patch={};let n=0,w=0;
@@ -1587,7 +1498,7 @@ function undo(){
   Object.keys(a.before).forEach(p=>mirrorSet(p,a.before[p]));
   applyPatchLocally(a.before);
   logAction("undid: "+a.label);
-  render();saveLocal();updateUndoBtn();toast("Undone — "+a.label);}
+  saveLocal();render();updateUndoBtn();toast("Undone — "+a.label);}
 function toggleMenu(e){e.stopPropagation();const m=$("moreMenu");if(m)m.classList.toggle("show");}
 function closeMenu(){const m=$("moreMenu");if(m)m.classList.remove("show");}
 
@@ -2239,7 +2150,7 @@ function fillRoleNames(){if(!pendingRole)return;const list=pendingRole==='doctor
   $("roleNameSel").innerHTML=list.map(n=>`<option>${esc(n)}</option>`).join('')||'<option value="">(list is empty — counter must add names in Edit lists)</option>';}
 function confirmRole(){const n=$("roleNameSel").value;if(!n){toast("No name selected");return;}setRole(pendingRole,n);}
 function setRole(role,name){ROLE=role;MYNAME=name;pendingRole=null;
-  try{LS.setItem(LS_ROLE,JSON.stringify({role,name}));}catch(e){}
+  try{localStorage.setItem(LS_ROLE,JSON.stringify({role,name}));}catch(e){}
   notifReady=false;seenAlerts={};activeNotifs=[];
   closeModal('roleOverlay');applyRoleChrome();render();
   setTimeout(()=>{scanAlerts();notifReady=true;},1500);
@@ -2303,23 +2214,13 @@ document.addEventListener("click",e=>{const m=$("moreMenu");if(m&&m.classList.co
 // Firebase's first snapshot lands (and if the board is ever running offline).
 $("clock").textContent=nowHM();cloudMirror=JSON.parse(JSON.stringify(fullStateObj(state)));updateUndoBtn();
 if(FIREBASE_CONFIG&&window.firebase){$("loginOverlay").classList.add("show");}
-applyRoleChrome();updateAddMode();
-/* A saved board that cannot be displayed must not take the page down with it:
-   drop it and start clean, and the cloud refills everything a moment later. */
-try{render();}catch(e){console.error("Saved board could not be displayed - starting clean.",e);
-  try{LS.removeItem(LS_KEY);}catch(_){}state=freshState();
-  /* If even a clean board will not draw, carry on anyway: the clock, the sign-in
-     box and the cloud listener all still work, and the next good snapshot from
-     the cloud may well render. Throwing here would kill boot outright, which is
-     the exact outcome this guard exists to avoid. */
-  try{render();}catch(e2){console.error("A clean board could not be displayed either.",e2);}}
+applyRoleChrome();updateAddMode();render();
 initCloud();
 setInterval(()=>{$("clock").textContent=nowHM();},1000);
 setInterval(tick,20000);
 setInterval(refreshTimers,1000);
 window.addEventListener("resize",()=>{applyRoleChrome();render();});
 autoBackup();cloudBackup();setInterval(()=>{autoBackup();cloudBackup();pruneLog();},600000);
-window.__rfBooted=true;
 </script>
 </body>
 </html>
