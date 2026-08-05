@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SS2 Flow Board</title>
-<meta name="description" content="SS2 Flow Board — clinic room & queue management.">
+<title>Room Flow Board</title>
+<meta name="description" content="Room Flow Board — clinic room & queue management.">
 <meta name="theme-color" content="#1f4e5f">
 <!-- Icons / favicons -->
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -15,7 +15,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="SS2 Flow Board">
+<meta name="apple-mobile-web-app-title" content="Room Flow Board">
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -379,7 +379,7 @@
 <body>
 <header>
   <img class="logo" src="logo.png" alt="" onerror="this.style.display='none'">
-  <h1>SS2 Flow Board</h1><span class="nowbox"><span id="clock">--:--</span><span id="dateStamp" title="Date of the appointments loaded on this board"></span></span><span id="syncst" class="syncst">local</span>
+  <h1>Room Flow Board</h1><span class="nowbox"><span id="clock">--:--</span><span id="dateStamp" title="Date of the appointments loaded on this board"></span></span><span id="syncst" class="syncst">local</span>
   <span class="hdrbreak"></span>
   <span class="rolechip" id="roleChip" style="display:none" onclick="openRoleSetup()" title="Tap to switch role/device">…</span>
   <div class="spacer"></div>
@@ -471,7 +471,7 @@
 <div class="modal-bg" id="loginOverlay" style="background:rgba(31,78,95,.97)"><div class="modal" style="max-width:360px">
   <h2>Sign in</h2>
   <div class="mbody">
-    <p class="hint">Staff login for the SS2 Flow Board.</p>
+    <p class="hint">Staff login for the Room Flow Board.</p>
     <input id="loginEmail" type="text" autocomplete="username" placeholder="Username" style="width:100%;margin-bottom:8px">
     <input id="loginPwd" type="password" autocomplete="current-password" placeholder="Password" style="width:100%" onkeydown="if(event.key==='Enter')doLogin()">
     <div id="loginErr" style="color:#c0392b;font-size:13px;margin-top:8px"></div>
@@ -500,7 +500,7 @@
 <script>
 "use strict";
 /* ============================================================
-   SS2 Flow Board — v2
+   Room Flow Board — v2
    - Per-node Firebase sync (occ/queue/lists/completed/removed)
      so simultaneous edits from phones merge instead of clobber.
    - Device roles: counter / consultant / doctor / therapist.
@@ -508,31 +508,31 @@
      from the start timestamp; taps only correct reality.
    ============================================================ */
 const FIREBASE_CONFIG={
-  apiKey: "AIzaSyCz5dcca5izkAzIguJmmrLIsJKevatKUEU",
-  authDomain: "urss2-8597b.firebaseapp.com",
-  databaseURL: "https://urss2-8597b-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  projectId: "urss2-8597b",
-  storageBucket: "urss2-8597b.firebasestorage.app",
-  messagingSenderId: "875149967541",
-  appId: "1:875149967541:web:97fff0c6be4751bd79befc",
-  measurementId: ""
+  apiKey:"AIzaSyD-uqB5hculwYkTCQ8KWpB2mk_2YPwzfyg",
+  authDomain:"urgreenlane.firebaseapp.com",
+  databaseURL:"https://urgreenlane-default-rtdb.firebaseio.com",
+  projectId:"urgreenlane",
+  storageBucket:"urgreenlane.firebasestorage.app",
+  messagingSenderId:"529625112847",
+  appId:"1:529625112847:web:c1af51c483e6c85cfede7a",
+  measurementId:"G-RQ72QHJK79"
 };
 const BASE_PATH="board_v2";      // new sectioned data
 const OLD_PATH="board";          // v1 single-blob path (migrated once, left untouched)
-const LOGIN_DOMAIN="urss2.local";
+const LOGIN_DOMAIN="urgreenlane.local";
 
-const LS_KEY="roomFlowBoard_urss2_v5";
-const LS_ROLE="urss2_v5_role";
-const LS_FILTER="urss2_v5_filterWindow";
-const LS_ADDMODE="urss2_v5_addWalkIn";
+const LS_KEY="roomFlowBoard_urgreenlane_v5";
+const LS_ROLE="urgreenlane_v5_role";
+const LS_FILTER="urgreenlane_v5_filterWindow";
+const LS_ADDMODE="urgreenlane_v5_addWalkIn";
 const SEED_TX=["Goldius Glam","Alex","Pro Light","P7","Revive","E2","EXO-T","S Plus (Face)","S Plus (Neck)","HIFU (Face)","HIFU (Neck)","Oxy","SRW","Soft Laser","Radiesse","Filler","Botox","dePigmentation","Revital"];
 const SEED={
-  doctors: ["Dr 1", "Dr 2"],
-  therapists: ["Thera 1", "Thera 2"],
+  doctors: ["Dr Cheryl","Dr Nicole","Dr Teh","Dr Chan","Dr Yi Wen","Dr Michelle","Dr Eunice"],
+  therapists: ["Regina","Karene","Yunny","Xiao Wei","Chloe","Yan Yun","Katherine","Iris"],
   treatments: [...SEED_TX],
   groups: [
-    {name: "Downstairs", rooms: ["Room 1", "Room 2"]},
-    {name: "Upstairs", rooms: ["Room 3", "Room 4"]}
+    {name: "Downstairs", rooms: ["Con 1","Con 2","Room 1 (Alex)","Room 2 (Andy)"]},
+    {name: "Upstairs", rooms: ["R1","R2","R3","R4","Classroom","R5","R6","R7"]}
   ],
   customers: {}
 };
