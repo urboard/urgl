@@ -76,14 +76,27 @@
   @keyframes pulse{0%,100%{box-shadow:0 0 0 3px #ef9a9a}50%{box-shadow:0 0 0 6px #ef9a9a}}
   .room .rname{font-size:16px}
   .room .pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;flex:none}
-  .room .rheadR{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none;min-width:0}
-  .cochip{display:inline-flex;align-items:center;gap:6px;background:#fff3d6;border:1px solid #f0d48a;border-radius:12px;padding:2px 6px 2px 9px;font-size:12px;font-weight:700;color:#8a5212}
+  /* Slate, not the consultant chip's yellow -- the 2nd customer and the person
+     doing the consult are different things and must not read as one. */
+  .cochip{display:inline-flex;align-items:center;gap:6px;background:#eceff1;border:1px solid #c3ccd1;border-radius:12px;padding:2px 6px 2px 9px;font-size:12px;font-weight:700;color:#37474f}
   .cochip b{cursor:pointer;color:#c0392b}
-  .corow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#fff3d6;border:1px dashed #f0d48a;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;color:#8a5212;margin-bottom:5px}
+  .corow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#eceff1;border:1px dashed #c3ccd1;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;color:#37474f;margin-bottom:5px}
   .corow select{flex:1;min-width:130px}
   .coplus{color:var(--muted);font-weight:600}
-  .conmark{font-size:12px;margin-left:5px;vertical-align:baseline}
-  .conbadge{font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;background:#fff;border:1px solid #dcc6a4;color:#8a5212;line-height:1.6;max-width:132px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Phone flavour of the board badge: same soft orange disc, but inline beside
+     the name with the consultant next to it -- a stacked label would wreck a
+     heading row. 12px here sizes the 1.75em disc down to ~21px. */
+  .conmark{display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-size:12px;vertical-align:middle;white-space:nowrap}
+  .conmark .conwho{max-width:96px}
+  /* A bare emoji at name size disappeared into a busy card. Orange disc + glow,
+     picked from the IN USE pill so it reads as part of the board, not a sticker,
+     with the consultant stacked underneath in small type. */
+  .conbadge{margin-left:auto;flex:none;align-self:center;font-size:inherit;line-height:1;white-space:nowrap;
+    display:flex;flex-direction:column;align-items:center;gap:3px;max-width:112px}
+  .conicon{display:inline-flex;align-items:center;justify-content:center;width:1.75em;height:1.75em;
+    border-radius:50%;background:#f6d8b3;box-shadow:0 0 7px 2px rgba(224,138,32,.55)}
+  .conwho{font-size:10px;font-weight:700;color:#8a5212;letter-spacing:.1px;line-height:1.1;
+    max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .room .rname{min-width:0;overflow:hidden;text-overflow:ellipsis}
   .room.free .pill{background:#cfe9d6;color:#256b39}.room.occ .pill{background:#f6d8b3;color:#8a5212}.room.maskOver .pill{background:#e57373;color:#fff}
   .room.hasnext{border-color:#9cc0e0}.room.hasnext .pill{background:#cfe2f5;color:#1565c0}
@@ -98,7 +111,7 @@
   .timein:hover{border-bottom-color:var(--accent)}
   .timein:focus{border:1px solid var(--accent);background:#fff;outline:none}
   .room .body{padding:10px 11px;display:flex;flex-direction:column;gap:7px;flex:1}
-  .cust{font-size:15px;font-weight:800;line-height:1.25;letter-spacing:-.1px;margin-bottom:2px}
+  .cust{font-size:15px;font-weight:800;line-height:1.25;letter-spacing:-.1px;margin-bottom:2px;display:flex;align-items:baseline;gap:6px}
   .fieldrow{display:flex;align-items:flex-start;gap:6px;font-size:13px}
   .fieldrow label{width:50px;color:var(--muted);flex:none;padding-top:6px;white-space:nowrap;font-size:12px}
   .fieldrow select,.fieldrow .note-in{flex:1;min-width:0}
@@ -464,6 +477,7 @@
     <div class="grp"><label>Upstairs rooms</label><textarea id="setUp"></textarea></div>
     <div class="grp"><label>Doctors</label><textarea id="setDoctors"></textarea></div>
     <div class="grp"><label>Therapists</label><textarea id="setTherapists"></textarea></div>
+    <div class="grp"><label>Consultants</label><textarea id="setConsultants"></textarea></div>
     <div class="grp"><label>Treatments</label><textarea id="setTreatments"></textarea></div>
   </div>
   <div class="mfoot"><button class="btn grey" onclick="closeModal('settingsModal')">Cancel</button><button class="btn" onclick="saveSettings()">Save lists</button></div>
@@ -583,7 +597,7 @@ let notifReady=false,seenAlerts={},activeNotifs=[];
 
 /* ===== state helpers ===== */
 function freshState(){const occ={};SEED.groups.forEach(g=>g.rooms.forEach(r=>occ[r]=null));
-  return {doctors:[...SEED.doctors],therapists:[...SEED.therapists],treatments:[...SEED.treatments],groups:JSON.parse(JSON.stringify(SEED.groups)),customers:{},occ,queue:[],completed:[],removed:[]};}
+  return {doctors:[...SEED.doctors],therapists:[...SEED.therapists],consultants:[],treatments:[...SEED.treatments],groups:JSON.parse(JSON.stringify(SEED.groups)),customers:{},occ,queue:[],completed:[],removed:[]};}
 function txArr(t){return Array.isArray(t)?t.slice():(t?[t]:[]);}
 /* One therapist name, one role: "" | "wash" | "washed" | "full". Older records
    held a separate washBy/washDone pair alongside the therapist; fold those in.
@@ -596,7 +610,7 @@ function roleMigrate(o){
   if(o.washBy&&!o.therapist){o.therapist=o.washBy;r=o.washDone?"washed":"wash";}
   delete o.washBy;delete o.washDone;
   return r;}
-function normRoomObj(o){if(!o)return null;if(o.note===undefined)o.note="";if(o.nextRoom===undefined)o.nextRoom="";if(o.stage===undefined)o.stage="";if(o.numb===undefined)o.numb="";if(o.consult===undefined)o.consult=false;if(o.consultant===undefined)o.consultant="";if(o.consultTs===undefined)o.consultTs=0;if(o.conVisit===undefined)o.conVisit=!!o.consult;if(o.co===undefined)o.co=null;if(o.co)o.co.treatment=txArr(o.co.treatment);if(o.numbRemovedAt===undefined)o.numbRemovedAt="";
+function normRoomObj(o){if(!o)return null;if(o.note===undefined)o.note="";if(o.nextRoom===undefined)o.nextRoom="";if(o.stage===undefined)o.stage="";if(o.numb===undefined)o.numb="";if(o.consult===undefined)o.consult=false;if(o.consultant===undefined)o.consultant="";if(o.consultTs===undefined)o.consultTs=0;if(o.conVisit===undefined)o.conVisit=!!o.consult;if(o.co===undefined)o.co=null;if(o.co)o.co.treatment=txArr(o.co.treatment);if(o.coPend===undefined)o.coPend=false;if(o.numbRemovedAt===undefined)o.numbRemovedAt="";
   o.doctor=o.doctor||"";o.therapist=o.therapist||"";o.mask=o.mask||"";o.numb=o.numb||"";o.appt=o.appt||"";o.customer=o.customer||"";
   o.role=roleMigrate(o);
   o.treatment=txArr(o.treatment);o.txDone=txArr(o.txDone);
@@ -608,7 +622,7 @@ function normRoomObj(o){if(!o)return null;if(o.note===undefined)o.note="";if(o.n
   if(!o.mask&&!o.numb&&!o.oxy&&o.stage&&!/ done$/.test(o.stage))o.stage=""; // no timer running -> drop the label, but keep an "… done" result
   if(o.mask){o.numb="";o.oxy=null;}else if(o.oxy){o.numb="";} // exclusive: mask > oxy > numbing
   return o;}
-function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.removed)s.removed=[];if(!s.treatments||!s.treatments.length)s.treatments=[...SEED.treatments];
+function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.removed)s.removed=[];if(!Array.isArray(s.consultants))s.consultants=[];if(!s.treatments||!s.treatments.length)s.treatments=[...SEED.treatments];
   if(!s.doctors||!s.doctors.length)s.doctors=[...SEED.doctors];
   if(!s.therapists||!s.therapists.length)s.therapists=[...SEED.therapists];
   if(!s.groups||!s.groups.length)s.groups=JSON.parse(JSON.stringify(SEED.groups));
@@ -680,7 +694,7 @@ function queueDelPatch(id){const p={["queue/"+id]:null};const k=queueKeys[id];
   if(k!=null&&String(k)!==String(id))p["queue/"+k]=null;return p;}
 function commitQueue(q,label){cloudPatch(queuePatch(q),label);}
 function custPatch(name){return {["lists/customers/"+fbKey(name)]:state.customers[name]||null};}
-function listsPatch(){return {"lists/doctors":state.doctors,"lists/therapists":state.therapists,"lists/treatments":state.treatments,"lists/groups":state.groups,"lists/customers":state.customers};}
+function listsPatch(){return {"lists/doctors":state.doctors,"lists/therapists":state.therapists,"lists/consultants":state.consultants||[],"lists/treatments":state.treatments,"lists/groups":state.groups,"lists/customers":state.customers};}
 function fullStateObj(st){
   const occ={};Object.entries(st.occ||{}).forEach(([r,o])=>{if(o)occ[fbKey(r)]=Object.assign({},o,{room:r});});
   const q={};(st.queue||[]).forEach(x=>{if(!x.id)x.id=nextId();q[x.id]=x;});
@@ -705,6 +719,7 @@ function applyLists(v){mirrorSection("lists",v);cloudReady=true;v=v||{};
   state.doctors=(v.doctors||[]).filter(Boolean);const gotDoctors=state.doctors.length>0;if(!gotDoctors)state.doctors=[...SEED.doctors];
   state.therapists=(v.therapists||[]).filter(Boolean);const gotThera=state.therapists.length>0;if(!gotThera)state.therapists=[...SEED.therapists];
   listsFromCloud=gotDoctors&&gotThera;
+  state.consultants=(v.consultants||[]).filter(Boolean); // seeded empty; the counter types them into Edit Lists, and an empty one is NOT a wipe signal
   state.treatments=(v.treatments||[]).filter(Boolean);if(!state.treatments.length)state.treatments=[...SEED_TX];
   state.groups=(v.groups&&v.groups.length)?v.groups.map(g=>({name:g.name,rooms:(g.rooms||[]).filter(Boolean)})):JSON.parse(JSON.stringify(SEED.groups));
   state.customers=v.customers||{};
@@ -898,6 +913,9 @@ function freeRooms(){return allRooms().filter(r=>!state.occ[r]);}
 function withCurrent(list,sel){const a=list.slice();if(sel&&a.indexOf(sel)<0)a.unshift(sel);return a;}
 function thOptions(sel){return ['<option value="">Therapist…</option>'].concat(withCurrent(state.therapists,sel).map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
 function docOptions(sel){return ['<option value="">Doctor…</option>'].concat(withCurrent(state.doctors,sel).map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
+// withCurrent keeps a consultant who predates the list (or came from another
+// board) selectable instead of silently reverting to the placeholder.
+function consultOptions(sel){return ['<option value="">Consultant…</option>'].concat(withCurrent(state.consultants||[],sel).map(d=>`<option ${d===sel?'selected':''}>${esc(d)}</option>`)).join('');}
 function parseTimeInput(s){s=(s||"").trim().toLowerCase();if(!s)return"";let pm=/p/.test(s),am=/a/.test(s);let h,mm;if(s.includes(":")){let p=s.replace(/[^0-9:]/g,'').split(":");h=parseInt(p[0]||"0",10);mm=parseInt(p[1]||"0",10);}else{let d=s.replace(/\D/g,'');if(!d)return"";if(d.length<=2){h=parseInt(d,10);mm=0;}else{mm=parseInt(d.slice(-2),10);h=parseInt(d.slice(0,-2),10);}}if(isNaN(h))return"";if(isNaN(mm))mm=0;if(am){if(h===12)h=0;}else if(pm){if(h<12)h+=12;}else if(h>=1&&h<=9)h+=12;if(h>23||mm>59)return"";return pad(h)+":"+pad(mm);}
 function hmShort(hm){if(!hm)return"";let[h,m]=hm.split(":").map(Number);let hh=h%12;if(hh===0)hh=12;return hh+":"+pad(m);}
 function hm12(hm){if(!hm)return"";let[h,m]=hm.split(":").map(Number);let ap=h>=12?'PM':'AM';let hh=h%12;if(hh===0)hh=12;return hh+":"+pad(m)+" "+ap;}
@@ -1135,11 +1153,15 @@ function maskSet(room,hm){const o=state.occ[room];if(!o||!hm)return; // mask sto
   editingNumbRoom=null;editingOxyRoom=null;editingMaskRoom=null;commitRoom(room,o.customer+": mask off at "+hm12(hm));}
 function maskIn(room,mins){if(!state.occ[room])return;let m=(curMin()+mins)%1440;maskSet(room,pad(Math.floor(m/60))+":"+pad(m%60));}
 function maskClear(room){const o=state.occ[room];if(o){o.mask="";if(o.stage==="Mask on")o.stage="";commitRoom(room,o.customer+": mask removed");}}
-function moveRoomToRoom(from,to){if(!to)return;if(state.occ[to]){toast(to+" is occupied");render();return;}const rv=nextFor(to);if(rv&&rv.from!==from){toast(to+" is reserved for "+rv.customer);render();return;}
+function moveRoomToRoom(from,to){if(!to)return;
+  // Moving one half of a shared consult is a SPLIT, not a refusal: the primary
+  // goes, the 2nd person stays put in this room with their own picker.
+  const __f=state.occ[from];if(__f&&__f.co){coSendPrimary(from,to);return;}
+  if(state.occ[to]){toast(to+" is occupied");render();return;}const rv=nextFor(to);if(rv&&rv.from!==from){toast(to+" is reserved for "+rv.customer);render();return;}
   const cust=state.occ[from]?state.occ[from].customer:"";
   const prevNext=state.occ[from]?state.occ[from].nextRoom:""; // remember the reservation so undo can restore it
   state.occ[to]=state.occ[from];state.occ[to].nextRoom="";
-  state.occ[to].consult=false;state.occ[to].consultTs=0; // moving rooms means treatment has commenced
+  state.occ[to].consult=false;state.occ[to].consultTs=0;state.occ[to].coPend=false; // moving rooms means treatment has commenced
   state.occ[to].numbRemovedAt="";
   state.occ[from]=null;
   cloudPatch(Object.assign(roomPatch(from),roomPatch(to)),cust+": "+from+" → "+to);
@@ -1155,7 +1177,7 @@ function roomToQueue(room){const o=state.occ[room];if(!o)return;const q={id:next
   state.occ[room]=null;
   cloudPatch(Object.assign(queuePatch(q),co?queuePatch(co):{},roomPatch(room)),o.customer+": "+room+" → waiting room");}
 function clearRoom(room){const o=state.occ[room];
-  if(o&&o.co){toast("Send "+o.co.customer+" to a room first");return;} // don't let the 2nd person vanish with the room
+  if(o&&o.co){toast("Send "+o.co.customer+" to a room first \u2014 use the \ud83d\udc65 row on this card");return;} // don't let the 2nd person vanish with the room
   if(o&&!hasThera(o)){toast("Assign a therapist in charge (\ud83d\udd90) before clearing the room");return;}if(o&&!confirm("Clear "+room+" and free it?"))return;
   let patch=roomPatch(room);
   if(o){const rec={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.txDone).concat(txArr(o.treatment)),room,at:nowHM()};
@@ -1391,10 +1413,19 @@ function tsToHM(ts){const d=new Date(ts);return pad(d.getHours())+":"+pad(d.getM
 // pill is gone this badge is the only thing still saying so.
 // The same marker shrunk to sit beside a name on a phone. Takes a room object
 // (carries conVisit) or a waiting-room entry (carries the consult tag).
-function conMark(x){return (x&&(x.conVisit||x.consult))?'<span class="conmark" title="new consult">🩺</span>':'';}
+function conMark(x){if(!x||!(x.conVisit||x.consult))return"";
+  return `<span class="conmark" title="new consult${x.consultant?' — '+esc(x.consultant):''}">`+
+    `<span class="conicon">🩺</span>`+
+    (x.consultant?`<span class="conwho">${esc(x.consultant)}</span>`:'')+
+    `</span>`;}
 function conBadge(o){if(!o||!o.conVisit)return"";
-  const who=o.consultant?' '+esc(o.consultant):'';
-  return `<span class="conbadge" title="new consult${who?' — '+esc(o.consultant):''}">🩺${who}</span>`;}
+  // Hard against the right edge of the name row: the icon on an orange disc with
+  // the consultant stacked UNDER it in small type. Stacked rather than inline so
+  // a long customer name can never push it off the row.
+  return `<span class="conbadge" title="new consult${o.consultant?' — '+esc(o.consultant):''}">`+
+    `<span class="conicon">🩺</span>`+
+    (o.consultant?`<span class="conwho">${esc(o.consultant)}</span>`:'')+
+    `</span>`;}
 // ---- two people in one consult room (husband + wife, sisters) --------------
 // The 2nd person is NAME ONLY while the consult runs: same doctor, same
 // consultant, no therapist and no timers of their own. o.co carries their
@@ -1418,31 +1449,59 @@ function coAdd(room,id){const o=state.occ[room];if(!o||!id)return;
 function coQueueEntry(o){const c=o.co;
   return {id:c.id||nextId(),customer:c.customer,doctor:o.doctor||"",therapist:"",role:"",note:c.note||"",nextRoom:"",
     treatment:txArr(c.treatment),appt:c.appt||"",arrivedAt:nowHM(),consult:!!o.consult,consultant:o.consultant||"",conVisit:!!c.conVisit};}
+// Splitting a shared consult. BOTH of them need a treatment room, so BOTH get
+// their own picker on the card and either may go first -- the one left behind
+// keeps a picker (coPend) instead of having to be moved a second, different way.
+// The 2nd person also never rides along on the primary's record any more: they
+// stay where they are and are dispatched from there.
+function coRecord(o,c){return normRoomObj({customer:c.customer,doctor:o.doctor||"",therapist:"",role:"",treatment:txArr(c.treatment),txDone:[],
+  mask:"",appt:c.appt||"",note:c.note||"",nextRoom:"",stage:"",oxy:null,
+  consult:false,consultant:o.consultant||"",consultTs:0,conVisit:!!c.conVisit,co:null,coPend:true});}
+function coRoomFree(to,from){if(state.occ[to]){toast(to+" is occupied");render();return false;}
+  // a room THIS room already reserved is exactly where its occupants are headed
+  const rv=nextFor(to);if(rv&&rv.from!==from){toast(to+" is reserved for "+rv.customer);render();return false;}return true;}
 function coSendTo(room,to){const o=state.occ[room];if(!o||!o.co)return;const c=o.co;
   if(to){
-    if(state.occ[to]){toast(to+" is occupied");render();return;}
-    const rv=nextFor(to);if(rv){toast(to+" is reserved for "+rv.customer);render();return;}
-    state.occ[to]=normRoomObj({customer:c.customer,doctor:o.doctor||"",therapist:"",role:"",treatment:txArr(c.treatment),txDone:[],
-      mask:"",appt:c.appt||"",note:c.note||"",nextRoom:"",stage:"",oxy:null,
-      consult:false,consultant:o.consultant||"",consultTs:0,conVisit:!!c.conVisit,co:null});
-    o.co=null;
+    if(!coRoomFree(to,room))return;
+    const rec=coRecord(o,c);rec.coPend=false; // they have arrived; the one left behind is the one still waiting
+    state.occ[to]=rec;o.co=null;o.coPend=true;o.consult=false;o.consultTs=0; // going to a treatment room IS the end of the consult
     cloudPatch(Object.assign(roomPatch(room),roomPatch(to)),c.customer+": "+room+" \u2192 "+to);return;}
-  const q=coQueueEntry(o);state.queue.push(q);o.co=null;
+  const q=coQueueEntry(o);state.queue.push(q);o.co=null;o.coPend=true;
   cloudPatch(Object.assign(queuePatch(q),roomPatch(room)),c.customer+": back to the waiting room");}
+// The primary leaves; the 2nd person stays put as the room's occupant, still
+// carrying a picker of their own.
+function coSendPrimary(room,to){const o=state.occ[room];if(!o)return;
+  if(!to&&!o.co){roomToQueue(room);return;}
+  const stay=o.co?coRecord(o,o.co):null;
+  if(to){
+    if(!coRoomFree(to,room))return;
+    o.co=null;o.coPend=false;o.nextRoom="";o.consult=false;o.consultTs=0;
+    state.occ[to]=o;state.occ[room]=stay;
+    cloudPatch(Object.assign(roomPatch(room),roomPatch(to)),o.customer+": "+room+" \u2192 "+to);return;}
+  const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM(),role:o.role||"",note:o.note||"",nextRoom:"",conVisit:!!o.conVisit};
+  state.queue.push(q);state.occ[room]=stay;
+  cloudPatch(Object.assign(queuePatch(q),roomPatch(room)),o.customer+": back to the waiting room");}
 function coPick(room,v){if(!v)return;coSendTo(room,v==="__wait__"?"":v);}
-// Shown once the consult is over and the 2nd person still has nowhere to go.
-function coRow(room,o){if(!o.co||o.consult)return"";
-  const opts=['<option value="">\u2192 send to room\u2026</option>']
-    .concat(freeRooms().filter(r=>!nextFor(r)).map(r=>`<option value="${esc(r)}">${esc(r)}</option>`))
-    .concat('<option value="__wait__">\u21a9 back to the waiting room</option>').join('');
-  return `<div class="corow">\ud83d\udc65 <b>${esc(o.co.customer)}</b> still here<select class="selCompact" onchange="coPick('${jsq(room)}',this.value)">${opts}</select></div>`;}
+function coPickPrimary(room,v){if(!v)return;coSendPrimary(room,v==="__wait__"?"":v);}
+function coOpts(){return ['<option value="">\u2192 send to room\u2026</option>']
+  .concat(freeRooms().filter(r=>!nextFor(r)).map(r=>`<option value="${esc(r)}">${esc(r)}</option>`))
+  .concat('<option value="__wait__">\u21a9 back to the waiting room</option>').join('');}
+// Shown once the consult is over and someone from the pair still needs a room.
+// Visible the moment a 2nd person joins -- NOT only after "start treatment".
+// Hiding it until then meant the only thing the card said was "send them to a
+// room first", with nothing on screen that could do it.
+function coRow(room,o){if(!o.co&&!o.coPend)return"";
+  const opts=coOpts();
+  let h=`<div class="corow">\ud83d\udc65 <b>${esc(o.customer)}</b><select class="selCompact" onchange="coPickPrimary('${jsq(room)}',this.value)">${opts}</select></div>`;
+  if(o.co)h+=`<div class="corow">\ud83d\udc65 <b>${esc(o.co.customer)}</b><select class="selCompact" onchange="coPick('${jsq(room)}',this.value)">${opts}</select></div>`;
+  return h;}
 function consultBlock(room,o){if(!o.consult)return"";
   const started=o.consultTs?tsToHM(o.consultTs):"";const mins=consultElapsed(o);
   const editing=editingConsultRoom===room;
   return `<div class="oxybox mini"><div class="oxyline consultline"><span>\ud83e\ude7a Consult${started?' \u00b7 since '+esc(started):''}</span><b class="oxyrem" style="margin-left:auto" data-constart="${esc(room)}">${mins}m</b></div>
     <div class="oxyctl">${editing?
-      `<input id="activeConsultant" class="timein" style="width:130px" value="${esc(o.consultant)}" placeholder="consultant name" onkeydown="if(event.key==='Enter')this.blur()" onblur="consultantSave('${jsq(room)}',this.value)">`:
-      (o.consultant?`<span class="notetext" title="click to edit" onclick="consultToggle('${jsq(room)}')">${esc(o.consultant)}</span><button class="docedit" title="change consultant name" onclick="consultToggle('${jsq(room)}')">✎</button>`:`<button class="chip" onclick="consultToggle('${jsq(room)}')">+ consultant</button>`)}
+      `<select id="activeConsultant" class="selCompact" style="min-width:134px;max-width:180px" onchange="consultantSave('${jsq(room)}',this.value)">${consultOptions(o.consultant)}</select>`:
+      `<button class="chip" title="who is doing this consult" onclick="consultToggle('${jsq(room)}')">${o.consultant?'✎ consultant':'+ consultant'}</button>`}
       <button class="chip sel" title="treatment has commenced \u2014 end consult" onclick="consultEnd('${jsq(room)}')">\u2713 start treatment</button>
     </div>
     <div class="oxyctl">${o.co
@@ -1452,18 +1511,14 @@ function consultBlock(room,o){if(!o.consult)return"";
 function qConsultSet(id,on){const q=state.queue.find(x=>x.id==id);if(!q)return;q.consult=on;if(!on){q.consultant="";}else{
   q.treatment=txArr(q.treatment);["Goldius Glam","Oxy"].forEach(t=>{if(!q.treatment.includes(t))q.treatment.push(t);});}
   commitQueue(q,q.customer+(on?": tagged for consult":": consult tag removed"));}
-let editingQConsultant=null;
-function qConsultantToggle(id){editingQConsultant=editingQConsultant===id?null:id;render();const el=$("activeQConsultant");if(el){el.focus();}}
-function qConsultantSave(id,v){const q=state.queue.find(x=>x.id==id);if(!q)return;q.consultant=v;editingQConsultant=null;commitQueue(q,q.customer+": consultant → "+(v||"none"));}
+function qConsultantSave(id,v){const q=state.queue.find(x=>x.id==id);if(!q)return;q.consultant=v;commitQueue(q,q.customer+": consultant → "+(v||"none"));}
 function qConsultBadge(q){
   return `<button class="miniToggle${q.consult?' on':''}" title="${q.consult?'tap to remove consult tag':'tag this visit as a consult'}" onclick="qConsultSet(${q.id},${q.consult?'false':'true'})">\ud83e\ude7a</button>`;}
 function qConsultDetail(q){
   if(!q.consult)return"";
-  const editing=editingQConsultant===q.id;
   const hasPL=txArr(q.treatment).includes("Pro Light");
   return `<div style="margin:2px 0;display:flex;align-items:center;gap:5px;flex-wrap:wrap">`+
-    (editing?`<input id="activeQConsultant" class="timein" style="width:120px" value="${esc(q.consultant||'')}" placeholder="consultant name" onkeydown="if(event.key==='Enter')this.blur()" onblur="qConsultantSave(${q.id},this.value)">`:
-      (q.consultant?`<span class="notetext" title="click to edit" onclick="qConsultantToggle(${q.id})">${esc(q.consultant)}</span>`:`<button class="chip" style="padding:2px 7px;font-size:11px" onclick="qConsultantToggle(${q.id})">+ consultant</button>`))+
+    `<select class="selCompact" style="min-width:134px;max-width:180px" title="who is doing this consult" onchange="qConsultantSave(${q.id},this.value)">${consultOptions(q.consultant||'')}</select>`+
     (hasPL?'':`<button class="chip" style="padding:2px 7px;font-size:11px" title="add Pro Light" onclick="qTxAdd(${q.id},'Pro Light')">+ Pro Light</button>`)+
     `</div>`;}
 function statusFor(o){
@@ -1663,9 +1718,9 @@ function roomCard(room){
   const theraEl=roleRow("r",room,o);
   const remChips=txArr(o.treatment).map((x,i)=>`<span class="txchip"><span class="txname" title="tap when done" onclick="roomTxDone('${jsq(room)}',${i})">${esc(x)}</span><b title="remove" onclick="roomTxRemove('${jsq(room)}',${i})">✕</b></span>`).join('');
   const doneChips=txArr(o.txDone).map((x,i)=>`<span class="txchip done"><span class="txname" title="tap to undo" onclick="roomTxUndo('${jsq(room)}',${i})">${esc(x)}</span></span>`).join('');
-  return `<div class="room occ${maskClass(o)}${(hasThera(o)||o.consult)?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="rheadR"><span class="pill">${o.consult?'CONSULT':(o.mask&&toMin(o.mask)-curMin()<0?'MASK OFF':(o.numb&&toMin(o.numb)-curMin()<0?'NUMB DONE':'IN USE'))}</span>${conBadge(o)}</span></div>
+  return `<div class="room occ${maskClass(o)}${(hasThera(o)||o.consult)?'':' noThera'}"><div class="rhead"><span class="rname">${esc(room)}</span><span class="pill">${o.consult?'CONSULT':(o.mask&&toMin(o.mask)-curMin()<0?'MASK OFF':(o.numb&&toMin(o.numb)-curMin()<0?'NUMB DONE':'IN USE'))}</span></div>
     <div class="body">${nb}${(hasThera(o)||o.consult)?'':'<div class="noTheraBanner">⚠ No therapist assigned</div>'}
-      <div class="cust">${custNames(o)} ${dupBadge(o.customer)}</div>
+      <div class="cust">${custNames(o)} ${dupBadge(o.customer)}${conBadge(o)}</div>
       <div class="fieldrow"><label>Doctor</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${docEl}</div></div>
       ${o.consult?'':`<div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>`}
       ${o.consult?'':`<div class="fieldrow"><label>${picking?(editingNumbRoom===room?'Numb for':'Mask for'):'Timer'}</label><div style="flex:1;display:flex;align-items:center;gap:6px;padding-top:4px;flex-wrap:wrap">${picking?'':stageChipsRow(room,o)}</div></div>`}
@@ -2196,12 +2251,12 @@ function copyStr(str){if(navigator.clipboard){navigator.clipboard.writeText(str)
 
 /* ===== settings (counter only) ===== */
 function openSettings(){if(!isCounter())return;const dn=state.groups.find(g=>g.name==="Downstairs")||state.groups[0];const up=state.groups.find(g=>g.name==="Upstairs")||state.groups[1]||{rooms:[]};
-  $("setDown").value=dn.rooms.join("\n");$("setUp").value=up.rooms.join("\n");$("setDoctors").value=state.doctors.join("\n");$("setTherapists").value=state.therapists.join("\n");$("setTreatments").value=state.treatments.join("\n");
+  $("setDown").value=dn.rooms.join("\n");$("setUp").value=up.rooms.join("\n");$("setDoctors").value=state.doctors.join("\n");$("setTherapists").value=state.therapists.join("\n");$("setConsultants").value=(state.consultants||[]).join("\n");$("setTreatments").value=state.treatments.join("\n");
   $("settingsModal").classList.add("show");}
 function saveSettings(){const lines=t=>t.value.split("\n").map(x=>x.trim()).filter(Boolean);
   const cleanRoom=x=>fbKey(x);
   const newGroups=[{name:"Downstairs",rooms:lines($("setDown")).map(cleanRoom)},{name:"Upstairs",rooms:lines($("setUp")).map(cleanRoom)}];
-  const newDoctors=lines($("setDoctors")),newTherapists=lines($("setTherapists")),newTreatments=lines($("setTreatments"));
+  const newDoctors=lines($("setDoctors")),newTherapists=lines($("setTherapists")),newTreatments=lines($("setTreatments")),newConsultants=lines($("setConsultants"));
   const newRooms=newGroups.flatMap(g=>g.rooms);
   // Never let a populated list be saved as empty. A blank box here nearly always
   // means the page hadn't finished loading from Firebase, or a field was cleared
@@ -2210,6 +2265,7 @@ function saveSettings(){const lines=t=>t.value.split("\n").map(x=>x.trim()).filt
   if(!newDoctors.length&&state.doctors.length)emptied.push("Doctors");
   if(!newTherapists.length&&state.therapists.length)emptied.push("Therapists");
   if(!newTreatments.length&&state.treatments.length)emptied.push("Treatments");
+  if(!newConsultants.length&&(state.consultants||[]).length)emptied.push("Consultants"); // empty is fine until the list has been filled in once
   if(!newRooms.length&&allRooms().length)emptied.push("Rooms");
   if(emptied.length){toast(emptied.join(" / ")+" can't be saved empty — nothing was changed");return;}
   // Losing most of a list in one save is likelier to be a mistake than an edit.
@@ -2217,7 +2273,7 @@ function saveSettings(){const lines=t=>t.value.split("\n").map(x=>x.trim()).filt
   const bigCut=(before,after,label)=>{if(before.length>=4&&after.length<Math.ceil(before.length/2))shrink.push(label+": "+before.length+" → "+after.length);};
   bigCut(state.doctors,newDoctors,"Doctors");bigCut(state.therapists,newTherapists,"Therapists");bigCut(allRooms(),newRooms,"Rooms");
   if(shrink.length&&!confirm("This removes a lot at once:\n\n  "+shrink.join("\n  ")+"\n\nSave anyway?"))return;
-  state.doctors=newDoctors;state.therapists=newTherapists;state.treatments=newTreatments;
+  state.doctors=newDoctors;state.therapists=newTherapists;state.treatments=newTreatments;state.consultants=newConsultants;
   const occ={};newRooms.forEach(r=>occ[r]=state.occ[r]||null);
   const patch=listsPatch();
   allRooms().forEach(r=>{if(!newRooms.includes(r)&&state.occ[r]){const o=state.occ[r];const q={id:nextId(),customer:o.customer,doctor:o.doctor,therapist:o.therapist,role:o.role||"",note:o.note||"",treatment:txArr(o.treatment),appt:o.appt||"",arrivedAt:nowHM()};
@@ -2225,7 +2281,7 @@ function saveSettings(){const lines=t=>t.value.split("\n").map(x=>x.trim()).filt
   state.groups=newGroups;state.occ=occ;
   Object.assign(patch,{"lists/groups":state.groups});
   newRooms.forEach(r=>{Object.assign(patch,roomPatch(r));});
-  closeModal('settingsModal');cloudPatch(patch,"edited lists (doctors/therapists/treatments/rooms)");toast("Lists saved");}
+  closeModal('settingsModal');cloudPatch(patch,"edited lists (doctors/therapists/consultants/treatments/rooms)");toast("Lists saved");}
 function closeModal(id){$(id).classList.remove("show");}
 
 /* ===== import (counter only) ===== */
