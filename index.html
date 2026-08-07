@@ -374,6 +374,9 @@
   .qitem.compact{padding:8px 10px}
   .qtop2{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
   .qleft{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+  /* .qleft is a COLUMN flex container, so the default align-items:stretch blew
+     the dup pill out to the full width of the card. Hug the text instead. */
+  .qleft .dupbadge{align-self:flex-start}
   .qleft .qtime{font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;font-size:12px}
   .qleft .qname{font-weight:700;font-size:15px;white-space:normal;overflow-wrap:break-word}
   .qright{display:flex;flex-direction:column;gap:5px;align-items:stretch;flex:none}
@@ -588,7 +591,8 @@ let lastAction=null,cloudMirror={};
 // True once Firebase has delivered its first snapshot. Until then a connected
 // device's mirror is only as good as its (possibly stale) localStorage, so Undo
 // stays disarmed rather than risk reverting to values that were never current.
-let cloudReady=false;
+let cloudReady=false;      // lists have arrived — used to disarm Undo
+let cloudArmed=false;      // the first-run check has FINISHED — until then NOTHING may write
 // True only when Firebase actually delivered lists. Distinguishes "these are the
 // real lists" from "the cloud gave us nothing so we're showing built-in defaults" —
 // which is what the backup sanity gate needs to know.
@@ -641,7 +645,16 @@ function migrate(s){if(!s)return null;if(!s.completed)s.completed=[];if(!s.remov
   (s.removed||[]).forEach(c=>{c.treatment=txArr(c.treatment);});return s;}
 function load(){try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
-function nextId(){return Date.now()*100+Math.floor(Math.random()*100);}
+// Monotonic. fullStateObj() backfills every id-less record in ONE synchronous
+// loop, so Date.now() is the same for all of them and only the 100-value random
+// tail separates them: 17 id-less entries collided ~77% of the time, and
+// q[x.id]=x then silently DROPPED a customer. The counter lives on the function
+// rather than a module-level `let` because migrate() calls this from inside
+// `let state = migrate(load())...` — a `let` here would be in the temporal dead
+// zone and kill boot (round 27).
+function nextId(){let n=Date.now()*100+Math.floor(Math.random()*100);
+  if(nextId.last!=null&&n<=nextId.last)n=nextId.last+1;
+  nextId.last=n;return n;}
 function fbKey(s){return String(s).replace(/[.#$/\[\]]/g,'_').trim()||"_";}
 
 /* ===== cloud write layer =====
@@ -682,7 +695,7 @@ function cloudPatch(patch,label){
   lastAction=(baseRef&&!cloudReady)?null:{before,label};
   Object.keys(patch).forEach(p=>{mirrorSet(p,patch[p]);});
   updateUndoBtn();logAction(label);
-  if(baseRef){try{baseRef.update(patch);}catch(e){}}
+  if(baseRef&&cloudArmed){try{baseRef.update(patch);}catch(e){}}
   saveLocal();render();}
 function roomPatch(room){const o=state.occ[room];const v=o?Object.assign({},o,{room}):null;
   return {["occ/"+fbKey(room)]:v};}
@@ -698,8 +711,8 @@ function listsPatch(){return {"lists/doctors":state.doctors,"lists/therapists":s
 function fullStateObj(st){
   const occ={};Object.entries(st.occ||{}).forEach(([r,o])=>{if(o)occ[fbKey(r)]=Object.assign({},o,{room:r});});
   const q={};(st.queue||[]).forEach(x=>{if(!x.id)x.id=nextId();q[x.id]=x;});
-  const cm={};(st.completed||[]).forEach(x=>{if(!x.id)x.id=nextId()+Math.floor(Math.random()*50);cm[x.id]=x;});
-  const rm={};(st.removed||[]).forEach(x=>{if(!x.id)x.id=nextId()+Math.floor(Math.random()*50);rm[x.id]=x;});
+  const cm={};(st.completed||[]).forEach(x=>{if(!x.id)x.id=nextId();cm[x.id]=x;});   // plain nextId(): adding random breaks the monotonic guarantee
+  const rm={};(st.removed||[]).forEach(x=>{if(!x.id)x.id=nextId();rm[x.id]=x;});
   return {lists:{doctors:st.doctors,therapists:st.therapists,treatments:st.treatments,groups:st.groups,customers:st.customers||{}},
     occ:Object.keys(occ).length?occ:null,queue:Object.keys(q).length?q:null,
     completed:Object.keys(cm).length?cm:null,removed:Object.keys(rm).length?rm:null,
@@ -746,18 +759,31 @@ function scanAlerts(){
   activeNotifs=activeNotifs.filter(n=>{
     let keep=true;
     if(n.k[0]==='q'){const id=parseInt(n.k.slice(1),10);const q=state.queue.find(x=>x.id===id);keep=!!(q&&sameName(q.doctor,MYNAME)&&q.arrivedAt);}
-    else if(n.k[0]==='r'){const rest=n.k.slice(1);const sep=rest.indexOf('|');const room=rest.slice(0,sep);const cust=rest.slice(sep+1);const o=state.occ[room];keep=!!(o&&sameName(o.doctor,MYNAME)&&o.customer===cust);}
+    // Read room/customer off the notif itself. They used to be packed into the key
+    // and split on the FIRST "|" — and fbKey() strips .#$/[] but NOT "|", so a room
+    // or customer name containing one silently broke the match.
+    else if(n.k[0]==='r'){const o=state.occ[n.room];keep=!!(o&&sameName(o.doctor,MYNAME)&&o.customer===n.cust);}
     if(!keep)delete seenAlerts[n.k];
     return keep;});
   const found=[];
   state.queue.forEach(q=>{if(sameName(q.doctor,MYNAME)&&q.arrivedAt)found.push({k:"q"+q.id,msg:q.customer+" has arrived · waiting"});});
-  allRooms().forEach(r=>{const o=state.occ[r];if(o&&sameName(o.doctor,MYNAME))found.push({k:"r"+r+"|"+o.customer,msg:o.customer+" — in "+r});});
+  allRooms().forEach(r=>{const o=state.occ[r];if(o&&sameName(o.doctor,MYNAME))found.push({k:"r"+r+"|"+o.customer,room:r,cust:o.customer,msg:o.customer+" — in "+r});});
   if(!notifReady){found.forEach(f=>seenAlerts[f.k]=1);return;}
   found.forEach(f=>{if(!seenAlerts[f.k]){seenAlerts[f.k]=1;activeNotifs.push(f);beep();try{navigator.vibrate&&navigator.vibrate([180,90,180]);}catch(e){}}});
 }
 function dismissNotif(k){activeNotifs=activeNotifs.filter(n=>n.k!==k);render();}
 let audioCtx=null;
-function beep(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+// iOS refuses to start an AudioContext outside a user gesture: it is created
+// SUSPENDED and never resumes, so the doctor's arrival alert was silently dead
+// on an iPhone — and a silent alert is indistinguishable from no alert. Arm it
+// on the first real tap, and re-arm after iOS suspends it on backgrounding.
+function audioArm(){try{
+  if(audioCtx&&audioCtx.state==='running')return;
+  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+}catch(e){}}
+['pointerdown','touchend','keydown'].forEach(ev=>window.addEventListener(ev,audioArm,{passive:true}));
+function beep(){try{audioArm();
   const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);
   o.frequency.value=880;g.gain.setValueAtTime(.25,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.5);
   o.start();o.stop(audioCtx.currentTime+.5);}catch(e){}}
@@ -771,13 +797,13 @@ const LOG_KEEP=200;
 function actorName(){if(MYNAME)return MYNAME;
   return ROLE?ROLE.charAt(0).toUpperCase()+ROLE.slice(1):"Someone";}
 function logAction(msg){
-  if(!baseRef||!msg)return;
+  if(!baseRef||!cloudArmed||!msg)return;
   try{baseRef.child("log").push({t:Date.now(),who:actorName(),role:ROLE||"",msg:String(msg)});}catch(e){}}
 // Machine-driven write (e.g. a timer finishing on its own): applied and synced,
 // but never logged and never undoable — it isn't anybody's action.
 function systemPatch(patch){
   Object.keys(patch).forEach(p=>mirrorSet(p,patch[p]));
-  if(baseRef){try{baseRef.update(patch);}catch(e){}}
+  if(baseRef&&cloudArmed){try{baseRef.update(patch);}catch(e){}}
   saveLocal();render();}
 const LOG_SHOW=60;
 function logTime(t){const d=new Date(t||0);return pad(d.getHours())+":"+pad(d.getMinutes());}
@@ -934,7 +960,11 @@ function isBoardRole(){return ROLE==='counter'||ROLE==='consultant';}
 function dupQueueEntries(name,exceptId){return state.queue.filter(q=>q.id!=exceptId&&sameName(q.customer,name));}
 function dupCount(name){let n=state.queue.filter(q=>sameName(q.customer,name)).length;
   allRooms().forEach(r=>{const o=state.occ[r];if(o&&sameName(o.customer,name))n++;});return n;}
-function dupBadge(name){return dupCount(name)>1?'<span class="dupbadge" title="This name is on the board more than once">⧉ dup</span>':'';}
+// A digit needs no English: "dup" was developer shorthand for a formal word, and
+// staff whose English is limited can neither guess nor look it up (and an iPad
+// has no tooltip). dupCount() already knew the real number — show it.
+function dupBadge(name){const n=dupCount(name);
+  return n>1?`<span class="dupbadge" title="This name is on the board ${n} times">⧉ ×${n}</span>`:'';}
 function whereIsName(name){const q=state.queue.find(x=>sameName(x.customer,name));
   if(q)return q.arrivedAt?"the waiting room":"the appointments list";
   const r=allRooms().find(x=>state.occ[x]&&sameName(state.occ[x].customer,name));
@@ -2327,11 +2357,39 @@ function setRole(role,name){ROLE=role;MYNAME=name;pendingRole=null;
 function setSync(t,cls){const e=$("syncst");if(e){e.textContent=t;e.className="syncst"+(cls?" "+cls:"");e.style.display=cls==='cloud'?'none':'';}}
 function connectCloud(){
   if(baseRef)return;db=firebase.database();baseRef=db.ref(BASE_PATH);cloudOn=true;
-  baseRef.once('value').then(s=>{
-    if(s.val()==null){
-      // First run on v2: migrate the old single-blob board if it exists.
+  // FIRST-RUN TEST: "do we have LISTS?", not "does board_v2 exist?".
+  // sync.js writes board_v2/queue on every branch, so the node already existed
+  // on RU/MA/SU/BM long before they were upgraded — testing the node meant the
+  // v1 migration was skipped on every one of them, `lists` never arrived, and
+  // applyLists() fell back to this file's SEED. The roster on screen was the
+  // built-in one while the clinic's real lists sat untouched in `board`.
+  baseRef.child('lists').once('value').then(s=>{
+    const L=s.val();
+    if(!(L&&L.doctors&&Object.keys(L.doctors).length)){
+      // No lists yet: migrate the old single-blob board if it exists.
       db.ref(OLD_PATH).once('value').then(os=>{
-        let st=null;try{if(typeof os.val()==='string')st=migrate(JSON.parse(os.val()));}catch(e){}
+        let st=null;
+        try{
+          let raw=os.val();
+          if(typeof raw==='string')raw=JSON.parse(raw);
+          // An older sync.js spread the blob STRING into an object, so some
+          // branches hold {"0":"{","1":"\"","2":"d",...} — sometimes wrapped in a
+          // string on top. The characters are all there and in order, so rebuild
+          // and re-parse rather than lose the board.
+          if(raw&&typeof raw==='object'&&typeof raw['0']==='string'&&typeof raw['1']==='string'){
+            const idx=Object.keys(raw).filter(k=>/^\d+$/.test(k)).sort((a,b)=>a-b);
+            if(idx.length)raw=JSON.parse(idx.map(k=>raw[k]).join(''));
+          }
+          // NEVER publish this file's SEED as if it were the clinic's roster —
+          // that is exactly how GL's lists were replaced in round 17. migrate()
+          // fills empty lists from SEED, so the blob has to prove itself FIRST.
+          const real=raw&&typeof raw==='object'
+            &&Array.isArray(raw.doctors)&&raw.doctors.length
+            &&Array.isArray(raw.groups)&&raw.groups.length;
+          if(real)st=migrate(raw);
+          else if(raw)console.warn('v1 blob unusable — publishing nothing, board stays on its built-in lists');
+        }catch(e){}
+        cloudArmed=true;   // armed only now: an earlier write would have created board_v2 and skipped this migration for good
         // ONLY seed the cloud when there is a genuine previous board to carry over.
         // The old code fell back to pushFullState(state) here, which published THIS
         // FILE's built-in SEED as if it were the clinic's real roster — that is how
@@ -2340,9 +2398,9 @@ function connectCloud(){
         // Edit Lists, and the first real action creates the nodes.
         if(st)pushFullState(st);
         attachListeners();
-      }).catch(()=>{attachListeners();});
-    } else attachListeners();
-  }).catch(()=>{attachListeners();});
+      }).catch(()=>{cloudArmed=true;attachListeners();});
+    } else {cloudArmed=true;attachListeners();}
+  }).catch(()=>{cloudArmed=true;attachListeners();});
 }
 function attachListeners(){
   baseRef.child('lists').on('value',s=>applyLists(s.val()));
@@ -2386,7 +2444,10 @@ initCloud();
 setInterval(()=>{$("clock").textContent=nowHM();},1000);
 setInterval(tick,20000);
 setInterval(refreshTimers,1000);
-window.addEventListener("resize",()=>{applyRoleChrome();render();});
+// Debounced: a phone rotating, or the keyboard opening, fires resize many times
+// and each one was a full board re-render.
+let __rzT=null;
+window.addEventListener("resize",()=>{clearTimeout(__rzT);__rzT=setTimeout(()=>{applyRoleChrome();render();},150);});
 autoBackup();cloudBackup();setInterval(()=>{autoBackup();cloudBackup();pruneLog();},600000);
 </script>
 </body>
