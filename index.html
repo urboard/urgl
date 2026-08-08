@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Room Flow Board</title>
 <meta name="description" content="Room Flow Board — clinic room & queue management.">
-<meta name="theme-color" content="#1f4e5f">
+<meta name="theme-color" content="#07465b">
 <!-- Icons / favicons -->
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -21,13 +21,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
-  :root{--bg:#f4f6f7;--card:#ffffff;--ink:#1f2d33;--muted:#6b7c85;--line:#dbe3e6;--head:#1f4e5f;--accent:#2e7d8a;--free:#e6f4ea;--free-b:#9cc4a8;--occ:#fff5e9;--occ-b:#f0c79a;}
+  :root{--bg:#f4f6f7;--card:#ffffff;--ink:#1f2d33;--muted:#6b7c85;--line:#dbe3e6;--head:#07465b;--accent:#2e7d8a;--free:#e6f4ea;--free-b:#9cc4a8;--occ:#fff5e9;--occ-b:#f0c79a;}
   *{box-sizing:border-box}
   button,select,input,.focusPill,.chip,.maskx,.docedit,.mstep button,.notelink,.miniToggle{touch-action:manipulation}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:15px}
   header{position:sticky;top:0;z-index:20;background:var(--head);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 2px 6px rgba(0,0,0,.12)}
   header h1{font-size:18px;margin:0;font-weight:700}
-  .logo{height:30px;width:auto;border-radius:6px;background:#fff;padding:2px}
+  .logo{height:30px;width:auto;border-radius:6px}
   #clock{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.05}
   .nowbox{display:inline-flex;flex-direction:column;line-height:1.1;opacity:.92}
   #dateStamp{font-size:11px;font-weight:600;opacity:.72;white-space:nowrap}
@@ -131,6 +131,9 @@
   .mstep button{background:none;border:0;cursor:pointer;color:var(--muted);font-size:9px;line-height:.9;padding:0 2px}
   .mstep button:hover{color:var(--accent)}
   .txwrap{display:flex;flex-wrap:wrap;gap:4px;align-items:center;flex:1}
+  /* Keep '+ treatment' and '+ Pro Light' together: as separate flex items the
+     picker fitted on the chip line and Pro Light wrapped underneath alone. */
+  .txgrp{display:inline-flex;align-items:center;gap:4px;flex:0 1 auto;min-width:0}
   .txchip{display:inline-flex;align-items:center;gap:5px;background:#e3eef0;border:1px solid #cfe0e3;border-radius:12px;padding:2px 4px 2px 9px;font-size:12px;font-weight:600}
   .txchip b{cursor:pointer;color:#c0392b}
   .txname{cursor:pointer}
@@ -204,8 +207,8 @@
   .pstatus.mo{background:#ffd9d9;color:#b3261e}
   .pstatus.soon{background:#fdeede;color:#8a5212}
   .pmeta{font-size:12px;color:var(--muted)}
-  .notif{background:#1f4e5f;color:#fff;border-radius:10px;padding:10px 12px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;align-items:center;animation:nflash .8s 3}
-  @keyframes nflash{0%,100%{background:#1f4e5f}50%{background:#2e7d8a}}
+  .notif{background:#07465b;color:#fff;border-radius:10px;padding:10px 12px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;align-items:center;animation:nflash .8s 3}
+  @keyframes nflash{0%,100%{background:#07465b}50%{background:#2e7d8a}}
   .notif button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:6px;padding:4px 9px;font-weight:700;cursor:pointer}
   .rolebtns{display:flex;flex-direction:column;gap:8px}
   .rolebtns button{padding:13px;font-size:15px;font-weight:800;border:1px solid var(--line);border-radius:9px;background:#fbfdfd;cursor:pointer;text-align:left}
@@ -1555,11 +1558,15 @@ function qConsultBadge(q){
   return `<button class="miniToggle${q.consult?' on':''}" title="${q.consult?'tap to remove consult tag':'tag this visit as a consult'}" onclick="qConsultSet(${q.id},${q.consult?'false':'true'})">\ud83e\ude7a</button>`;}
 function qConsultDetail(q){
   if(!q.consult)return"";
-  const hasPL=txArr(q.treatment).includes("Pro Light");
   return `<div style="margin:2px 0;display:flex;align-items:center;gap:5px;flex-wrap:wrap">`+
     `<select class="selCompact" style="min-width:134px;max-width:180px" title="who is doing this consult" onchange="qConsultantSave(${q.id},this.value)">${consultOptions(q.consultant||'')}</select>`+
-    (hasPL?'':`<button class="chip" style="padding:2px 7px;font-size:11px" title="add Pro Light" onclick="qTxAdd(${q.id},'Pro Light')">+ Pro Light</button>`)+
     `</div>`;}
+// Pro Light lives on the TREATMENT row now, not in the consult block — it adds a
+// treatment, so it belongs next to the other treatments rather than under the
+// consultant's name.
+function qProLight(q){
+  if(!q.consult||txArr(q.treatment).includes("Pro Light"))return"";
+  return `<button class="chip" style="padding:2px 7px;font-size:11px" title="add Pro Light" onclick="qTxAdd(${q.id},'Pro Light')">+ Pro Light</button>`;}
 function statusFor(o){
   if(o.consult)return {t:"In consult"+(o.consultant?" \u00b7 "+o.consultant:""),cls:""};
   if(o.mask){const d=toMin(o.mask)-curMin();
@@ -1888,11 +1895,15 @@ function renderWaiting(){
   let html=`<div class="section-title">Waiting room — longest first (${w.length})</div>`;
   if(!w.length){html+=`<div class="hint">No one checked in. Tap “✓ Arrived” on an appointment.</div>`;}
   w.forEach(({q,wait})=>{const cls=wait>=40?'wlong':wait>=20?'wmed':'';
+    const theraRow=`<div class="qmeta" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:3px">${roleRow("q",q.id,q)}</div>`;
+    const txRow=`<div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}<span class="txgrp">${qTxAddSel(q.id,true,'+ treatment ▾')}${qProLight(q)}</span></div>`;
+    // Normally the therapist is the first thing the counter sets, so it is the
+    // first row. Tapping 🩺 changes what this card is FOR: the consultant and the
+    // treatments jump above the therapist, right under the icon that revealed them.
+    const mid=q.consult?(qConsultDetail(q)+txRow+theraRow):(theraRow+txRow);
     html+=`<div class="witem ${cls}"><div class="wtop"><b>${esc(q.customer)} ${dupBadge(q.customer)}</b><span class="wmin">${wait}m</span></div>
       <div class="qmeta" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);min-width:0">${docInline(q.id,q.doctor)}${q.appt?' · '+esc(hm12(q.appt)):''}${qConsultBadge(q)}</div>
-      <div class="qmeta" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:3px">${roleRow("q",q.id,q)}</div>
-      ${qConsultDetail(q)}
-      <div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}${qTxAddSel(q.id,true,'+ treatment ▾')}</div>
+      ${mid}
       ${resLine(q)}
       <div style="display:flex;gap:6px;align-items:center"><select onchange="waitRoomPick(${q.id},this.value);this.value=''" style="flex:1">${waitRoomOpts(q,'→ room ▾')}</select><button class="btn sm grey" title="Clicked Arrived by mistake — send back to appointments" onclick="qCheckIn(${q.id})">↩ appts</button><button class="btn sm grey" title="Remove customer (logged in Records)" onclick="removeQueue(${q.id})">✕</button></div></div>`;});
   $("waitPanel").innerHTML=html;
@@ -2217,7 +2228,7 @@ function renderConsultantPhone(){
   w.forEach(({q,wait})=>{html+=`<div class="pcard${wait>=20?' alert':''}"><div class="ptop"><span class="pname">${esc(q.customer)}${conMark(q)}</span><span class="wmin">${wait}m</span></div>
     <div class="pmeta">${esc(q.doctor)||'no doctor'}${q.appt?' \u00b7 appt '+esc(hm12(q.appt)):''}</div>
     ${qConsultDetail(q)}
-    <div class="txwrap">${txArr(q.treatment).map(x=>`<span class="txchip">${esc(x)}</span>`).join('')}</div>
+    <div class="txwrap">${txArr(q.treatment).map(x=>`<span class="txchip">${esc(x)}</span>`).join('')}${qProLight(q)}</div>
     <div class="qactions">${qConsultBadge(q)}<select onchange="qSetThera(${q.id},this.value)">${thOptions(q.therapist)}</select><select onchange="moveQueueToRoom(${q.id},this.value)">${sendRoomOpts('\u2192 room \u25be')}</select></div>
     <div class="qactions"><button class="btn sm grey" onclick="qCheckIn(${q.id})">\u21a9 appts</button><button class="btn sm grey" onclick="removeQueue(${q.id})">\u2715 remove</button></div></div>`;});
   // rooms in use, most urgent first (mask overdue -> mask soon -> numb done -> oxy finished -> rest)
