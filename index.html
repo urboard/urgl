@@ -420,7 +420,6 @@
 
 <!-- ===== Counter / Consultant board ===== -->
 <main id="boardMain" style="display:none">
-  <datalist id="txList"></datalist>
   <div class="layout">
     <div>
       <div class="arrive-bar">
@@ -430,8 +429,7 @@
         <datalist id="custList"></datalist>
         <select id="arriveDoc" title="Doctor" style="width:120px"></select>
         <input id="arriveTime" class="timein" placeholder="time e.g. 345" style="width:100px">
-        <input id="arriveTx" list="txList" placeholder="Treatment" style="width:140px">
-        <select id="arriveTxSel" title="pick from the treatment list" style="width:86px" onchange="arrivePickTx(this)"></select>
+        <span id="arriveTxWrap" class="txwrap" style="flex:0 1 auto;min-width:150px;max-width:340px"></span>
         <button class="btn" id="arriveBtn" onclick="arrive()">+ Add appointment</button>
       </div>
       <div id="roomsHost"></div>
@@ -989,7 +987,8 @@ function addToQueue(nameRaw,doc,timeRaw,txRaw,walkIn){const name=fbKey(String(na
   if(!state.customers[name])state.customers[name]={doctor:"",therapist:""};
   if(doc)state.customers[name].doctor=doc;
   const c=state.customers[name];
-  const txs=String(txRaw||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const txs=Array.isArray(txRaw)?txRaw.map(s=>String(s).trim()).filter(Boolean)
+                                :String(txRaw||"").split(",").map(s=>s.trim()).filter(Boolean);
     // c.therapist is this customer's REMEMBERED therapist — a suggestion, not an
   // assignment. role stays empty so neither pill lights until someone taps one.
   const q={id:nextId(),customer:name,doctor:doc||c.doctor||"",therapist:c.therapist||"",role:"",note:"",nextRoom:"",conVisit:false,treatment:txs,appt:parseTimeInput(timeRaw),arrivedAt:walkIn?nowHM():""};
@@ -1004,12 +1003,22 @@ function updateAddMode(){
   if(w)w.classList.toggle("on",addWalkIn);
   if(b)b.textContent=addWalkIn?"+ Add walk-in":"+ Add appointment";}
 function arrive(){
-  if(addToQueue($("arriveName").value,$("arriveDoc").value,$("arriveTime").value,$("arriveTx").value,addWalkIn)){
-    $("arriveName").value="";$("arriveTx").value="";$("arriveDoc").value="";$("arriveTime").value="";}}
-function arrivePickTx(sel){let v=sel.value;sel.value="";if(!v)return;
+  if(addToQueue($("arriveName").value,$("arriveDoc").value,$("arriveTime").value,arriveTxList,addWalkIn)){
+    $("arriveName").value="";arriveTxList=[];$("arriveDoc").value="";$("arriveTime").value="";arriveTxDraw();}}
+// Treatments for the appointment being added. Chips + ONE picker, matching the
+// room / waiting / appointment cards — the Add bar used to carry a text box AND
+// a dropdown that only wrote into it: two identical-looking controls for one
+// job, and the box's own list never opened on an iPad.
+let arriveTxList=[];
+function arriveTxHtml(){
+  const chips=arriveTxList.map((x,i)=>`<span class="txchip">${esc(x)}<b title="remove" onclick="arriveTxRemove(${i})">✕</b></span>`).join('');
+  const left=state.treatments.filter(t=>!arriveTxList.includes(t));
+  return chips+`<select class="txin" title="add a treatment" onchange="arriveTxPick(this)">${txSelOpts(left,'+ tx ▾',true)}</select>`;}
+function arriveTxDraw(){const el=$("arriveTxWrap");if(el)el.innerHTML=arriveTxHtml();}
+function arriveTxPick(sel){let v=sel.value;sel.value="";if(!v)return;
   if(v==="__other__"){v=(prompt("Treatment name")||"").trim();if(!v)return;}
-  const el=$("arriveTx"),cur=el.value.split(",").map(s=>s.trim()).filter(Boolean);
-  if(!cur.includes(v))cur.push(v);el.value=cur.join(", ");}
+  if(!arriveTxList.includes(v))arriveTxList.push(v);arriveTxDraw();}
+function arriveTxRemove(i){arriveTxList.splice(i,1);arriveTxDraw();}
 function setCustDoc(name,v){if(!name)return null;state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].doctor=v;return custPatch(name);}
 function setCustThera(name,v){if(!name)return null;state.customers[name]=state.customers[name]||{doctor:"",therapist:""};state.customers[name].therapist=v;return custPatch(name);}
 function qSetDoctor(id,v){const q=state.queue.find(x=>x.id==id);if(q){q.doctor=v;const cp=setCustDoc(q.customer,v);editingDocId=null;cloudPatch(Object.assign(queuePatch(q),cp||{}),q.customer+": doctor → "+(v||"none"));}}
@@ -1719,8 +1728,7 @@ function applyRoleChrome(){
 /* ---- board (counter / consultant) ---- */
 function renderBoard(){
   $("custList").innerHTML=Object.keys(state.customers||{}).sort().map(n=>`<option value="${esc(n)}">`).join('');
-  $("txList").innerHTML=state.treatments.map(t=>`<option value="${esc(t)}">`).join('');
-  fillSel("arriveTxSel",txSelOpts(state.treatments,"pick…",true));
+  $("arriveTxWrap").innerHTML=arriveTxHtml();
   fillSel("arriveDoc",docOptions(""));
   let html="";state.groups.forEach(g=>{html+=`<div class="group-title">${esc(g.name)}</div><div class="rooms-grid">`+g.rooms.map(roomCard).join('')+`</div>`;});
   const __known=allRooms();const __orph=Object.keys(state.occ).filter(r=>state.occ[r]&&!__known.includes(r));
