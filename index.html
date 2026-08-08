@@ -113,7 +113,7 @@
   .room .body{padding:10px 11px;display:flex;flex-direction:column;gap:7px;flex:1}
   .cust{font-size:15px;font-weight:800;line-height:1.25;letter-spacing:-.1px;margin-bottom:2px;display:flex;align-items:baseline;gap:6px}
   .fieldrow{display:flex;align-items:flex-start;gap:6px;font-size:13px}
-  .fieldrow label{width:50px;color:var(--muted);flex:none;padding-top:6px;white-space:nowrap;font-size:12px}
+  .fieldrow label{width:62px;color:var(--muted);flex:none;padding-top:6px;white-space:nowrap;font-size:12px}
   .fieldrow select,.fieldrow .note-in{flex:1;min-width:0}
   .docline{font-weight:700;color:var(--head);font-size:13px}
   /* only the narrow waiting-room card needs the name to truncate */
@@ -1013,7 +1013,7 @@ let arriveTxList=[];
 function arriveTxHtml(){
   const chips=arriveTxList.map((x,i)=>`<span class="txchip">${esc(x)}<b title="remove" onclick="arriveTxRemove(${i})">✕</b></span>`).join('');
   const left=state.treatments.filter(t=>!arriveTxList.includes(t));
-  return chips+`<select class="txin" title="add a treatment" onchange="arriveTxPick(this)">${txSelOpts(left,'+ tx ▾',true)}</select>`;}
+  return chips+`<select class="txin" title="add a treatment" onchange="arriveTxPick(this)">${txSelOpts(left,'+ treatment ▾',true)}</select>`;}
 function arriveTxDraw(){const el=$("arriveTxWrap");if(el)el.innerHTML=arriveTxHtml();}
 function arriveTxPick(sel){let v=sel.value;sel.value="";if(!v)return;
   if(v==="__other__"){v=(prompt("Treatment name")||"").trim();if(!v)return;}
@@ -1765,7 +1765,7 @@ function roomCard(room){
       ${picking?`<div class="moderow">${stageChipsRow(room,o)}</div>`:''}
       ${consultBlock(room,o)}
       ${coRow(room,o)}
-      <div class="fieldrow"><label>Tx</label><div class="txwrap">${remChips}${txAddSel(room,true,'+ add ▾')}</div></div>
+      <div class="fieldrow"><label>Treatment</label><div class="txwrap">${remChips}${txAddSel(room,true,'+ treatment ▾')}</div></div>
       ${doneChips?`<div class="fieldrow"><label>Done</label><div class="txwrap">${doneChips}</div></div>`:''}
       ${o.consult?`<div class="fieldrow"><label>Thera.</label><div style="flex:1;display:flex;align-items:center;gap:4px;padding-top:6px">${theraEl}</div></div>`:''}
       ${noteRow(room,o,'Note')}
@@ -1892,7 +1892,7 @@ function renderWaiting(){
       <div class="qmeta" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);min-width:0">${docInline(q.id,q.doctor)}${q.appt?' · '+esc(hm12(q.appt)):''}${qConsultBadge(q)}</div>
       <div class="qmeta" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:3px">${roleRow("q",q.id,q)}</div>
       ${qConsultDetail(q)}
-      <div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}${qTxAddSel(q.id,true,'+ tx ▾')}</div>
+      <div class="txwrap">${txChips(q.treatment,`qTxRemove(${q.id},`)}${qTxAddSel(q.id,true,'+ treatment ▾')}</div>
       ${resLine(q)}
       <div style="display:flex;gap:6px;align-items:center"><select onchange="waitRoomPick(${q.id},this.value);this.value=''" style="flex:1">${waitRoomOpts(q,'→ room ▾')}</select><button class="btn sm grey" title="Clicked Arrived by mistake — send back to appointments" onclick="qCheckIn(${q.id})">↩ appts</button><button class="btn sm grey" title="Remove customer (logged in Records)" onclick="removeQueue(${q.id})">✕</button></div></div>`;});
   $("waitPanel").innerHTML=html;
@@ -1940,10 +1940,10 @@ function txPick(sel,fn,arg){let v=sel.value;sel.value="";if(!v)return;
   fn(arg,v);}
 function txAddSel(room,board,label){const o=state.occ[room];const taken=o?new Set(txArr(o.treatment).concat(txArr(o.txDone))):new Set();
   const opts=state.treatments.filter(t=>!taken.has(t));
-  return `<select class="${board?'txin':'txaddsel'}" onchange="txPick(this,roomTxAdd,'${jsq(room)}')">${txSelOpts(opts,label||'+ add…',board)}</select>`;}
+  return `<select class="${board?'txin':'txaddsel'}" onchange="txPick(this,roomTxAdd,'${jsq(room)}')">${txSelOpts(opts,label||'+ treatment…',board)}</select>`;}
 function qTxAddSel(id,board,label){const q=state.queue.find(x=>x.id==id);const taken=q?new Set(txArr(q.treatment)):new Set();
   const opts=state.treatments.filter(t=>!taken.has(t));
-  return `<select class="${board?'txin':'txaddsel'}" onchange="txPick(this,qTxAdd,${id})">${txSelOpts(opts,label||'+ add…',board)}</select>`;}
+  return `<select class="${board?'txin':'txaddsel'}" onchange="txPick(this,qTxAdd,${id})">${txSelOpts(opts,label||'+ treatment…',board)}</select>`;}
 function phoneQTxChips(q){
   const chips=txArr(q.treatment).map((x,i)=>`<span class="txchip">${esc(x)}<b onclick="qTxRemove(${q.id},${i})">\u2715</b></span>`).join('');
   return `<div class="txwrap">${chips}${qTxAddSel(q.id)}</div>`;}
